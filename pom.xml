@@ -65,7 +65,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                ru.kpfu.itis.paramonov.heartstone/ru.kpfu.itis.paramonov.heartstone.HelloApplication
+                                ru.kpfu.itis.paramonov.heartstone/ru.kpfu.itis.paramonov.heartstone.MainApplication
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
