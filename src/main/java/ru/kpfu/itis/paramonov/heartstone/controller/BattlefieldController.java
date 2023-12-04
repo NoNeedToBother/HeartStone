@@ -10,40 +10,24 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BattlefieldController {
     @FXML
     private Button btnEndTurn;
 
     @FXML
-    private ImageView ivCardFirst;
-
-    @FXML
-    private ImageView ivCardSecond;
-
-    @FXML
-    private ImageView ivCardThird;
-
-    @FXML
-    private ImageView ivCardForth;
-
-    @FXML
-    private ImageView ivCardFifth;
-
-    @FXML
     private HBox hBoxCards;
 
-    public StackPane hehe;
+    private List<Card> cards = new ArrayList<>();
 
     @FXML
     private void initialize() {
-        //ivCardFirst.setImage(new Image("/base_card.png"));
         setCards();
-
-
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv) {
@@ -53,6 +37,7 @@ public class BattlefieldController {
             content.putImage(iv.getImage());
             db.setContent(content);
             mouseEvent.consume();
+
         };
     }
 
@@ -60,13 +45,15 @@ public class BattlefieldController {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
 
         CardRepository.CardTemplate card = CardRepository.CardTemplate.Stone;
-        StackPane sprite = Card.Builder()
+        Image sprite = Card.Builder()
                 .addImage(card.getImageUrl())
                 .addRarity(card.getRarity())
                 .setBase()
                 .build();
 
-        hBoxCardsChildren.add(sprite);
+        ImageView img = new ImageView();
+        img.setImage(sprite);
+        hBoxCardsChildren.add(img);
         /*
         for (Node element : hBoxCardsChildren) {
             if (element.getClass().equals(ImageView.class)) {

@@ -1,6 +1,13 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card;
 
+import javafx.scene.image.Image;
+import javafx.scene.layout.StackPane;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public interface Sprite {
 
@@ -14,5 +21,4 @@ public interface Sprite {
 
         T build();
     }
-
 }

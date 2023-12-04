@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.io.IOException;
 
 public class MainApplication extends Application {
@@ -22,14 +23,6 @@ public class MainApplication extends Application {
         AnchorPane anchorPane = loader.load();
 
         primaryStage.setTitle("HeartStone");
-        anchorPane.layoutBoundsProperty().addListener(new ChangeListener<Bounds>() {
-            @Override
-            public void changed(ObservableValue<? extends Bounds> observableValue, Bounds bounds, Bounds t1) {
-                anchorPane.setPrefWidth(t1.getWidth());
-                anchorPane.setPrefHeight(t1.getHeight());
-                //primaryStage.setScene(new Scene(anchorPane));
-            }
-        });
 
         primaryStage.setScene(new Scene(anchorPane));
         primaryStage.show();

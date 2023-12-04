@@ -24,27 +24,7 @@
 
     <HBox AnchorPane.bottomAnchor="10" fx:id="hBoxCards" spacing="60">
         <HBox prefWidth="100"/>
-        <StackPane fx:id="hehe" HBox.hgrow="ALWAYS">
-            <ImageView fx:id="ivCardFirst"
-                       fitWidth="120"
-                       fitHeight="160"
-            />
-        </StackPane>
-        <ImageView fx:id="ivCardSecond"
-                   fitWidth="120"
-                   fitHeight="160"
-                   HBox.hgrow="ALWAYS"
-        />
-        <ImageView fx:id="ivCardThird"
-                   fitWidth="120"
-                   fitHeight="160"
-                   HBox.hgrow="ALWAYS"
-        />
-        <ImageView fx:id="ivCardForth"
-                   fitWidth="120"
-                   fitHeight="160"
-                   HBox.hgrow="ALWAYS"
-        />
+
     </HBox>
 
 </AnchorPane>

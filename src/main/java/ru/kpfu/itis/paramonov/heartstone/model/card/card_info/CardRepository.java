@@ -22,9 +22,10 @@ public class CardRepository {
         COMMON, RARE, EPIC, LEGENDARY
     }
 
+    private static final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources";
 
     public enum CardTemplate {
-        Stone(1, 1, 1, 0, "Just an ordinary stone", "/basic_stone.png", null, null, Faction.STONE, Rarity.COMMON);
+        Stone(1, 1, 1, 0, "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png", null, null, Faction.STONE, Rarity.COMMON);
 
         private int id;
 
