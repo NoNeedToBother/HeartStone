@@ -9,7 +9,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
@@ -44,24 +43,29 @@ public class BattlefieldController {
     private void setCards() {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
 
-        CardRepository.CardTemplate card = CardRepository.CardTemplate.Stone;
-        Image sprite = Card.Builder()
-                .addImage(card.getImageUrl())
-                .addRarity(card.getRarity())
-                .setBase()
-                .build();
+        for (int i = 0; i < 5; i++) {
+            CardRepository.CardTemplate card = CardRepository.CardTemplate.Stone;
+            Image sprite = Card.SpriteBuilder()
+                    .addImage(card.getImageUrl())
+                    .addRarity(card.getRarity())
+                    .setBase()
+                    .scale(2)
+                    .build();
 
-        ImageView img = new ImageView();
-        img.setImage(sprite);
-        hBoxCardsChildren.add(img);
-        /*
+            ImageView img = new ImageView();
+            img.setImage(sprite);
+            hBoxCardsChildren.add(img);
+        }
+    }
+
+    private void makeCardsDraggable() {
+        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
+
         for (Node element : hBoxCardsChildren) {
-            if (element.getClass().equals(ImageView.class)) {
+            if (element instanceof ImageView) {
                 ImageView iv = (ImageView) element;
-                iv.setImage(new Image("/base_card.png"));
                 iv.setOnDragDetected(getDragEventHandler(iv));
             }
-        }*/
-
+        }
     }
 }

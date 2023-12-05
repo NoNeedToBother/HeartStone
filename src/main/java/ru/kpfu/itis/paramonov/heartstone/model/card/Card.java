@@ -1,15 +1,12 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card;
 
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.ImageOutputStreamImpl;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -51,64 +48,16 @@ public class Card implements Sprite{
         return cardInfo;
     }
 
-    /*
-    public static class CardSpriteBuilder implements SpriteBuilder<StackPane> {
-        private StackPane sp = new StackPane();
-
-        private final double CARD_WIDTH = 96.0;
-
-        private final double CARD_HEIGHT = 128.0;
-
-        private SpriteBuilder<StackPane> addImageToSp(String imgUrl) {
-            ImageView iv = new ImageView();
-            iv.setImage(new Image(imgUrl));
-            iv.setFitWidth(CARD_WIDTH);
-            iv.setFitHeight(CARD_HEIGHT);
-            sp.getChildren().add(iv);
-            return this;
-        }
-
-        @Override
-        public SpriteBuilder<StackPane> setBase() {
-            return addImageToSp("/base_card.png");
-        }
-
-        @Override
-        public SpriteBuilder<StackPane> addImage(String imgUrl) {
-            return addImageToSp(imgUrl);
-        }
-
-        @Override
-        public SpriteBuilder<StackPane> addRarity(CardRepository.Rarity rarity) {
-            switch (rarity) {
-                case COMMON -> {
-                    return addImageToSp("/rarity_common.png");
-                }
-                case RARE -> {
-                    return addImageToSp("/rarity_rare.png");
-                }
-                case EPIC -> {
-                    return addImageToSp("/rarity_epic.png");
-                }
-                case LEGENDARY -> {
-                    return addImageToSp("/rarity_legendary");
-                }
-                default -> throw new RuntimeException("Impossible");
-            }
-        }
-
-        @Override
-        public StackPane build() {
-            return sp;
-        }
-    }*/
-
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
         private BufferedImage img;
 
-        private final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources";
+        private final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
 
         public CardSpriteBuilder() {
+            setBlankImg();
+        }
+
+        private void setBlankImg() {
             img = new BufferedImage(48, 64, BufferedImage.TYPE_INT_ARGB);
         }
 
@@ -150,9 +99,25 @@ public class Card implements Sprite{
                     return addImageToBufferedImage(DEFAULT_PATH + "/rarity_legendary.png");
                 }
                 default -> {
-                    throw new RuntimeException("Impossible");
+                    throw new RuntimeException("No such rarity");
                 }
             }
+        }
+
+        @Override
+        public SpriteBuilder<Image> scale(int scale) {
+            int width = img.getWidth() * scale;
+            int height = img.getHeight() * scale;
+            BufferedImage after = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
+            AffineTransformOp scaleOp
+                    = new AffineTransformOp(scaleInstance, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+
+            Graphics2D g2 = (Graphics2D) after.getGraphics();
+            g2.drawImage(img, scaleOp, 0, 0);
+            g2.dispose();
+            img = after;
+            return this;
         }
 
         @Override
@@ -160,6 +125,7 @@ public class Card implements Sprite{
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 ImageIO.write(img, "PNG", out);
                 InputStream in = new ByteArrayInputStream(out.toByteArray());
+                setBlankImg();
                 return new Image(in);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -169,7 +135,7 @@ public class Card implements Sprite{
 
     private static final CardSpriteBuilder builder = new CardSpriteBuilder();
 
-    public static CardSpriteBuilder Builder() {
+    public static CardSpriteBuilder SpriteBuilder() {
         return builder;
     }
 }
