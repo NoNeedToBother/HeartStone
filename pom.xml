@@ -14,13 +14,6 @@
         <junit.version>5.8.2</junit.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>clojars.org</id>
-            <url>https://repo.clojars.org</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -50,31 +43,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.clojure</groupId>
-            <artifactId>clojure</artifactId>
-            <version>1.11.1</version>
-        </dependency>
-        <dependency>
-            <groupId>clojure-interop</groupId>
-            <artifactId>java.awt</artifactId>
-            <version>1.0.5</version>
-        </dependency>
-        <!--
-        <dependency>
-            <groupId>org.clojure</groupId>
-            <artifactId>test.generative</artifactId>
-            <version>1.0.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.clojure</groupId>
-            <artifactId>test.check</artifactId>
-            <version>1.1.1</version>
-            <scope>test</scope>
-        </dependency>
-        -->
-
     </dependencies>
 
     <build>
@@ -98,7 +66,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                ru.kpfu.itis.paramonov.heartstone/ru.kpfu.itis.paramonov.heartstone.MainApplication
+                                ru.kpfu.itis.paramonov.heartstone/ru.kpfu.itis.paramonov.heartstone.GameApplication
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

@@ -1,6 +1,8 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card;
 
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 import javax.imageio.ImageIO;
@@ -10,7 +12,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public class Card implements Sprite{
+public class Card implements Sprite, Serializable{
 
     private int hp;
 
@@ -21,6 +23,8 @@ public class Card implements Sprite{
     private Image image;
 
     private CardRepository.CardTemplate cardInfo;
+
+    private ImageView imageView;
 
     public Card(CardRepository.CardTemplate cardInfo) {
         this.cardInfo = cardInfo;
@@ -44,8 +48,28 @@ public class Card implements Sprite{
         return cost;
     }
 
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public void setAtk(int atk) {
+        this.atk = atk;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
     public CardRepository.CardTemplate getCardInfo() {
         return cardInfo;
+    }
+
+    public void associateImageView(ImageView imageView) {
+        this.imageView = imageView;
+    }
+
+    public ImageView getAssociatedImageView() {
+        return imageView;
     }
 
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {

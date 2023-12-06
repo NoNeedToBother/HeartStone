@@ -24,8 +24,16 @@ public class CardRepository {
 
     private static final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
 
+    public CardTemplate getCardTemplate(int id) {
+        for (CardTemplate card : CardTemplate.values()) {
+            if (card.getId() == id) return card;
+        }
+        throw new RuntimeException("Card does not exist");
+    }
+
     public enum CardTemplate {
-        Stone(1, 1, 1, 0, "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png", null, null, Faction.STONE, Rarity.COMMON);
+        Stone(1, 1, 1, 0, "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
+                null, null, Faction.STONE, Rarity.COMMON);
 
         private int id;
 
@@ -37,7 +45,7 @@ public class CardRepository {
 
         private String description;
 
-        private String imageUrl;
+        private String portraitUrl;
 
         private List<Action> actions;
 
@@ -54,7 +62,7 @@ public class CardRepository {
             this.atk = atk;
             this.cost = cost;
             this.description = description;
-            this.imageUrl = imageUrl;
+            this.portraitUrl = imageUrl;
             this.actions = actions;
             this.keyWords = keyWords;
             this.faction = faction;
@@ -77,8 +85,8 @@ public class CardRepository {
             return description;
         }
 
-        public String getImageUrl() {
-            return imageUrl;
+        public String getPortraitUrl() {
+            return portraitUrl;
         }
 
         public List<Action> getActions() {

@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.model.card;
+package ru.kpfu.itis.paramonov.heartstone.model;
 
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
