@@ -1,10 +1,13 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
+import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
+import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -22,6 +25,7 @@ public class GameClient {
     public void sendMessage(String message) {
         try {
             thread.getOutput().write(message);
+            thread.getOutput().newLine();
             thread.getOutput().flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -29,8 +33,8 @@ public class GameClient {
     }
 
     public void start() {
-        GameServer server = GameApplication.getApplication().getServer();
-        InetAddress host = server.getHost();
+        GameServer server = application.getServer();
+        String host = server.getHost();
         int port = server.getPort();
 
         BufferedReader input;
@@ -44,7 +48,18 @@ public class GameClient {
         }
 
         thread = new ClientThread(input, output, this);
-        new Thread(thread).start();
+        (new Thread(thread)).start();
+    }
+
+    public void stop() {
+        try {
+            thread.input.close();
+            thread.output.close();
+            socket.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public GameApplication getApplication() {
@@ -68,6 +83,9 @@ public class GameClient {
             try {
                 while (true) {
                     String serverResponse = input.readLine();
+                    Platform.runLater(() -> {
+                        //response handling
+                    });
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

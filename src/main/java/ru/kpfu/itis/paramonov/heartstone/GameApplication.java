@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
@@ -22,18 +24,26 @@ public class GameApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        application = this;
+        primaryStage = stage;
+
         server = GameServer.getInstance();
 
         client = new GameClient(this);
+        client.start();
 
-        primaryStage = stage;
-        application = this;
+        primaryStage.setOnCloseRequest(windowEvent -> {
+            System.exit(0);
+        });
+
         FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/battlefield.fxml"));
         AnchorPane anchorPane = loader.load();
 
         primaryStage.setTitle("HeartStone");
 
-        primaryStage.setScene(new Scene(anchorPane));
+        Scene scene = new Scene(anchorPane);
+
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
@@ -47,6 +57,10 @@ public class GameApplication extends Application {
 
     public GameServer getServer() {
         return server;
+    }
+
+    public GameClient getClient() {
+        return client;
     }
 
     public static void main(String[] args) {

@@ -13,9 +13,9 @@ public class GameServer {
     private ServerSocket serverSocket;
     private List<Client> clients = new ArrayList<>();
 
-    private InetAddress host = setHost();
+    private final String host = "127.0.0.1";
 
-    private int port = 5555;
+    private final int port = 5555;
 
     private GameServer() {}
 
@@ -28,15 +28,7 @@ public class GameServer {
         return gameServer;
     }
 
-    private InetAddress setHost() {
-        try {
-            return InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public InetAddress getHost() {
+    public String getHost() {
         return host;
     }
 
@@ -46,7 +38,7 @@ public class GameServer {
 
     public void start() {
         try {
-            serverSocket = new ServerSocket(5555);
+            serverSocket = new ServerSocket(port);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
@@ -55,7 +47,7 @@ public class GameServer {
                 Client client = new Client(input, output, this);
                 clients.add(client);
 
-                new Thread(client).start();
+                (new Thread(client)).start();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -70,7 +62,8 @@ public class GameServer {
             }
 
             try {
-                c.getOutput().write(message + "\n");
+                c.getOutput().write(message);
+                c.getOutput().newLine();
                 c.getOutput().flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -79,8 +72,8 @@ public class GameServer {
     }
 
     public static void main(String[] args) {
-        GameServer chatServer = new GameServer();
-        chatServer.start();
+        GameServer gameServer = new GameServer();
+        gameServer.start();
     }
 
     static class Client implements Runnable {
@@ -100,6 +93,7 @@ public class GameServer {
             try {
                 while (true) {
                     String message = input.readLine();
+                    System.out.println(message);
                     server.sendMessage(message, this);
                 }
             } catch (IOException e) {
