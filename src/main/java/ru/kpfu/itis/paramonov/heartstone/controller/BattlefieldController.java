@@ -8,10 +8,14 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
+import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +27,20 @@ public class BattlefieldController {
     @FXML
     private HBox hBoxCards;
 
+    @FXML
+    private AnchorPane root;
+
     private List<Card> hand = new ArrayList<>();
+
+    private static BattlefieldController controller = null;
+
+    public static BattlefieldController getInstance() {
+        return controller;
+    }
 
     @FXML
     private void initialize() {
+        controller = this;
         setCards();
         makeCardsDraggable();
     }
