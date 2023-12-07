@@ -1,10 +1,11 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server;
 
+import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.List;
 public class GameServer {
     private ServerSocket serverSocket;
     private List<Client> clients = new ArrayList<>();
+
+    private List<Client> clientsToConnect = new ArrayList<>();
 
     private final String host = "127.0.0.1";
 
@@ -55,18 +58,16 @@ public class GameServer {
 
     }
 
-    public void sendMessage(String message, Client client) {
+    public void sendResponse(String message, Client client) {
         for (Client c : clients) {
             if (c.equals(client)) {
-                continue;
-            }
-
-            try {
-                c.getOutput().write(message);
-                c.getOutput().newLine();
-                c.getOutput().flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                try {
+                    c.getOutput().write(message);
+                    c.getOutput().newLine();
+                    c.getOutput().flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -82,6 +83,8 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
+        private boolean connected = false;
+
         public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
             this.input = input;
             this.output = output;
@@ -93,12 +96,63 @@ public class GameServer {
             try {
                 while (true) {
                     String message = input.readLine();
-                    System.out.println(message);
-                    server.sendMessage(message, this);
+                    String response = handleMessage(message);
+
+                    server.sendResponse(response, this);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public void notifyConnected() {
+            connected = true;
+        }
+
+        private Runnable getConnectionLogic() {
+            Runnable runnable = () -> {
+                try {
+                    server.clientsToConnect.add(this);
+                    while (!connected) {
+                        Thread.sleep(50);
+                        for (Client otherClient : server.clientsToConnect) {
+                            if (!this.equals(otherClient)) {
+                                otherClient.notifyConnected();
+                                GameRoom room = new GameRoom(this, otherClient);
+                                connected = true;
+                                server.clientsToConnect.remove(this);
+                                server.clientsToConnect.remove(otherClient);
+                            }
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            return runnable;
+        }
+
+        private String handleMessage(String serverMessage) {
+            JSONObject json = new JSONObject(serverMessage);
+            JSONObject response = new JSONObject();
+            response.put("action", "CONNECT");
+            if (json.getString("entity").equals(ServerMessage.Entity.SERVER.toString())) {
+                switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
+                    case CONNECT -> {
+                        Thread connectionThread = new Thread(getConnectionLogic());
+                        connectionThread.start();
+                        try {
+                            connectionThread.join();
+                            response.put("status", "OK");
+                        } catch (InterruptedException e) {}
+                    }
+                }
+
+            } else {
+                response.put("status", "NOT_OK");
+                response.put("reason", "INCORRECT_ENTITY");
+            }
+            return response.toString();
         }
 
         public BufferedWriter getOutput() {

@@ -3,6 +3,10 @@ package ru.kpfu.itis.paramonov.heartstone.net.client;
 import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
@@ -84,7 +88,17 @@ public class GameClient {
                 while (true) {
                     String serverResponse = input.readLine();
                     Platform.runLater(() -> {
-                        //response handling
+                        JSONObject json = new JSONObject(serverResponse);
+                        if (json.getString("action").equals("CONNECT") && json.getString("status").equals("OK")) {
+                            FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/battlefield.fxml"));
+                            try {
+                                AnchorPane pane = loader.load();
+                                Scene scene = new Scene(pane);
+                                GameApplication.getApplication().getPrimaryStage().setScene(scene);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
                     });
                 }
             } catch (IOException e) {
