@@ -55,17 +55,6 @@ public class GameClient {
         (new Thread(thread)).start();
     }
 
-    public void stop() {
-        try {
-            thread.input.close();
-            thread.output.close();
-            socket.close();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public GameApplication getApplication() {
         return application;
     }
@@ -89,7 +78,7 @@ public class GameClient {
                     String serverResponse = input.readLine();
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(serverResponse);
-                        if (json.getString("action").equals("CONNECT") && json.getString("status").equals("OK")) {
+                        if (json.getString("server_action").equals("CONNECT") && json.getString("status").equals("OK")) {
                             FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/battlefield.fxml"));
                             try {
                                 AnchorPane pane = loader.load();

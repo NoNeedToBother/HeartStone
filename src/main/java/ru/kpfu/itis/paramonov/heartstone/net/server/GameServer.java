@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 
@@ -59,16 +60,12 @@ public class GameServer {
     }
 
     public void sendResponse(String message, Client client) {
-        for (Client c : clients) {
-            if (c.equals(client)) {
-                try {
-                    c.getOutput().write(message);
-                    c.getOutput().newLine();
-                    c.getOutput().flush();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+        try {
+            client.getOutput().write(message);
+            client.getOutput().newLine();
+            client.getOutput().flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -96,7 +93,15 @@ public class GameServer {
             try {
                 while (true) {
                     String message = input.readLine();
-                    String response = handleMessage(message);
+                    JSONObject json = new JSONObject(message);
+                    String response;
+                    if (checkEntityIsServer(json)) {
+                        response = handleServerMessage(json);
+                    }
+                    else {
+                        //stub
+                        response = "response";
+                    }
 
                     server.sendResponse(response, this);
                 }
@@ -132,31 +137,45 @@ public class GameServer {
             return runnable;
         }
 
-        private String handleMessage(String serverMessage) {
-            JSONObject json = new JSONObject(serverMessage);
-            JSONObject response = new JSONObject();
-            response.put("action", "CONNECT");
-            if (json.getString("entity").equals(ServerMessage.Entity.SERVER.toString())) {
-                switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
-                    case CONNECT -> {
-                        Thread connectionThread = new Thread(getConnectionLogic());
-                        connectionThread.start();
-                        try {
-                            connectionThread.join();
-                            response.put("status", "OK");
-                        } catch (InterruptedException e) {}
-                    }
-                }
+        private boolean checkEntityIsServer(JSONObject jsonMessage) {
+            return (ServerMessage.Entity.SERVER.toString().equals(jsonMessage.getString("entity")));
+        }
 
-            } else {
-                response.put("status", "NOT_OK");
-                response.put("reason", "INCORRECT_ENTITY");
+        private String handleServerMessage(JSONObject jsonServerMessage) {
+            JSONObject response = new JSONObject();
+            try {
+                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())) {
+                    handleConnection(jsonServerMessage, response);
+                }
+            } catch (JSONException ignored) {
             }
             return response.toString();
         }
 
+        private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
+            switch (ServerMessage.ServerAction.valueOf(jsonServerMessage.getString("server_action"))) {
+                case CONNECT -> {
+                    response.put("server_action", "CONNECT");
+                    Thread connectionThread = new Thread(getConnectionLogic());
+                    connectionThread.start();
+                    try {
+                        connectionThread.join();
+                        response.put("status", "OK");
+                    } catch (InterruptedException e) {}
+                }
+            }
+        }
+
         public BufferedWriter getOutput() {
             return output;
+        }
+
+        public BufferedReader getInput() {
+            return input;
+        }
+
+        public GameServer getServer() {
+            return server;
         }
     }
 }

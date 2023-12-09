@@ -10,12 +10,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
-import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
-import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,15 +57,6 @@ public class BattlefieldController {
     }
 
     private void drawInitialCards() {
-        CardRepository.CardTemplate stone = CardRepository.CardTemplate.Stone;
-        List<CardRepository.CardTemplate> stubDeck = List.of(stone, stone, stone, stone, stone);
-        User.setDeck(stubDeck);
-
-        List<CardRepository.CardTemplate> deck = User.getDeck();
-
-        /*for (int i = 0; i < 5; i++) {
-            hand.add()
-        }*/
 
     }
 
