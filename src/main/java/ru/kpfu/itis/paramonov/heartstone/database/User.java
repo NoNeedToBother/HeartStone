@@ -9,10 +9,13 @@ public class User {
     private String login;
     private List<CardRepository.CardTemplate> deck;
 
-    public User(int id, String login, List<CardRepository.CardTemplate> deck) {
+    private List<CardRepository.CardTemplate> cards;
+
+    public User(int id, String login, List<CardRepository.CardTemplate> deck, List<CardRepository.CardTemplate> cards) {
         this.id = id;
         this.login = login;
         this.deck = deck;
+        this.cards = cards;
     }
 
     public int getId() {
@@ -25,5 +28,9 @@ public class User {
 
     public List<CardRepository.CardTemplate> getDeck() {
         return deck;
+    }
+
+    public List<CardRepository.CardTemplate> getCards() {
+        return cards;
     }
 }

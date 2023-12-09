@@ -3,6 +3,9 @@ package ru.kpfu.itis.paramonov.heartstone.net;
 import org.controlsfx.control.action.Action;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ServerMessage {
 
     public enum Entity {
@@ -10,7 +13,7 @@ public class ServerMessage {
     }
 
     public enum ServerAction {
-        CONNECT, //etc
+        CONNECT, REGISTER, LOGIN, UPDATE_DECK //etc
     }
 
     public enum RoomAction {
@@ -20,6 +23,8 @@ public class ServerMessage {
     private Entity entityToConnect = null;
 
     private ServerAction serverAction = null;
+
+    private Map<String, String> params = new HashMap<>();
 
     private static ServerMessageBuilder builder = new ServerMessageBuilder();
 
@@ -40,10 +45,18 @@ public class ServerMessage {
             }
         }
 
+        public ServerMessageBuilder setParameter(String parameter, String value) {
+            message.params.put(parameter, value);
+            return this;
+        }
+
         public String build() {
             JSONObject json = new JSONObject();
             json.put("entity", message.entityToConnect.toString());
             json.put("server_action", message.serverAction.toString());
+            for (String key : message.params.keySet()) {
+                json.put(key, message.params.get(key));
+            }
             return json.toString();
         }
     }

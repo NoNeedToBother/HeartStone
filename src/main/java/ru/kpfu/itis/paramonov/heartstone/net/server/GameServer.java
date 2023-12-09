@@ -2,6 +2,8 @@ package ru.kpfu.itis.paramonov.heartstone.net.server;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.database.User;
+import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 
 import java.io.*;
@@ -147,23 +149,35 @@ public class GameServer {
                 if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())) {
                     handleConnection(jsonServerMessage, response);
                 }
-            } catch (JSONException ignored) {
-            }
+            } catch (JSONException ignored) {}
+            try {
+                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.LOGIN.toString())) {
+                    handleLogin(jsonServerMessage, response);
+                }
+            } catch (JSONException ignored) {}
             return response.toString();
         }
 
-        private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
-            switch (ServerMessage.ServerAction.valueOf(jsonServerMessage.getString("server_action"))) {
-                case CONNECT -> {
-                    response.put("server_action", "CONNECT");
-                    Thread connectionThread = new Thread(getConnectionLogic());
-                    connectionThread.start();
-                    try {
-                        connectionThread.join();
-                        response.put("status", "OK");
-                    } catch (InterruptedException e) {}
-                }
+        private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
+            response.put("server_action", ServerMessage.ServerAction.LOGIN.toString());
+            UserService service = new UserService();
+            User user = service.getWithLoginAndPassword(
+                    jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
+            if (user != null) {
+                response.put("status", "OK");
+            } else {
+                response.put("status", "NOT_OK");
             }
+        }
+
+        private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
+            response.put("server_action", ServerMessage.ServerAction.CONNECT.toString());
+            Thread connectionThread = new Thread(getConnectionLogic());
+            connectionThread.start();
+            try {
+                connectionThread.join();
+                response.put("status", "OK");
+            } catch (InterruptedException e) {}
         }
 
         public BufferedWriter getOutput() {

@@ -13,4 +13,8 @@ public class UserService {
     public User get(String login) {
         return dao.get(login);
     }
+
+    public User getWithLoginAndPassword(String login, String password) {
+        return dao.getWithLoginAndPassword(login, password);
+    }
 }

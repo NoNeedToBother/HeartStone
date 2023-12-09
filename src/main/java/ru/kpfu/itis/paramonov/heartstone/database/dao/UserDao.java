@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class UserDao {
@@ -19,6 +18,8 @@ public class UserDao {
     private final String dbLogin = "login";
     private final String dbPassword = "password";
     private final String dbDeck = "deck";
+
+    private final String dbCards = "cards";
 
     public User get(int id) {
         try {
@@ -44,17 +45,31 @@ public class UserDao {
         }
     }
 
+    public User getWithLoginAndPassword(String login, String password) {
+        try {
+            String sql = "SELECT * from users WHERE login = ? AND password = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, login);
+            statement.setString(2, password);
+            ResultSet resultSet = statement.executeQuery();
+            return getByResultSet(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private User getByResultSet(ResultSet resultSet) throws SQLException {
         if (resultSet.next()) {
             return new User(
                     resultSet.getInt(dbId),
                     resultSet.getString(dbLogin),
-                    parseCardIds(resultSet.getString(dbDeck))
+                    getCardsById(resultSet.getString(dbDeck)),
+                    getCardsById(resultSet.getString(dbCards))
             );
         } else return null;
     }
 
-    private List<CardRepository.CardTemplate> parseCardIds(String cardIds) {
+    private List<CardRepository.CardTemplate> getCardsById(String cardIds) {
         String cardIdsCsv = cardIds.substring(1, cardIds.length() - 1);
         String[] ids = cardIdsCsv.split(",");
         List<CardRepository.CardTemplate> res = new ArrayList<>();

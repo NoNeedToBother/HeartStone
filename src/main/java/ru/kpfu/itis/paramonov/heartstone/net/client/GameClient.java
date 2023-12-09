@@ -76,6 +76,7 @@ public class GameClient {
             try {
                 while (true) {
                     String serverResponse = input.readLine();
+                    System.out.println(serverResponse);
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(serverResponse);
                         if (json.getString("server_action").equals("CONNECT") && json.getString("status").equals("OK")) {
@@ -88,12 +89,28 @@ public class GameClient {
                                 throw new RuntimeException(e);
                             }
                         }
+
+                        if (json.getString("server_action").equals("LOGIN")) {
+                            if (json.getString("status").equals("OK")) {
+                                FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/main_menu.fxml"));
+                                try {
+                                    AnchorPane pane = loader.load();
+                                    Scene scene = new Scene(pane);
+                                    GameApplication.getApplication().getPrimaryStage().setScene(scene);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+
                     });
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+
+
 
         public BufferedWriter getOutput() {
             return output;
