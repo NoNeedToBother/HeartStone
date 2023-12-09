@@ -24,7 +24,7 @@ public class CardRepository {
 
     private static final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
 
-    public CardTemplate getCardTemplate(int id) {
+    public static CardTemplate getCardTemplate(int id) {
         for (CardTemplate card : CardTemplate.values()) {
             if (card.getId() == id) return card;
         }

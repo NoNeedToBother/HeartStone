@@ -2,8 +2,10 @@ module ru.kpfu.itis.paramonov.heartstone {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.desktop;
+    requires java.sql;
 
     requires org.controlsfx.controls;
+    requires jakarta.xml.bind;
 
     opens ru.kpfu.itis.paramonov.heartstone to javafx.fxml;
     opens ru.kpfu.itis.paramonov.heartstone.controller to javafx.fxml;
