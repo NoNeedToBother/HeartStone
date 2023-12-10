@@ -11,14 +11,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class GameServer {
     private ServerSocket serverSocket;
-    private List<Client> clients = new ArrayList<>();
+    private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
-    private List<Client> clientsToConnect = new ArrayList<>();
+    private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
 
     private final String host = "127.0.0.1";
 
@@ -51,7 +50,7 @@ public class GameServer {
                 BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
                 BufferedWriter output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
 
-                Client client = new Client(input, output, this);
+                Client client = new Client(input, output, this, clientSocket);
                 clients.add(client);
 
                 (new Thread(client)).start();
@@ -83,30 +82,36 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
+        private Socket socket;
+
+        private boolean isDisconnected = false;
+
         private boolean connected = false;
 
-        public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
+        private Thread connectionThread = null;
+
+        public Client(BufferedReader input, BufferedWriter output, GameServer gameServer, Socket socket) {
             this.input = input;
             this.output = output;
             this.server = gameServer;
+            this.socket = socket;
         }
 
         @Override
         public void run() {
             try {
                 while (true) {
-                    String message = input.readLine();
-                    JSONObject json = new JSONObject(message);
-                    String response;
-                    if (checkEntityIsServer(json)) {
-                        response = handleServerMessage(json);
-                    }
-                    else {
-                        //stub
-                        response = "response";
-                    }
+                    if (!isDisconnected) {
+                        String message = input.readLine();
+                        JSONObject json = new JSONObject(message);
+                        String response;
+                        if (checkEntityIsServer(json)) {
+                            response = handleServerMessage(json);
+                        }
+                        else response = null;
 
-                    server.sendResponse(response, this);
+                        if (response != null) server.sendResponse(response, this);
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -121,7 +126,7 @@ public class GameServer {
             Runnable runnable = () -> {
                 try {
                     server.clientsToConnect.add(this);
-                    while (!connected) {
+                    while (!connected && !isDisconnected) {
                         Thread.sleep(50);
                         for (Client otherClient : server.clientsToConnect) {
                             if (!this.equals(otherClient)) {
@@ -130,6 +135,10 @@ public class GameServer {
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
+                                JSONObject response = new JSONObject();
+                                response.put("server_action", "CONNECT");
+                                response.put("status", "OK");
+                                server.sendResponse(response.toString(), this);
                             }
                         }
                     }
@@ -149,14 +158,28 @@ public class GameServer {
             try {
                 String serverAction = jsonServerMessage.getString("server_action");
                 switch (ServerMessage.ServerAction.valueOf(serverAction)) {
-                    case CONNECT -> handleConnection(jsonServerMessage, response);
+                    case CONNECT -> {
+                        handleConnection(jsonServerMessage, response);
+                        return null;
+                    }
                     case LOGIN -> handleLogin(jsonServerMessage, response);
                     case REGISTER -> handleRegistration(jsonServerMessage, response);
+                    case DISCONNECT -> {
+                        handleDisconnection();
+                        return null;
+                    }
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
             return response.toString();
+        }
+
+        private void handleDisconnection() {
+            server.clientsToConnect.remove(this);
+            server.clients.remove(this);
+            isDisconnected = true;
+            connectionThread.interrupt();
         }
 
         private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
@@ -189,13 +212,9 @@ public class GameServer {
         }
 
         private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.CONNECT.toString());
             Thread connectionThread = new Thread(getConnectionLogic());
+            this.connectionThread = connectionThread;
             connectionThread.start();
-            try {
-                connectionThread.join();
-                response.put("status", "OK");
-            } catch (InterruptedException e) {}
         }
 
         public BufferedWriter getOutput() {

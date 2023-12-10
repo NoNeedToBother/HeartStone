@@ -13,7 +13,7 @@ public class ServerMessage {
     }
 
     public enum ServerAction {
-        CONNECT, REGISTER, LOGIN, UPDATE_DECK //etc
+        CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT //etc
     }
 
     public enum RoomAction {
