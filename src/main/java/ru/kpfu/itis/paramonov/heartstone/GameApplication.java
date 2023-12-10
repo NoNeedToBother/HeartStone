@@ -79,6 +79,17 @@ public class GameApplication extends Application {
         this.user = user;
     }
 
+    public void loadScene(String resource) {
+        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource(resource));
+        try {
+            AnchorPane pane = loader.load();
+            Scene scene = new Scene(pane);
+            GameApplication.getApplication().getPrimaryStage().setScene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void main(String[] args) {
         launch();
     }

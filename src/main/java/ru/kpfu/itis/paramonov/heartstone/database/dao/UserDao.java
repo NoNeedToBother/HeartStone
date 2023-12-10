@@ -63,20 +63,25 @@ public class UserDao {
             return new User(
                     resultSet.getInt(dbId),
                     resultSet.getString(dbLogin),
-                    getCardsById(resultSet.getString(dbDeck)),
-                    getCardsById(resultSet.getString(dbCards))
+                    resultSet.getString(dbDeck),
+                    resultSet.getString(dbCards)
             );
         } else return null;
     }
 
-    private List<CardRepository.CardTemplate> getCardsById(String cardIds) {
-        String cardIdsCsv = cardIds.substring(1, cardIds.length() - 1);
-        String[] ids = cardIdsCsv.split(",");
-        List<CardRepository.CardTemplate> res = new ArrayList<>();
-        for (String id : ids) {
-            res.add(CardRepository.getCardTemplate(Integer.parseInt(id)));
-        }
-        return res;
+    private String DEFAULT_CARDS = "[1]";
+
+    private String DEFAULT_DECK = "[1,1,1,1,1]";
+
+    public void save(String login, String password) throws SQLException {
+        String sql = "insert into users (login, password, deck, cards) values (?, ?, ?, ?)";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, login);
+        statement.setString(2, password);
+        statement.setString(3, DEFAULT_DECK);
+        statement.setString(4, DEFAULT_CARDS);
+
+        statement.executeUpdate();
     }
 
 }

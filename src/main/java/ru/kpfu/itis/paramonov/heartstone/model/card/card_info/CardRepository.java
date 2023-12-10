@@ -2,6 +2,7 @@ package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
 import org.controlsfx.control.action.Action;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CardRepository {
@@ -29,6 +30,16 @@ public class CardRepository {
             if (card.getId() == id) return card;
         }
         throw new RuntimeException("Card does not exist");
+    }
+
+    public static List<CardTemplate> getCardsById(String cardIds) {
+        String cardIdsCsv = cardIds.substring(1, cardIds.length() - 1);
+        String[] ids = cardIdsCsv.split(",");
+        List<CardTemplate> res = new ArrayList<>();
+        for (String id : ids) {
+            res.add(getCardTemplate(Integer.parseInt(id)));
+        }
+        return res;
     }
 
     public enum CardTemplate {

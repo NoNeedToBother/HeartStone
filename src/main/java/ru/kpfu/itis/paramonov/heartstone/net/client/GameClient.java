@@ -9,6 +9,8 @@ import javafx.scene.layout.AnchorPane;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.io.*;
@@ -76,33 +78,25 @@ public class GameClient {
             try {
                 while (true) {
                     String serverResponse = input.readLine();
-                    System.out.println(serverResponse);
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(serverResponse);
                         if (json.getString("server_action").equals("CONNECT") && json.getString("status").equals("OK")) {
-                            FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/battlefield.fxml"));
-                            try {
-                                AnchorPane pane = loader.load();
-                                Scene scene = new Scene(pane);
-                                GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                            GameApplication.getApplication().loadScene("/battlefield.fxml");
                         }
 
                         if (json.getString("server_action").equals("LOGIN")) {
                             if (json.getString("status").equals("OK")) {
-                                FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/main_menu.fxml"));
-                                try {
-                                    AnchorPane pane = loader.load();
-                                    Scene scene = new Scene(pane);
-                                    GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
+                                setGameUser(json);
+                                GameApplication.getApplication().loadScene("/main_menu.fxml");
                             }
                         }
 
+                        if (json.getString("server_action").equals("REGISTER")) {
+                            if (json.getString("status").equals("OK")) {
+                                setGameUser(json);
+                                GameApplication.getApplication().loadScene("/main_menu.fxml");
+                            }
+                        }
                     });
                 }
             } catch (IOException e) {
@@ -110,7 +104,12 @@ public class GameClient {
             }
         }
 
-
+        private void setGameUser(JSONObject json) {
+            User user = User.getInstance();
+            user.setLogin(json.getString("login"));
+            user.setDeck(CardRepository.getCardsById(json.getString("deck")));
+            user.setCards(CardRepository.getCardsById(json.getString("cards")));
+        }
 
         public BufferedWriter getOutput() {
             return output;

@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,15 +147,15 @@ public class GameServer {
         private String handleServerMessage(JSONObject jsonServerMessage) {
             JSONObject response = new JSONObject();
             try {
-                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())) {
-                    handleConnection(jsonServerMessage, response);
+                String serverAction = jsonServerMessage.getString("server_action");
+                switch (ServerMessage.ServerAction.valueOf(serverAction)) {
+                    case CONNECT -> handleConnection(jsonServerMessage, response);
+                    case LOGIN -> handleLogin(jsonServerMessage, response);
+                    case REGISTER -> handleRegistration(jsonServerMessage, response);
                 }
-            } catch (JSONException ignored) {}
-            try {
-                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.LOGIN.toString())) {
-                    handleLogin(jsonServerMessage, response);
-                }
-            } catch (JSONException ignored) {}
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
             return response.toString();
         }
 
@@ -165,7 +166,24 @@ public class GameServer {
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
                 response.put("status", "OK");
+                response.put("login", user.getLogin());
+                response.put("deck", user.getDeck());
+                response.put("cards", user.getCards());
             } else {
+                response.put("status", "NOT_OK");
+            }
+        }
+
+        private void handleRegistration(JSONObject jsonServerMessage, JSONObject response) {
+            response.put("server_action", ServerMessage.ServerAction.REGISTER.toString());
+            UserService service = new UserService();
+            try {
+                User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
+                response.put("status", "OK");
+                response.put("login", user.getLogin());
+                response.put("deck", user.getDeck());
+                response.put("cards", user.getCards());
+            } catch (SQLException e) {
                 response.put("status", "NOT_OK");
             }
         }

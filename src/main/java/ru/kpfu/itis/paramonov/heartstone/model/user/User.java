@@ -11,16 +11,18 @@ public class User {
 
     private String login;
 
+    private List<CardRepository.CardTemplate> deck;
+
+    private List<CardRepository.CardTemplate> cards;
+
     private User() {}
 
-    public User instance() {
+    public static User getInstance() {
         if (user == null) {
             user = new User();
         }
         return user;
     }
-
-    private List<CardRepository.CardTemplate> deck;
 
     public List<CardRepository.CardTemplate> getDeck() {
         return deck;
@@ -28,6 +30,14 @@ public class User {
 
     public void setDeck(List<CardRepository.CardTemplate> deck) {
         this.deck = deck;
+    }
+
+    public List<CardRepository.CardTemplate> getCards() {
+        return cards;
+    }
+
+    public void setCards(List<CardRepository.CardTemplate> cards) {
+        this.cards = cards;
     }
 
     public String getLogin() {
