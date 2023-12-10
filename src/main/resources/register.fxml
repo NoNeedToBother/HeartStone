@@ -11,12 +11,10 @@
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.RegisterController"
             prefHeight="720.0" prefWidth="1080.0">
 
-    <VBox>
+    <VBox layoutX="480" layoutY="200" fx:id="registerMenu">
         <TextField fx:id="login" text="Login"/>
         <PasswordField fx:id="password"/>
         <PasswordField fx:id="confirmPassword"/>
-        <Button fx:id="btnRegister" text="Register"/>
-        <Button fx:id="btnGoToSignIn" text="Go to sign in"/>
     </VBox>
 
 </AnchorPane>

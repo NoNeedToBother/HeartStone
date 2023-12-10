@@ -18,7 +18,9 @@ public class LoginController {
     @FXML
     private PasswordField password;
 
-    private Button btnLogin;
+    private GameButton btnLogin;
+
+    private GameButton btnGoToRegister;
 
     @FXML
     private VBox loginMenu;
@@ -40,6 +42,14 @@ public class LoginController {
                 .build();
         loginMenu.getChildren().add(btnLogin);
         this.btnLogin = btnLogin;
+
+        GameButton btnGoToRegister = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.GO_REGISTER)
+                .scale(3)
+                .build();
+        loginMenu.getChildren().add(btnGoToRegister);
+        this.btnGoToRegister = btnGoToRegister;
     }
 
     private void setOnClickListeners() {
@@ -55,10 +65,9 @@ public class LoginController {
             mouseEvent.consume();
         });
 
-        /*
         btnGoToRegister.setOnMouseClicked(mouseEvent -> {
             application.loadScene("/register.fxml");
             mouseEvent.consume();
-        });*/
+        });
     }
 }
