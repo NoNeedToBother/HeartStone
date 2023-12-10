@@ -1,13 +1,14 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.database.util.PasswordUtil;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
 public class LoginController {
     @FXML
@@ -16,22 +17,42 @@ public class LoginController {
     @FXML
     private PasswordField password;
 
-    @FXML
-    private Button btnSignIn;
+    private GameButton btnLogin;
+
+    private GameButton btnGoToRegister;
 
     @FXML
-    private Button btnGoToRegister;
+    private VBox loginMenu;
 
     private GameApplication application = null;
 
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        addGameButtons();
         setOnClickListeners();
     }
 
+    private void addGameButtons() {
+        GameButton btnLogin = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.LOGIN)
+                .scale(3)
+                .build();
+        loginMenu.getChildren().add(btnLogin);
+        this.btnLogin = btnLogin;
+
+        GameButton btnGoToRegister = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.GO_REGISTER)
+                .scale(3)
+                .build();
+        loginMenu.getChildren().add(btnGoToRegister);
+        this.btnGoToRegister = btnGoToRegister;
+    }
+
     private void setOnClickListeners() {
-        btnSignIn.setOnMouseClicked(mouseEvent -> {
+        btnLogin.setOnMouseClicked(mouseEvent -> {
             GameClient client = application.getClient();
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.SERVER)

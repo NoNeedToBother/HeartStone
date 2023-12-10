@@ -4,12 +4,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.database.util.PasswordUtil;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
 public class RegisterController {
+    @FXML
+    private VBox registerMenu;
+
     @FXML
     private TextField login;
 
@@ -19,22 +24,39 @@ public class RegisterController {
     @FXML
     private PasswordField confirmPassword;
 
-    @FXML
     private Button btnRegister;
 
-    @FXML
-    private Button btnGoToSignIn;
+    private Button btnGoToLogin;
 
     private GameApplication application = null;
 
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        addGameButtons();
         setOnClickListeners();
     }
 
+    private void addGameButtons() {
+        GameButton btnRegister = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.REGISTER)
+                .scale(3)
+                .build();
+        registerMenu.getChildren().add(btnRegister);
+        this.btnRegister = btnRegister;
+
+        GameButton btnGoToLogin = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.GO_LOGIN)
+                .scale(3)
+                .build();
+        registerMenu.getChildren().add(btnGoToLogin);
+        this.btnGoToLogin = btnGoToLogin;
+    }
+
     private void setOnClickListeners() {
-        btnGoToSignIn.setOnMouseClicked(mouseEvent -> {
+        btnGoToLogin.setOnMouseClicked(mouseEvent -> {
             application.loadScene("/login.fxml");
             mouseEvent.consume();
         });

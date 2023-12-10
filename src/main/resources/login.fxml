@@ -6,16 +6,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.text.Text?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.LoginController"
             prefHeight="720.0" prefWidth="1080.0">
 
-    <VBox>
-        <TextField fx:id="login" text="Login"/>
-        <PasswordField fx:id="password"/>
-        <Button fx:id="btnSignIn" text="Sign in"/>
-        <Button fx:id="btnGoToRegister" text="Go to register"/>
+    <VBox layoutX="480" layoutY="200" fx:id="loginMenu" stylesheets="text-fields.css" spacing="10">
+        <TextField fx:id="login" promptText="login"/>
+        <PasswordField fx:id="password" promptText="password"/>
     </VBox>
 
 </AnchorPane>

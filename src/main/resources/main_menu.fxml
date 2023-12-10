@@ -11,11 +11,7 @@
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.MainMenuController"
             prefHeight="720.0" prefWidth="1080.0">
 
-    <Button
-            text="Play"
-            fx:id="btnPlay"
-            layoutX="360"
-            layoutY="540"
-    />
+    <VBox layoutX="460" layoutY="200" fx:id="mainMenu" spacing="10">
+    </VBox>
 
 </AnchorPane>

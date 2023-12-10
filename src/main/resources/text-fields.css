@@ -1,0 +1,29 @@
+.text-field {
+    -fx-background-color: #2fa02f, #2f2d2f;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 18px;
+    -fx-pref-width: 100;
+    -fx-text-fill: #ffffff;
+    -fx-display-caret: false;
+    -fx-background-radius: 5;
+    -fx-background-insets: 0, 1 0 0 0 ;
+    -fx-padding: 1 ;
+    -fx-prompt-text-fill: #c9c9c9;
+
+    -fx-alignment: center-right ;
+}
+
+.password-field {
+    -fx-background-color: #2fa02f, #2f2d2f;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 18px;
+    -fx-pref-width: 100;
+    -fx-text-fill: #ffffff;
+    -fx-display-caret: false;
+    -fx-background-radius: 5;
+    -fx-background-insets: 0, 1 0 0 0 ;
+    -fx-padding: 1 ;
+    -fx-prompt-text-fill: #c9c9c9;
+
+    -fx-alignment: center-right ;
+}
