@@ -11,6 +11,7 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.io.*;
@@ -80,18 +81,19 @@ public class GameClient {
                     String serverResponse = input.readLine();
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(serverResponse);
-                        if (json.getString("server_action").equals("CONNECT") && json.getString("status").equals("OK")) {
+                        if (json.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())
+                                && json.getString("status").equals("OK")) {
                             GameApplication.getApplication().loadScene("/battlefield.fxml");
                         }
 
-                        if (json.getString("server_action").equals("LOGIN")) {
+                        if (json.getString("server_action").equals(ServerMessage.ServerAction.LOGIN.toString())) {
                             if (json.getString("status").equals("OK")) {
                                 setGameUser(json);
                                 GameApplication.getApplication().loadScene("/main_menu.fxml");
                             }
                         }
 
-                        if (json.getString("server_action").equals("REGISTER")) {
+                        if (json.getString("server_action").equals(ServerMessage.ServerAction.REGISTER.toString())) {
                             if (json.getString("status").equals("OK")) {
                                 setGameUser(json);
                                 GameApplication.getApplication().loadScene("/main_menu.fxml");
