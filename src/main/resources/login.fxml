@@ -11,11 +11,9 @@
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.LoginController"
             prefHeight="720.0" prefWidth="1080.0">
 
-    <VBox>
+    <VBox layoutX="480" layoutY="200" fx:id="loginMenu">
         <TextField fx:id="login" text="Login"/>
         <PasswordField fx:id="password"/>
-        <Button fx:id="btnSignIn" text="Sign in"/>
-        <Button fx:id="btnGoToRegister" text="Go to register"/>
     </VBox>
 
 </AnchorPane>
