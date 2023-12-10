@@ -4,9 +4,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Region;
-import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import javax.imageio.ImageIO;
@@ -16,7 +13,7 @@ import java.io.*;
 
 public class GameButton extends Button {
     public enum GameButtonText {
-        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER
+        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK
     }
     public static class ButtonBuilder {
         private BufferedImage img;
@@ -58,6 +55,15 @@ public class GameButton extends Button {
                 }
                 case GO_REGISTER -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/go_register.png");
+                }
+                case PLAY -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/play.png");
+                }
+                case QUIT -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/quit.png");
+                }
+                case DECK -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/deck.png");
                 }
                 default -> throw new RuntimeException("Impossible");
             }
