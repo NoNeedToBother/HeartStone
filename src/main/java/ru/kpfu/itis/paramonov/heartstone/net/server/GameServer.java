@@ -126,10 +126,9 @@ public class GameServer {
                     while (!connected && !isDisconnected) {
                         Thread.sleep(50);
                         for (Client otherClient : server.clientsToConnect) {
+                            if (connected) break;
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
-                                GameRoom room = new GameRoom(this, otherClient);
-                                room.onStart();
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
@@ -137,6 +136,8 @@ public class GameServer {
                                 response.put("server_action", "CONNECT");
                                 response.put("status", "OK");
                                 server.sendResponse(response.toString(), this);
+                                GameRoom room = new GameRoom(this, otherClient, server);
+                                room.onStart();
                             }
                         }
                     }

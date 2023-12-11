@@ -13,6 +13,9 @@ import javafx.scene.layout.HBox;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +31,12 @@ public class BattlefieldController {
 
     private List<Card> hand = new ArrayList<>();
 
+    @FXML
+    private ImageView background;
+
     private static BattlefieldController controller = null;
 
-    public static BattlefieldController getInstance() {
+    public static BattlefieldController getController() {
         return controller;
     }
 
@@ -97,6 +103,22 @@ public class BattlefieldController {
                 iv.setOnDragDetected(getDragEventHandler(iv, hand.get(counter)));
                 counter++;
             }
+        }
+    }
+
+    private String DEFAULT_IMAGE_PATH = "D:\\projects\\HeartStone\\src\\main\\resources\\assets\\images";
+
+    public void setBackground(String bg) {
+        File file = new File(DEFAULT_IMAGE_PATH + "\\background\\" + bg);
+        try {
+            BufferedImage img = ImageIO.read(file);
+            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                ImageIO.write(img, "PNG", out);
+                InputStream in = new ByteArrayInputStream(out.toByteArray());
+                background.setImage(new Image(in));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
