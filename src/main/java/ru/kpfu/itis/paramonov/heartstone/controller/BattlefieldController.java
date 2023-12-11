@@ -64,7 +64,9 @@ public class BattlefieldController {
 
 
         for (int i = 0; i < 5; i++) {
-            CardRepository.CardTemplate cardInfo = CardRepository.CardTemplate.Stone;
+            CardRepository.CardTemplate cardInfo;
+            if (i % 2 == 0) cardInfo = CardRepository.CardTemplate.Stone;
+            else cardInfo = CardRepository.CardTemplate.KnightStone;
             Image sprite = Card.SpriteBuilder()
                     .addImage(cardInfo.getPortraitUrl())
                     .addRarity(cardInfo.getRarity())
