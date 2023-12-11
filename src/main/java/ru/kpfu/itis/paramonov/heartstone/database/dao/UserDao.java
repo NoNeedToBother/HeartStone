@@ -17,6 +17,8 @@ public class UserDao {
 
     private final String dbCards = "cards";
 
+    private final String dbMoney = "money";
+
     public User get(int id) {
         try {
             String sql = "SELECT * from users WHERE id = ?";
@@ -60,7 +62,8 @@ public class UserDao {
                     resultSet.getInt(dbId),
                     resultSet.getString(dbLogin),
                     resultSet.getString(dbDeck),
-                    resultSet.getString(dbCards)
+                    resultSet.getString(dbCards),
+                    resultSet.getInt(dbMoney)
             );
         } else return null;
     }
