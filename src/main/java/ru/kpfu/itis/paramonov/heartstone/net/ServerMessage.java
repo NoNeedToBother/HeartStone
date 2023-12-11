@@ -15,10 +15,6 @@ public class ServerMessage {
         CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT //etc
     }
 
-    public enum RoomAction {
-        //whatever
-    }
-
     private Entity entityToConnect = null;
 
     private ServerAction serverAction = null;

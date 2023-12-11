@@ -10,15 +10,21 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BattlefieldController {
-    @FXML
+
     private Button btnEndTurn;
+
+    @FXML
+    private VBox vBoxBtnEndTurn;
 
     @FXML
     private HBox hBoxCards;
@@ -28,9 +34,15 @@ public class BattlefieldController {
 
     private List<Card> hand = new ArrayList<>();
 
+    @FXML
+    private ImageView background;
+
+    @FXML
+    private ImageView handBg;
+
     private static BattlefieldController controller = null;
 
-    public static BattlefieldController getInstance() {
+    public static BattlefieldController getController() {
         return controller;
     }
 
@@ -38,7 +50,19 @@ public class BattlefieldController {
     private void initialize() {
         controller = this;
         setCards();
+        setHandBackground();
+        addEndTurnBtn();
         makeCardsDraggable();
+    }
+
+    private void addEndTurnBtn() {
+        GameButton btnEndTurn = GameButton.builder()
+                .setBase()
+                .setText(GameButton.GameButtonText.END_TURN)
+                .scale(3)
+                .build();
+
+        vBoxBtnEndTurn.getChildren().add(btnEndTurn);
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
@@ -98,5 +122,39 @@ public class BattlefieldController {
                 counter++;
             }
         }
+    }
+
+    private String DEFAULT_IMAGE_PATH = "D:\\projects\\HeartStone\\src\\main\\resources\\assets\\images";
+
+    public void setBackground(String bg) {
+        BufferedImageUtil.getFromSrcAndSetImage("\\background\\" + bg, background);
+        /*
+        File file = new File(DEFAULT_IMAGE_PATH + "\\background\\" + bg);
+        try {
+            BufferedImage img = ImageIO.read(file);
+            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                ImageIO.write(img, "PNG", out);
+                InputStream in = new ByteArrayInputStream(out.toByteArray());
+                background.setImage(new Image(in));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }*/
+    }
+
+    public void setHandBackground() {
+        BufferedImageUtil.getFromSrcAndSetImage("\\hand_bg.png", handBg);
+        /*
+        File file = new File(DEFAULT_IMAGE_PATH + "hand_bg");
+        try {
+            BufferedImage img = ImageIO.read(file);
+            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                ImageIO.write(img, "PNG", out);
+                InputStream in = new ByteArrayInputStream(out.toByteArray());
+                handBg.setImage(new Image(in));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }*/
     }
 }

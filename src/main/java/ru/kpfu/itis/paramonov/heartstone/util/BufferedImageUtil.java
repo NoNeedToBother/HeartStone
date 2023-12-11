@@ -1,12 +1,14 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class BufferedImageUtil {
     public static BufferedImage addImage(BufferedImage target, String src) {
@@ -34,5 +36,21 @@ public class BufferedImageUtil {
         g2.dispose();
         target = after;
         return target;
+    }
+
+    private static String DEFAULT_IMAGE_PATH = "D:\\projects\\HeartStone\\src\\main\\resources\\assets\\images";
+
+    public static void getFromSrcAndSetImage(String src, ImageView target) {
+        File file = new File(DEFAULT_IMAGE_PATH + src);
+        try {
+            BufferedImage img = ImageIO.read(file);
+            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                ImageIO.write(img, "PNG", out);
+                InputStream in = new ByteArrayInputStream(out.toByteArray());
+                target.setImage(new Image(in));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
