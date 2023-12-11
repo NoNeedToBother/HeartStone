@@ -126,6 +126,7 @@ public class GameClient {
             user.setLogin(json.getString("login"));
             user.setDeck(CardRepository.getCardsById(json.getString("deck")));
             user.setCards(CardRepository.getCardsById(json.getString("cards")));
+            user.setMoney(json.getInt("money"));
         }
 
         public BufferedWriter getOutput() {

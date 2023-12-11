@@ -14,6 +14,8 @@ public class User {
 
     private List<CardRepository.CardTemplate> cards;
 
+    private int money;
+
     private User() {}
 
     public static User getInstance() {
@@ -45,5 +47,13 @@ public class User {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
     }
 }

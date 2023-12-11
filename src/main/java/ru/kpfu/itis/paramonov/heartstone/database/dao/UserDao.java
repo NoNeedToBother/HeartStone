@@ -17,6 +17,8 @@ public class UserDao {
 
     private final String dbCards = "cards";
 
+    private final String dbMoney = "money";
+
     public User get(int id) {
         try {
             String sql = "SELECT * from users WHERE id = ?";
@@ -60,7 +62,8 @@ public class UserDao {
                     resultSet.getInt(dbId),
                     resultSet.getString(dbLogin),
                     resultSet.getString(dbDeck),
-                    resultSet.getString(dbCards)
+                    resultSet.getString(dbCards),
+                    resultSet.getInt(dbMoney)
             );
         } else return null;
     }
@@ -76,6 +79,24 @@ public class UserDao {
         statement.setString(2, password);
         statement.setString(3, DEFAULT_DECK);
         statement.setString(4, DEFAULT_CARDS);
+
+        statement.executeUpdate();
+    }
+
+    public void updateDeck(String login, String deck) throws SQLException{
+        String sql = "update users set deck = ? where login = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, deck);
+        statement.setString(2, login);
+
+        statement.executeUpdate();
+    }
+
+    public void updateCards(String login, String cards) throws SQLException{
+        String sql = "update users set cards = ? where login = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, cards);
+        statement.setString(2, login);
 
         statement.executeUpdate();
     }

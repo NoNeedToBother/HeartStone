@@ -223,6 +223,7 @@ public class GameServer {
             response.put("login", user.getLogin());
             response.put("deck", user.getDeck());
             response.put("cards", user.getCards());
+            response.put("money", user.getMoney());
         }
 
         private void handleConnection() {
