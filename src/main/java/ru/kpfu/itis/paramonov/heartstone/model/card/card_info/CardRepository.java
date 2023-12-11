@@ -1,13 +1,32 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-import org.controlsfx.control.action.Action;
 
+import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CardRepository {
 
     public enum CardAction {
-        SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, REVIVE, ATTACK, //etc
+        SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, COST_UP, COST_DOWN, REVIVE, ATTACK, CHOOSE, CHOOSE_RANDOM;
+
+        private int hpIncrease;
+        private int atkIncrease;
+        private int costIncrease;
+
+        public CardAction setStats(int stats) {
+            switch (this) {
+                case ATK_UP -> atkIncrease = stats;
+                case ATK_DOWN -> atkIncrease = -stats;
+                case HP_UP-> hpIncrease = stats;
+                case HP_DOWN -> hpIncrease = -stats;
+                case COST_UP -> costIncrease = stats;
+                case COST_DOWN -> costIncrease = -stats;
+                default -> throw new RuntimeException("Card does not support stats increase");
+            }
+            return this;
+        }
     }
 
     public enum KeyWord {
@@ -31,9 +50,22 @@ public class CardRepository {
         throw new RuntimeException("Card does not exist");
     }
 
+    public static List<CardTemplate> getCardsById(String cardIds) {
+        String cardIdsCsv = cardIds.substring(1, cardIds.length() - 1);
+        String[] ids = cardIdsCsv.split(",");
+        List<CardTemplate> res = new ArrayList<>();
+        for (String id : ids) {
+            res.add(getCardTemplate(Integer.parseInt(id)));
+        }
+        return res;
+    }
+
     public enum CardTemplate {
-        Stone(1, 1, 1, 0, "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
-                null, null, Faction.STONE, Rarity.COMMON);
+        Stone(1, 1, 1, 0, "", "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
+                null, null, Faction.STONE, Rarity.COMMON),
+        KnightStone(2, 4, 5, 6, "Battlecry: gives +2/2 to chosen stone", "On guard of Stoneland since childhood", DEFAULT_PATH + "/knight_stone.png",
+                List.of(CardAction.CHOOSE, CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2)), List.of(KeyWord.BATTLE_CRY),
+                Faction.STONE, Rarity.RARE);
 
         private int id;
 
@@ -43,11 +75,13 @@ public class CardRepository {
 
         private int cost;
 
+        private String actionDesc;
+
         private String description;
 
         private String portraitUrl;
 
-        private List<Action> actions;
+        private List<CardAction> actions;
 
         private List<KeyWord> keyWords;
 
@@ -55,12 +89,13 @@ public class CardRepository {
 
         private Rarity rarity;
 
-        CardTemplate(int id, int hp, int atk, int cost, String description, String imageUrl, List<Action> actions,
+        CardTemplate(int id, int hp, int atk, int cost, String actionDesc, String description, String imageUrl, List<CardAction> actions,
                      List<KeyWord> keyWords, Faction faction, Rarity rarity) {
             this.id = id;
             this.hp = hp;
             this.atk = atk;
             this.cost = cost;
+            this.actionDesc = actionDesc;
             this.description = description;
             this.portraitUrl = imageUrl;
             this.actions = actions;
@@ -68,6 +103,8 @@ public class CardRepository {
             this.faction = faction;
             this.rarity = rarity;
         }
+
+
 
         public int getHp() {
             return hp;
@@ -89,7 +126,7 @@ public class CardRepository {
             return portraitUrl;
         }
 
-        public List<Action> getActions() {
+        public List<CardAction> getActions() {
             return actions;
         }
 
@@ -107,6 +144,10 @@ public class CardRepository {
 
         public Rarity getRarity() {
             return rarity;
+        }
+
+        public String getActionDesc() {
+            return actionDesc;
         }
     }
 }

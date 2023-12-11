@@ -4,11 +4,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -19,8 +17,6 @@ public class Card implements Sprite, Serializable{
     private int atk;
 
     private int cost;
-
-    private Image image;
 
     private CardRepository.CardTemplate cardInfo;
 
@@ -86,15 +82,8 @@ public class Card implements Sprite, Serializable{
         }
 
         private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
-            try {
-                BufferedImage bufferedImage = ImageIO.read(new File(imgUrl));
-                Graphics g = img.getGraphics();
-                g.drawImage(bufferedImage, 0, 0, null);
-                g.dispose();
-                return this;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            img = BufferedImageUtil.addImage(img, imgUrl);
+            return this;
         }
 
         @Override
@@ -130,17 +119,7 @@ public class Card implements Sprite, Serializable{
 
         @Override
         public SpriteBuilder<Image> scale(int scale) {
-            int width = img.getWidth() * scale;
-            int height = img.getHeight() * scale;
-            BufferedImage after = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
-            AffineTransformOp scaleOp
-                    = new AffineTransformOp(scaleInstance, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-
-            Graphics2D g2 = (Graphics2D) after.getGraphics();
-            g2.drawImage(img, scaleOp, 0, 0);
-            g2.dispose();
-            img = after;
+            img = BufferedImageUtil.scale(img, scale);
             return this;
         }
 

@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
@@ -41,7 +42,7 @@ public class GameApplication extends Application {
         client.start();
 
         primaryStage.setOnCloseRequest(windowEvent -> {
-            System.exit(0);
+            disconnect();
         });
 
         primaryStage.setTitle("HeartStone");
@@ -53,6 +54,15 @@ public class GameApplication extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public void disconnect() {
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.SERVER)
+                .setServerAction(ServerMessage.ServerAction.DISCONNECT)
+                .build();
+        client.sendMessage(msg);
+        System.exit(0);
     }
 
     public Stage getPrimaryStage() {
@@ -77,6 +87,17 @@ public class GameApplication extends Application {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void loadScene(String resource) {
+        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource(resource));
+        try {
+            AnchorPane pane = loader.load();
+            Scene scene = new Scene(pane);
+            GameApplication.getApplication().getPrimaryStage().setScene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) {

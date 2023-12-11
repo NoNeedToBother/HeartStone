@@ -11,21 +11,16 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController"
-            prefHeight="720.0" prefWidth="1080.0">
+            prefHeight="720.0" prefWidth="1280.0">
 
-    <VBox AnchorPane.rightAnchor="10">
+    <ImageView fx:id="background"/>
+
+    <VBox AnchorPane.rightAnchor="10" fx:id="vBoxBtnEndTurn">
         <VBox prefHeight="300" VBox.vgrow="ALWAYS"/>
-        <Button VBox.vgrow="ALWAYS"
-                text="End turn"
-                prefHeight="50"
-                prefWidth="100"
-                fx:id="btnEndTurn"
-        />
     </VBox>
 
-    <HBox AnchorPane.bottomAnchor="10" fx:id="hBoxCards" spacing="60">
-        <HBox prefWidth="100"/>
+    <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
 
+    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxCards" spacing="60">
     </HBox>
-
 </AnchorPane>

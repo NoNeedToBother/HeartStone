@@ -1,21 +1,20 @@
 package ru.kpfu.itis.paramonov.heartstone.database;
 
-import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-
-import java.util.List;
-
 public class User {
     private int id;
     private String login;
-    private List<CardRepository.CardTemplate> deck;
+    private String deck;
 
-    private List<CardRepository.CardTemplate> cards;
+    private String cards;
 
-    public User(int id, String login, List<CardRepository.CardTemplate> deck, List<CardRepository.CardTemplate> cards) {
+    private int money;
+
+    public User(int id, String login, String deck, String cards, int money) {
         this.id = id;
         this.login = login;
         this.deck = deck;
         this.cards = cards;
+        this.money = money;
     }
 
     public int getId() {
@@ -26,11 +25,15 @@ public class User {
         return login;
     }
 
-    public List<CardRepository.CardTemplate> getDeck() {
+    public String getDeck() {
         return deck;
     }
 
-    public List<CardRepository.CardTemplate> getCards() {
+    public String getCards() {
         return cards;
+    }
+
+    public int getMoney() {
+        return money;
     }
 }

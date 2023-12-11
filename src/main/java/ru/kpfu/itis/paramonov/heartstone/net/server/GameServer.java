@@ -10,14 +10,18 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class GameServer {
     private ServerSocket serverSocket;
-    private List<Client> clients = new ArrayList<>();
+    private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
-    private List<Client> clientsToConnect = new ArrayList<>();
+    private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
+
+    private List<GameRoom> rooms = new ArrayList<>();
 
     private final String host = "127.0.0.1";
 
@@ -82,7 +86,17 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
+        private boolean isDisconnected = false;
+
         private boolean connected = false;
+
+        private Thread connectionThread = null;
+
+        private String login = null;
+
+        public String getUserLogin() {
+            return login;
+        }
 
         public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
             this.input = input;
@@ -94,18 +108,17 @@ public class GameServer {
         public void run() {
             try {
                 while (true) {
-                    String message = input.readLine();
-                    JSONObject json = new JSONObject(message);
-                    String response;
-                    if (checkEntityIsServer(json)) {
-                        response = handleServerMessage(json);
-                    }
-                    else {
-                        //stub
-                        response = "response";
-                    }
+                    if (!isDisconnected) {
+                        String message = input.readLine();
+                        JSONObject json = new JSONObject(message);
+                        String response;
+                        if (checkEntityIsServer(json)) {
+                            response = handleServerMessage(json);
+                        }
+                        else response = null;
 
-                    server.sendResponse(response, this);
+                        if (response != null) server.sendResponse(response, this);
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -120,15 +133,22 @@ public class GameServer {
             Runnable runnable = () -> {
                 try {
                     server.clientsToConnect.add(this);
-                    while (!connected) {
+                    while (!connected && !isDisconnected) {
                         Thread.sleep(50);
                         for (Client otherClient : server.clientsToConnect) {
+                            if (connected) break;
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
-                                GameRoom room = new GameRoom(this, otherClient);
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
+                                JSONObject response = new JSONObject();
+                                response.put("server_action", "CONNECT");
+                                response.put("status", "OK");
+                                server.sendResponse(response.toString(), this);
+                                GameRoom room = new GameRoom(this, otherClient, server);
+                                server.rooms.add(room);
+                                room.onStart();
                             }
                         }
                     }
@@ -146,16 +166,30 @@ public class GameServer {
         private String handleServerMessage(JSONObject jsonServerMessage) {
             JSONObject response = new JSONObject();
             try {
-                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())) {
-                    handleConnection(jsonServerMessage, response);
+                String serverAction = jsonServerMessage.getString("server_action");
+                switch (ServerMessage.ServerAction.valueOf(serverAction)) {
+                    case CONNECT -> {
+                        handleConnection();
+                        return null;
+                    }
+                    case LOGIN -> handleLogin(jsonServerMessage, response);
+                    case REGISTER -> handleRegistration(jsonServerMessage, response);
+                    case DISCONNECT -> {
+                        handleDisconnection();
+                        return null;
+                    }
                 }
-            } catch (JSONException ignored) {}
-            try {
-                if (jsonServerMessage.getString("server_action").equals(ServerMessage.ServerAction.LOGIN.toString())) {
-                    handleLogin(jsonServerMessage, response);
-                }
-            } catch (JSONException ignored) {}
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
             return response.toString();
+        }
+
+        private void handleDisconnection() {
+            server.clientsToConnect.remove(this);
+            server.clients.remove(this);
+            isDisconnected = true;
+            if (connectionThread != null) connectionThread.interrupt();
         }
 
         private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
@@ -164,20 +198,38 @@ public class GameServer {
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
+                login = user.getLogin();
                 response.put("status", "OK");
+                putUserInfo(user, response);
             } else {
                 response.put("status", "NOT_OK");
             }
         }
 
-        private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.CONNECT.toString());
-            Thread connectionThread = new Thread(getConnectionLogic());
-            connectionThread.start();
+        private void handleRegistration(JSONObject jsonServerMessage, JSONObject response) {
+            response.put("server_action", ServerMessage.ServerAction.REGISTER.toString());
+            UserService service = new UserService();
             try {
-                connectionThread.join();
+                User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
                 response.put("status", "OK");
-            } catch (InterruptedException e) {}
+                login = user.getLogin();
+                putUserInfo(user, response);
+            } catch (SQLException e) {
+                response.put("status", "NOT_OK");
+            }
+        }
+
+        private void putUserInfo(User user, JSONObject response) {
+            response.put("login", user.getLogin());
+            response.put("deck", user.getDeck());
+            response.put("cards", user.getCards());
+            response.put("money", user.getMoney());
+        }
+
+        private void handleConnection() {
+            Thread connectionThread = new Thread(getConnectionLogic());
+            this.connectionThread = connectionThread;
+            connectionThread.start();
         }
 
         public BufferedWriter getOutput() {
@@ -186,10 +238,6 @@ public class GameServer {
 
         public BufferedReader getInput() {
             return input;
-        }
-
-        public GameServer getServer() {
-            return server;
         }
     }
 }

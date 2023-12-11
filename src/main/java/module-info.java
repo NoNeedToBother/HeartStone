@@ -7,6 +7,7 @@ module ru.kpfu.itis.paramonov.heartstone {
 
     requires org.controlsfx.controls;
     requires jakarta.xml.bind;
+    requires org.postgresql.jdbc;
 
     opens ru.kpfu.itis.paramonov.heartstone to javafx.fxml;
     opens ru.kpfu.itis.paramonov.heartstone.controller to javafx.fxml;

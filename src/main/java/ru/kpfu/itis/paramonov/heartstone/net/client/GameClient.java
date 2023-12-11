@@ -1,14 +1,14 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
+import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.model.user.User;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.io.*;
@@ -75,34 +75,41 @@ public class GameClient {
         public void run() {
             try {
                 while (true) {
-                    String serverResponse = input.readLine();
-                    System.out.println(serverResponse);
+                    String response = input.readLine();
+                    System.out.println(response);
                     Platform.runLater(() -> {
-                        JSONObject json = new JSONObject(serverResponse);
-                        if (json.getString("server_action").equals("CONNECT") && json.getString("status").equals("OK")) {
-                            FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/battlefield.fxml"));
-                            try {
-                                AnchorPane pane = loader.load();
-                                Scene scene = new Scene(pane);
-                                GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-
-                        if (json.getString("server_action").equals("LOGIN")) {
-                            if (json.getString("status").equals("OK")) {
-                                FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/main_menu.fxml"));
-                                try {
-                                    AnchorPane pane = loader.load();
-                                    Scene scene = new Scene(pane);
-                                    GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                        JSONObject json = new JSONObject(response);
+                        try {
+                            switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
+                                case CONNECT -> {
+                                    if (checkStatus(json))
+                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                }
+                                case LOGIN, REGISTER -> {
+                                    if (checkStatus(json)) {
+                                        setGameUser(json);
+                                        GameApplication.getApplication().loadScene("/main_menu.fxml");
+                                    }
                                 }
                             }
-                        }
-
+                        } catch (JSONException ignored) {}
+                        try {
+                            switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
+                                case GET_BACKGROUND -> {
+                                    String bg = json.getString("background");
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                    }
+                                    BattlefieldController.getController().setBackground(bg);
+                                }
+                                case GET_BATTLE_DECK -> {
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                    }
+                                    BattlefieldController.getController().setCards(json.getJSONArray("cards"));
+                                }
+                            }
+                        } catch (JSONException ignored) {}
                     });
                 }
             } catch (IOException e) {
@@ -110,7 +117,17 @@ public class GameClient {
             }
         }
 
+        private boolean checkStatus(JSONObject json) {
+            return json.getString("status").equals("OK");
+        }
 
+        private void setGameUser(JSONObject json) {
+            User user = User.getInstance();
+            user.setLogin(json.getString("login"));
+            user.setDeck(CardRepository.getCardsById(json.getString("deck")));
+            user.setCards(CardRepository.getCardsById(json.getString("cards")));
+            user.setMoney(json.getInt("money"));
+        }
 
         public BufferedWriter getOutput() {
             return output;
