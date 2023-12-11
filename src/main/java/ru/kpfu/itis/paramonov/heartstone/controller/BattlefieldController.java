@@ -11,6 +11,9 @@ import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
@@ -49,7 +52,6 @@ public class BattlefieldController {
     @FXML
     private void initialize() {
         controller = this;
-        setCards();
         setHandBackground();
         addEndTurnBtn();
         makeCardsDraggable();
@@ -63,6 +65,41 @@ public class BattlefieldController {
                 .build();
 
         vBoxBtnEndTurn.getChildren().add(btnEndTurn);
+    }
+
+    public void setCards(JSONArray cards) {
+        hand.clear();
+        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
+        for (int i = 0; i < cards.length(); i++) {
+            JSONObject json = cards.getJSONObject(i);
+            int atk = json.getInt("atk");
+            int hp = json.getInt("hp");
+            int cost = json.getInt("cost");
+            CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(json.getInt("id"));
+
+            setCard(atk, hp, cost, cardInfo, hBoxCardsChildren);
+        }
+    }
+
+    private void setCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
+        Image sprite = Card.SpriteBuilder()
+                .addImage(cardInfo.getPortraitUrl())
+                .addRarity(cardInfo.getRarity())
+                .setBase()
+                .scale(2)
+                .build();
+
+        ImageView img = new ImageView();
+        img.setImage(sprite);
+
+        layoutCards.add(img);
+
+        Card card = new Card(cardInfo);
+        card.setAtk(atk);
+        card.setHp(hp);
+        card.setCost(cost);
+        card.associateImageView(img);
+        hand.add(card);
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
@@ -83,6 +120,7 @@ public class BattlefieldController {
 
     }
 
+    /*
     private void setCards() {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
 
@@ -111,7 +149,7 @@ public class BattlefieldController {
             card.associateImageView(img);
             hand.add(card);
         }
-    }
+    }*/
 
     private void makeCardsDraggable() {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();

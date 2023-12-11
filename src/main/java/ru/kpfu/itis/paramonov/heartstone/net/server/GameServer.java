@@ -11,6 +11,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class GameServer {
@@ -18,6 +20,8 @@ public class GameServer {
     private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
     private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
+
+    private List<GameRoom> rooms = new ArrayList<>();
 
     private final String host = "127.0.0.1";
 
@@ -88,6 +92,12 @@ public class GameServer {
 
         private Thread connectionThread = null;
 
+        private String login = null;
+
+        public String getUserLogin() {
+            return login;
+        }
+
         public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
             this.input = input;
             this.output = output;
@@ -137,6 +147,7 @@ public class GameServer {
                                 response.put("status", "OK");
                                 server.sendResponse(response.toString(), this);
                                 GameRoom room = new GameRoom(this, otherClient, server);
+                                server.rooms.add(room);
                                 room.onStart();
                             }
                         }
@@ -187,6 +198,7 @@ public class GameServer {
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
+                login = user.getLogin();
                 response.put("status", "OK");
                 putUserInfo(user, response);
             } else {
@@ -200,6 +212,7 @@ public class GameServer {
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
                 response.put("status", "OK");
+                login = user.getLogin();
                 putUserInfo(user, response);
             } catch (SQLException e) {
                 response.put("status", "NOT_OK");
