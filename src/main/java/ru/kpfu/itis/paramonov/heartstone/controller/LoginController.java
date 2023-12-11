@@ -39,7 +39,6 @@ public class LoginController {
                 .setText(GameButton.GameButtonText.LOGIN)
                 .scale(3)
                 .build();
-        loginMenu.getChildren().add(btnLogin);
         this.btnLogin = btnLogin;
 
         GameButton btnGoToRegister = GameButton.builder()
@@ -47,8 +46,9 @@ public class LoginController {
                 .setText(GameButton.GameButtonText.GO_REGISTER)
                 .scale(3)
                 .build();
-        loginMenu.getChildren().add(btnGoToRegister);
         this.btnGoToRegister = btnGoToRegister;
+
+        loginMenu.getChildren().addAll(btnLogin, btnGoToRegister);
     }
 
     private void setOnClickListeners() {

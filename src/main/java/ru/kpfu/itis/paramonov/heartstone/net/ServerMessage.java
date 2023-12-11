@@ -1,6 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.net;
 
-import org.controlsfx.control.action.Action;
 import org.json.JSONObject;
 
 import java.util.HashMap;

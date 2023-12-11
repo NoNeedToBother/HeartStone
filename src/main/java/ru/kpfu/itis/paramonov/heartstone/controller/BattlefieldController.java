@@ -12,7 +12,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 
 import java.util.ArrayList;
 import java.util.List;

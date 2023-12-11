@@ -1,7 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.model.user;
 
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 
 import java.util.List;
 

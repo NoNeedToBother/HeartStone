@@ -2,21 +2,17 @@ package ru.kpfu.itis.paramonov.heartstone.database.dao;
 
 import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.util.DatabaseConnectionUtil;
-import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserDao {
     private final Connection connection = DatabaseConnectionUtil.getConnection();
 
     private final String dbId = "id";
     private final String dbLogin = "login";
-    private final String dbPassword = "password";
     private final String dbDeck = "deck";
 
     private final String dbCards = "cards";

@@ -1,14 +1,8 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
@@ -81,22 +75,16 @@ public class GameClient {
                     String serverResponse = input.readLine();
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(serverResponse);
-                        if (json.getString("server_action").equals(ServerMessage.ServerAction.CONNECT.toString())
-                                && json.getString("status").equals("OK")) {
-                            GameApplication.getApplication().loadScene("/battlefield.fxml");
-                        }
-
-                        if (json.getString("server_action").equals(ServerMessage.ServerAction.LOGIN.toString())) {
-                            if (json.getString("status").equals("OK")) {
-                                setGameUser(json);
-                                GameApplication.getApplication().loadScene("/main_menu.fxml");
+                        switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
+                            case CONNECT -> {
+                                if (checkStatus(json))
+                                    GameApplication.getApplication().loadScene("/battlefield.fxml");
                             }
-                        }
-
-                        if (json.getString("server_action").equals(ServerMessage.ServerAction.REGISTER.toString())) {
-                            if (json.getString("status").equals("OK")) {
-                                setGameUser(json);
-                                GameApplication.getApplication().loadScene("/main_menu.fxml");
+                            case LOGIN, REGISTER -> {
+                                if (checkStatus(json)) {
+                                    setGameUser(json);
+                                    GameApplication.getApplication().loadScene("/main_menu.fxml");
+                                }
                             }
                         }
                     });
@@ -104,6 +92,10 @@ public class GameClient {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        private boolean checkStatus(JSONObject json) {
+            return json.getString("status").equals("OK");
         }
 
         private void setGameUser(JSONObject json) {

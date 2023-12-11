@@ -56,6 +56,7 @@ public class MainMenuController {
     private void setOnClickListeners() {
         btnPlay.setOnMouseClicked(mouseEvent -> onPlayClicked());
         btnQuit.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().disconnect();
             System.exit(0);
         });
     }

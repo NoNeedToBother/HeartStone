@@ -7,7 +7,6 @@ import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 

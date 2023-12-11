@@ -50,7 +50,7 @@ public class GameServer {
                 BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
                 BufferedWriter output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8));
 
-                Client client = new Client(input, output, this, clientSocket);
+                Client client = new Client(input, output, this);
                 clients.add(client);
 
                 (new Thread(client)).start();
@@ -82,19 +82,16 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
-        private Socket socket;
-
         private boolean isDisconnected = false;
 
         private boolean connected = false;
 
         private Thread connectionThread = null;
 
-        public Client(BufferedReader input, BufferedWriter output, GameServer gameServer, Socket socket) {
+        public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
             this.input = input;
             this.output = output;
             this.server = gameServer;
-            this.socket = socket;
         }
 
         @Override
@@ -132,6 +129,7 @@ public class GameServer {
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
                                 GameRoom room = new GameRoom(this, otherClient);
+                                room.onStart();
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
@@ -159,7 +157,7 @@ public class GameServer {
                 String serverAction = jsonServerMessage.getString("server_action");
                 switch (ServerMessage.ServerAction.valueOf(serverAction)) {
                     case CONNECT -> {
-                        handleConnection(jsonServerMessage, response);
+                        handleConnection();
                         return null;
                     }
                     case LOGIN -> handleLogin(jsonServerMessage, response);
@@ -179,7 +177,7 @@ public class GameServer {
             server.clientsToConnect.remove(this);
             server.clients.remove(this);
             isDisconnected = true;
-            connectionThread.interrupt();
+            if (connectionThread != null) connectionThread.interrupt();
         }
 
         private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
@@ -189,9 +187,7 @@ public class GameServer {
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
                 response.put("status", "OK");
-                response.put("login", user.getLogin());
-                response.put("deck", user.getDeck());
-                response.put("cards", user.getCards());
+                putUserInfo(user, response);
             } else {
                 response.put("status", "NOT_OK");
             }
@@ -203,15 +199,19 @@ public class GameServer {
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
                 response.put("status", "OK");
-                response.put("login", user.getLogin());
-                response.put("deck", user.getDeck());
-                response.put("cards", user.getCards());
+                putUserInfo(user, response);
             } catch (SQLException e) {
                 response.put("status", "NOT_OK");
             }
         }
 
-        private void handleConnection(JSONObject jsonServerMessage, JSONObject response) {
+        private void putUserInfo(User user, JSONObject response) {
+            response.put("login", user.getLogin());
+            response.put("deck", user.getDeck());
+            response.put("cards", user.getCards());
+        }
+
+        private void handleConnection() {
             Thread connectionThread = new Thread(getConnectionLogic());
             this.connectionThread = connectionThread;
             connectionThread.start();
@@ -223,10 +223,6 @@ public class GameServer {
 
         public BufferedReader getInput() {
             return input;
-        }
-
-        public GameServer getServer() {
-            return server;
         }
     }
 }

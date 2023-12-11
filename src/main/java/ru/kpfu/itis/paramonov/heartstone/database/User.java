@@ -1,9 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.database;
 
-import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-
-import java.util.List;
-
 public class User {
     private int id;
     private String login;
