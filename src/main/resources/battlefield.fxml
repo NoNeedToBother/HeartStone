@@ -15,17 +15,12 @@
 
     <ImageView fx:id="background"/>
 
-    <VBox AnchorPane.rightAnchor="10">
+    <VBox AnchorPane.rightAnchor="10" fx:id="vBoxBtnEndTurn">
         <VBox prefHeight="300" VBox.vgrow="ALWAYS"/>
-        <Button VBox.vgrow="ALWAYS"
-                text="End turn"
-                prefHeight="50"
-                prefWidth="100"
-                fx:id="btnEndTurn"
-        />
     </VBox>
 
-    <HBox AnchorPane.bottomAnchor="10" fx:id="hBoxCards" spacing="60">
-        <HBox prefWidth="200"/>
+    <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
+
+    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxCards" spacing="60">
     </HBox>
 </AnchorPane>
