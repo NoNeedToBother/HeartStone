@@ -104,6 +104,8 @@ public class CardRepository {
             this.rarity = rarity;
         }
 
+
+
         public int getHp() {
             return hp;
         }
@@ -142,6 +144,10 @@ public class CardRepository {
 
         public Rarity getRarity() {
             return rarity;
+        }
+
+        public String getActionDesc() {
+            return actionDesc;
         }
     }
 }

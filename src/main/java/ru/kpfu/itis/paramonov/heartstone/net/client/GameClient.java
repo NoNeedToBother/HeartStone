@@ -76,6 +76,7 @@ public class GameClient {
             try {
                 while (true) {
                     String response = input.readLine();
+                    System.out.println(response);
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(response);
                         try {
@@ -96,8 +97,16 @@ public class GameClient {
                             switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
                                 case GET_BACKGROUND -> {
                                     String bg = json.getString("background");
-                                    GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                    }
                                     BattlefieldController.getController().setBackground(bg);
+                                }
+                                case GET_BATTLE_DECK -> {
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                    }
+                                    BattlefieldController.getController().setCards(json.getJSONArray("cards"));
                                 }
                             }
                         } catch (JSONException ignored) {}
