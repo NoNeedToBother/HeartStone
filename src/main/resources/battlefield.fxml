@@ -7,6 +7,8 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.text.Text?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
@@ -17,6 +19,10 @@
 
     <VBox AnchorPane.rightAnchor="10" fx:id="vBoxBtnEndTurn">
         <VBox prefHeight="300" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <VBox AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" fx:id="vBoxCardInfo" prefWidth="276">
+        <BattleCardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 
     <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>

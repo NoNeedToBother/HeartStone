@@ -12,10 +12,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
@@ -43,6 +43,12 @@ public class BattlefieldController {
     @FXML
     private ImageView handBg;
 
+    @FXML
+    private VBox vBoxCardInfo;
+
+    @FXML
+    private BattleCardInfo cardInfo;
+
     private static BattlefieldController controller = null;
 
     public static BattlefieldController getController() {
@@ -53,6 +59,7 @@ public class BattlefieldController {
     private void initialize() {
         controller = this;
         setHandBackground();
+        makeCardInfoWrapText();
         addEndTurnBtn();
         makeCardsDraggable();
     }
@@ -63,6 +70,7 @@ public class BattlefieldController {
                 .setText(GameButton.GameButtonText.END_TURN)
                 .scale(3)
                 .build();
+        this.btnEndTurn = btnEndTurn;
 
         vBoxBtnEndTurn.getChildren().add(btnEndTurn);
     }
@@ -99,7 +107,29 @@ public class BattlefieldController {
         card.setHp(hp);
         card.setCost(cost);
         card.associateImageView(img);
+        setOnHoverListener(img);
         hand.add(card);
+    }
+
+    private Card getCardByImageView(ImageView iv) {
+        for (Card card : hand) {
+            if (iv.equals(card.getAssociatedImageView())) return card;
+        }
+        return null;
+    }
+
+    private void setOnHoverListener(ImageView iv) {
+        iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
+            Card card = getCardByImageView(iv);
+            if (isHovered) {
+                cardInfo.setVisible(true);
+            }
+            else cardInfo.setVisible(false);
+        }));
+    }
+
+    private void makeCardInfoWrapText() {
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty());
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
@@ -111,45 +141,6 @@ public class BattlefieldController {
             mouseEvent.consume();
         };
     }
-
-    private void onBattleStart() {
-
-    }
-
-    private void drawInitialCards() {
-
-    }
-
-    /*
-    private void setCards() {
-        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
-
-
-        for (int i = 0; i < 5; i++) {
-            CardRepository.CardTemplate cardInfo;
-            if (i % 2 == 0) cardInfo = CardRepository.CardTemplate.Stone;
-            else cardInfo = CardRepository.CardTemplate.KnightStone;
-            Image sprite = Card.SpriteBuilder()
-                    .addImage(cardInfo.getPortraitUrl())
-                    .addRarity(cardInfo.getRarity())
-                    .setBase()
-                    .scale(2)
-                    .build();
-
-            ImageView img = new ImageView();
-            img.setImage(sprite);
-            img.hoverProperty().addListener((observable, oldValue, isHovered) -> {
-                if (isHovered) {
-
-                }
-            });
-            hBoxCardsChildren.add(img);
-
-            Card card = new Card(cardInfo);
-            card.associateImageView(img);
-            hand.add(card);
-        }
-    }*/
 
     private void makeCardsDraggable() {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
@@ -164,37 +155,11 @@ public class BattlefieldController {
         }
     }
 
-    private String DEFAULT_IMAGE_PATH = "D:\\projects\\HeartStone\\src\\main\\resources\\assets\\images";
-
     public void setBackground(String bg) {
         BufferedImageUtil.getFromSrcAndSetImage("\\background\\" + bg, background);
-        /*
-        File file = new File(DEFAULT_IMAGE_PATH + "\\background\\" + bg);
-        try {
-            BufferedImage img = ImageIO.read(file);
-            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                ImageIO.write(img, "PNG", out);
-                InputStream in = new ByteArrayInputStream(out.toByteArray());
-                background.setImage(new Image(in));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
     }
 
     public void setHandBackground() {
         BufferedImageUtil.getFromSrcAndSetImage("\\hand_bg.png", handBg);
-        /*
-        File file = new File(DEFAULT_IMAGE_PATH + "hand_bg");
-        try {
-            BufferedImage img = ImageIO.read(file);
-            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                ImageIO.write(img, "PNG", out);
-                InputStream in = new ByteArrayInputStream(out.toByteArray());
-                handBg.setImage(new Image(in));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
     }
 }
