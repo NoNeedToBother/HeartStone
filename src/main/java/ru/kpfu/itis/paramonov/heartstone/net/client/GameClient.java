@@ -106,7 +106,14 @@ public class GameClient {
                                     if (BattlefieldController.getController() == null) {
                                         GameApplication.getApplication().loadScene("/battlefield.fxml");
                                     }
-                                    BattlefieldController.getController().setCards(json.getJSONArray("cards"));
+                                    BattlefieldController.getController().setHand(json.getJSONArray("hand"));
+                                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                                }
+
+                                case END_TURN -> {
+                                }
+                                case BEGIN_TURN -> {
+                                    System.out.println(response);
                                 }
                             }
                         } catch (JSONException ignored) {}
