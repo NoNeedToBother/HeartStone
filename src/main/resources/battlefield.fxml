@@ -21,7 +21,7 @@
         <VBox prefHeight="300" VBox.vgrow="ALWAYS"/>
     </VBox>
 
-    <VBox AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" fx:id="vBoxCardInfo" prefWidth="276">
+    <VBox AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" fx:id="vBoxCardInfo" prefWidth="260">
         <BattleCardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 

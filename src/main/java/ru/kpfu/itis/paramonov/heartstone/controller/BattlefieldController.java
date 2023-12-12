@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
@@ -122,14 +123,30 @@ public class BattlefieldController {
         iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
             Card card = getCardByImageView(iv);
             if (isHovered) {
+                String actionDesc = card.getCardInfo().getActionDesc();
+                if (actionDesc.isEmpty()) cardInfo.setText(card.getCardInfo().getDescription());
+                else {
+                    cardInfo.setText(actionDesc);
+                    cardInfo.addTextLine(card.getCardInfo().getDescription());
+                }
+                cardInfo.addTextLine("ATK: ");
+                cardInfo.addText(String.valueOf(card.getAtk()));
+                cardInfo.addTextLine("HP: ");
+                cardInfo.addText(String.valueOf(card.getHp()));
+                cardInfo.addTextLine("Cost: ");
+                cardInfo.addText(String.valueOf(card.getCost()));
+                cardInfo.commitChanges();
                 cardInfo.setVisible(true);
             }
-            else cardInfo.setVisible(false);
+            else {
+                cardInfo.setVisible(false);
+                cardInfo.clear();
+            }
         }));
     }
 
     private void makeCardInfoWrapText() {
-        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty());
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty().add(-20));
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
@@ -156,10 +173,12 @@ public class BattlefieldController {
     }
 
     public void setBackground(String bg) {
-        BufferedImageUtil.getFromSrcAndSetImage("\\background\\" + bg, background);
+        String url = GameApplication.class.getResource("/assets/images/background/" + bg).toString();
+        background.setImage(new Image(url));
     }
 
     public void setHandBackground() {
-        BufferedImageUtil.getFromSrcAndSetImage("\\hand_bg.png", handBg);
+        String url = GameApplication.class.getResource("/assets/images/hand_bg.png").toString();
+        handBg.setImage(new Image(url));
     }
 }

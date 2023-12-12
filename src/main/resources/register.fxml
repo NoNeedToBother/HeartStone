@@ -11,7 +11,7 @@
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.RegisterController"
             prefHeight="720.0" prefWidth="1280.0">
 
-    <VBox layoutX="580" layoutY="200" fx:id="registerMenu" stylesheets="text-fields.css" spacing="10">
+    <VBox layoutX="580" layoutY="200" fx:id="registerMenu" spacing="10">
         <TextField fx:id="login" promptText="login"/>
         <PasswordField fx:id="password" promptText="password"/>
         <PasswordField fx:id="confirmPassword" promptText="confirm password"/>
