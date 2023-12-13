@@ -108,6 +108,8 @@ public class GameClient {
                                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().setHand(json.getJSONArray("hand"));
+                                    if (json.getString("card_status").equals("drawn"))
+                                        BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
                                     BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
                                 }
 
@@ -119,6 +121,7 @@ public class GameClient {
                                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
+
                                 }
                             }
                         } catch (JSONException ignored) {}

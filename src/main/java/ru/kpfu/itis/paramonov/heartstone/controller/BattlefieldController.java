@@ -102,21 +102,33 @@ public class BattlefieldController {
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
         for (int i = 0; i < cards.length(); i++) {
             JSONObject json = cards.getJSONObject(i);
-            int atk = json.getInt("atk");
-            int hp = json.getInt("hp");
-            int cost = json.getInt("cost");
-            CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(json.getInt("id"));
-
-            setCard(atk, hp, cost, cardInfo, hBoxCardsChildren);
+            addCardToHand(json, hBoxCardsChildren);
         }
     }
 
+    private void addCardToHand(JSONObject card, ObservableList<Node> hBox) {
+        int atk = card.getInt("atk");
+        int hp = card.getInt("hp");
+        int cost = card.getInt("cost");
+        CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(card.getInt("id"));
+
+        setCard(atk, hp, cost, cardInfo, hBox);
+    }
+
+    public void addCardToHand(JSONObject card) {
+        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
+
+        addCardToHand(card, hBoxCardsChildren);
+    }
+
     public void setDeck(JSONArray deck) {
+        List<Card> tempDeck = new ArrayList<>();
         for (int i = 0; i < deck.length(); i++) {
             JSONObject json = deck.getJSONObject(i);
             CardRepository.CardTemplate card = CardRepository.getCardTemplate(json.getInt("id"));
-            this.deck.add(new Card(card));
+            tempDeck.add(new Card(card));
         }
+        this.deck = tempDeck;
     }
 
     private void setCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
