@@ -18,7 +18,17 @@ public class GameButton extends Button {
     public enum GameButtonStyle {
         BASE, GREEN, RED
     }
+
+    private boolean clickable = false;
+
+    public boolean isClickable() {
+        return clickable;
+    }
+
     public static class ButtonBuilder {
+
+        GameButton btn;
+
         private BufferedImage img;
 
         private int imgWidth = 46;
@@ -31,6 +41,7 @@ public class GameButton extends Button {
         }
 
         private void setBlankImg() {
+            btn = new GameButton();
             imgWidth = 46;
             imgHeight = 14;
             img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_ARGB);
@@ -44,12 +55,15 @@ public class GameButton extends Button {
         public ButtonBuilder setStyle(GameButtonStyle style) {
             switch (style) {
                 case BASE -> {
+                    btn.clickable = true;
                     return addImageToBufferedImage(DEFAULT_PATH + "/base_button.png");
                 }
                 case RED -> {
+                    btn.clickable = false;
                     return addImageToBufferedImage(DEFAULT_PATH + "/red_button.png");
                 }
                 case GREEN -> {
+                    btn.clickable = true;
                     return addImageToBufferedImage(DEFAULT_PATH + "/green_button.png");
                 }
                 default -> throw new RuntimeException("Impossible");
@@ -59,28 +73,28 @@ public class GameButton extends Button {
         public ButtonBuilder setText(GameButtonText text) {
             switch (text) {
                 case LOGIN -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/login.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/login.png");
                 }
                 case REGISTER -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/register.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/register.png");
                 }
                 case GO_LOGIN -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/go_login.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/go_login.png");
                 }
                 case GO_REGISTER -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/go_register.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/go_register.png");
                 }
                 case PLAY -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/play.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/play.png");
                 }
                 case QUIT -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/quit.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/quit.png");
                 }
                 case DECK -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/deck.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/deck.png");
                 }
                 case END_TURN -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/end_turn.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/end_turn.png");
                 }
                 default -> throw new RuntimeException("Impossible");
             }
@@ -94,18 +108,17 @@ public class GameButton extends Button {
         }
 
         public GameButton build() {
-            GameButton button = new GameButton();
             Image btnImg;
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 ImageIO.write(img, "PNG", out);
                 InputStream in = new ByteArrayInputStream(out.toByteArray());
                 setBlankImg();
                 btnImg = new Image(in);
-                button.setPrefHeight(imgHeight);
-                button.setPrefWidth(imgWidth);
-                button.setGraphic(new ImageView(btnImg));
-                button.setPadding(Insets.EMPTY);
-                return button;
+                btn.setPrefHeight(imgHeight);
+                btn.setPrefWidth(imgWidth);
+                btn.setGraphic(new ImageView(btnImg));
+                btn.setPadding(Insets.EMPTY);
+                return btn;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

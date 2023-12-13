@@ -1,7 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 import javax.imageio.ImageIO;

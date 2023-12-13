@@ -71,7 +71,7 @@ public class Card implements Sprite, Serializable{
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
         private BufferedImage img;
 
-        private final String DEFAULT_PATH = "/assets/images";
+        private final String DEFAULT_PATH = "/assets/images/cards";
 
         public CardSpriteBuilder() {
             setBlankImg();
@@ -100,16 +100,16 @@ public class Card implements Sprite, Serializable{
         public SpriteBuilder<Image> addRarity(CardRepository.Rarity rarity) {
             switch (rarity) {
                 case COMMON -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarity_common.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_common.png");
                 }
                 case RARE -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarity_rare.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_rare.png");
                 }
                 case EPIC -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarity_epic.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_epic.png");
                 }
                 case LEGENDARY -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarity_legendary.png");
+                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_legendary.png");
                 }
                 default -> {
                     throw new RuntimeException("No such rarity");

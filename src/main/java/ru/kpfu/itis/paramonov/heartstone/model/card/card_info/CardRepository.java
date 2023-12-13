@@ -1,8 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +38,7 @@ public class CardRepository {
         COMMON, RARE, EPIC, LEGENDARY
     }
 
-    private static final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
+    private static final String DEFAULT_PATH = "/assets/images/cards";
 
     public static CardTemplate getCardTemplate(int id) {
         for (CardTemplate card : CardTemplate.values()) {
@@ -63,7 +60,7 @@ public class CardRepository {
     public enum CardTemplate {
         Stone(1, 1, 1, 0, "", "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
                 null, null, Faction.STONE, Rarity.COMMON),
-        KnightStone(2, 4, 5, 6, "Battlecry: gives +2/2 to chosen stone", "On guard of Stoneland since childhood", DEFAULT_PATH + "/knight_stone.png",
+        KnightStone(2, 4, 5, 5, "Battlecry: gives +2/2 to chosen stone", "On guard of Stoneland since childhood", DEFAULT_PATH + "/knight_stone.png",
                 List.of(CardAction.CHOOSE, CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.STONE, Rarity.RARE);
 

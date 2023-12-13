@@ -20,14 +20,13 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
-import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BattlefieldController {
 
-    private Button btnEndTurn;
+    private GameButton btnEndTurn;
 
     @FXML
     private VBox vBoxBtnEndTurn;
@@ -64,7 +63,7 @@ public class BattlefieldController {
     private void initialize() {
         controller = this;
         setHandBackground();
-        addEndTurnBtn(GameButton.GameButtonStyle.RED)
+        addEndTurnBtn(GameButton.GameButtonStyle.RED);
         makeCardInfoWrapText();
         makeCardsDraggable();
     }
@@ -84,13 +83,17 @@ public class BattlefieldController {
         vBoxBtnEndTurn.getChildren().add(btnEndTurn);
 
         this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
-            String msg = ServerMessage.builder()
-                    .setEntityToConnect(ServerMessage.Entity.ROOM)
-                    .setRoomAction(GameRoom.RoomAction.END_TURN)
-                    .build();
+            if (this.btnEndTurn.isClickable()) {
+                String msg = ServerMessage.builder()
+                        .setEntityToConnect(ServerMessage.Entity.ROOM)
+                        .setRoomAction(GameRoom.RoomAction.END_TURN)
+                        .build();
 
-            GameApplication.getApplication().getClient().sendMessage(msg);
-            mouseEvent.consume();
+                GameApplication.getApplication().getClient().sendMessage(msg);
+                mouseEvent.consume();
+            } else {
+                mouseEvent.consume();
+            }
         });
     }
 
