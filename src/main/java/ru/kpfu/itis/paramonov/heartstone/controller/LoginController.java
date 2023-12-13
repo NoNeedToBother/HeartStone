@@ -29,20 +29,25 @@ public class LoginController {
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        setTextFieldsStyle();
         addGameButtons();
         setOnClickListeners();
     }
 
+     private void setTextFieldsStyle() {
+        loginMenu.getStylesheets().add(GameApplication.class.getResource("/css/text-fields.css").toString());
+     }
+
     private void addGameButtons() {
         GameButton btnLogin = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.LOGIN)
                 .scale(3)
                 .build();
         this.btnLogin = btnLogin;
 
         GameButton btnGoToRegister = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.GO_REGISTER)
                 .scale(3)
                 .build();
@@ -65,7 +70,7 @@ public class LoginController {
         });
 
         btnGoToRegister.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/register.fxml");
+            application.loadScene("/fxml/register.fxml");
             mouseEvent.consume();
         });
     }

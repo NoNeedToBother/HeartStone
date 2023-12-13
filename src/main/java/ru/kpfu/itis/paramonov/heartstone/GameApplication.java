@@ -47,12 +47,14 @@ public class GameApplication extends Application {
 
         primaryStage.setTitle("HeartStone");
 
-        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/login.fxml"));
+        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/login.fxml"));
         AnchorPane anchorPane = loader.load();
 
         Scene scene = new Scene(anchorPane);
 
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+
         primaryStage.show();
     }
 

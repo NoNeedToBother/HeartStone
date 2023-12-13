@@ -24,4 +24,14 @@ public class UserService {
         dao.save(login, password);
         return dao.get(login);
     }
+
+    public User updateDeck(String login, String deck) throws SQLException{
+        dao.updateDeck(login, deck);
+        return dao.get(login);
+    }
+
+    public User updateCards(String login, String cards) throws SQLException {
+        dao.updateCards(login, cards);
+        return dao.get(login);
+    }
 }

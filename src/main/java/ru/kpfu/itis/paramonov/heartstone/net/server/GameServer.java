@@ -11,6 +11,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class GameServer {
@@ -18,6 +20,8 @@ public class GameServer {
     private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
     private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
+
+    private List<GameRoom> rooms = new ArrayList<>();
 
     private final String host = "127.0.0.1";
 
@@ -82,11 +86,19 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
+        private GameRoom currentRoom = null;
+
         private boolean isDisconnected = false;
 
         private boolean connected = false;
 
         private Thread connectionThread = null;
+
+        private String login = null;
+
+        public String getUserLogin() {
+            return login;
+        }
 
         public Client(BufferedReader input, BufferedWriter output, GameServer gameServer) {
             this.input = input;
@@ -105,7 +117,10 @@ public class GameServer {
                         if (checkEntityIsServer(json)) {
                             response = handleServerMessage(json);
                         }
-                        else response = null;
+                        else {
+                            currentRoom.handleMessage(json, this);
+                            response = null;
+                        }
 
                         if (response != null) server.sendResponse(response, this);
                     }
@@ -126,10 +141,9 @@ public class GameServer {
                     while (!connected && !isDisconnected) {
                         Thread.sleep(50);
                         for (Client otherClient : server.clientsToConnect) {
+                            if (connected) break;
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
-                                GameRoom room = new GameRoom(this, otherClient);
-                                room.onStart();
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
@@ -137,6 +151,11 @@ public class GameServer {
                                 response.put("server_action", "CONNECT");
                                 response.put("status", "OK");
                                 server.sendResponse(response.toString(), this);
+                                GameRoom room = new GameRoom(this, otherClient, server);
+                                server.rooms.add(room);
+                                this.currentRoom = room;
+                                otherClient.setCurrentRoom(room);
+                                room.onStart();
                             }
                         }
                     }
@@ -186,6 +205,7 @@ public class GameServer {
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
+                login = user.getLogin();
                 response.put("status", "OK");
                 putUserInfo(user, response);
             } else {
@@ -199,6 +219,7 @@ public class GameServer {
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
                 response.put("status", "OK");
+                login = user.getLogin();
                 putUserInfo(user, response);
             } catch (SQLException e) {
                 response.put("status", "NOT_OK");
@@ -209,6 +230,7 @@ public class GameServer {
             response.put("login", user.getLogin());
             response.put("deck", user.getDeck());
             response.put("cards", user.getCards());
+            response.put("money", user.getMoney());
         }
 
         private void handleConnection() {
@@ -223,6 +245,14 @@ public class GameServer {
 
         public BufferedReader getInput() {
             return input;
+        }
+
+        public GameRoom getCurrentRoom() {
+            return currentRoom;
+        }
+
+        public void setCurrentRoom(GameRoom currentRoom) {
+            this.currentRoom = currentRoom;
         }
     }
 }

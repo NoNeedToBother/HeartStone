@@ -1,17 +1,18 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class BufferedImageUtil {
     public static BufferedImage addImage(BufferedImage target, String src) {
         try {
-            BufferedImage bufferedImage = ImageIO.read(new File(src));
+            BufferedImage bufferedImage = ImageIO.read(GameApplication.class.getResource(src));
             Graphics g = target.getGraphics();
             g.drawImage(bufferedImage, 0, 0, null);
             g.dispose();

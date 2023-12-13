@@ -7,11 +7,14 @@ public class User {
 
     private String cards;
 
-    public User(int id, String login, String deck, String cards) {
+    private int money;
+
+    public User(int id, String login, String deck, String cards, int money) {
         this.id = id;
         this.login = login;
         this.deck = deck;
         this.cards = cards;
+        this.money = money;
     }
 
     public int getId() {
@@ -28,5 +31,9 @@ public class User {
 
     public String getCards() {
         return cards;
+    }
+
+    public int getMoney() {
+        return money;
     }
 }

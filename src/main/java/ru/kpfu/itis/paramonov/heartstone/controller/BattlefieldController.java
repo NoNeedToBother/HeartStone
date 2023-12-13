@@ -10,15 +10,26 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BattlefieldController {
+
+    private GameButton btnEndTurn;
+
     @FXML
-    private Button btnEndTurn;
+    private VBox vBoxBtnEndTurn;
 
     @FXML
     private HBox hBoxCards;
@@ -28,17 +39,143 @@ public class BattlefieldController {
 
     private List<Card> hand = new ArrayList<>();
 
+    private List<Card> deck = new ArrayList<>();
+
+    @FXML
+    private ImageView background;
+
+    @FXML
+    private ImageView handBg;
+
+    @FXML
+    private VBox vBoxCardInfo;
+
+    @FXML
+    private BattleCardInfo cardInfo;
+
     private static BattlefieldController controller = null;
 
-    public static BattlefieldController getInstance() {
+    public static BattlefieldController getController() {
         return controller;
     }
 
     @FXML
     private void initialize() {
         controller = this;
-        setCards();
+        setHandBackground();
+        addEndTurnBtn(GameButton.GameButtonStyle.RED);
+        makeCardInfoWrapText();
         makeCardsDraggable();
+    }
+
+    public void changeEndTurnButton(GameButton.GameButtonStyle style) {
+        vBoxBtnEndTurn.getChildren().remove(btnEndTurn);
+        addEndTurnBtn(style);
+    }
+    private void addEndTurnBtn(GameButton.GameButtonStyle style) {
+        GameButton btnEndTurn = GameButton.builder()
+                .setStyle(style)
+                .setText(GameButton.GameButtonText.END_TURN)
+                .scale(3)
+                .build();
+        this.btnEndTurn = btnEndTurn;
+
+        vBoxBtnEndTurn.getChildren().add(btnEndTurn);
+
+        this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
+            if (this.btnEndTurn.isClickable()) {
+                String msg = ServerMessage.builder()
+                        .setEntityToConnect(ServerMessage.Entity.ROOM)
+                        .setRoomAction(GameRoom.RoomAction.END_TURN)
+                        .build();
+
+                GameApplication.getApplication().getClient().sendMessage(msg);
+                mouseEvent.consume();
+            } else {
+                mouseEvent.consume();
+            }
+        });
+    }
+
+    public void setHand(JSONArray cards) {
+        hand.clear();
+        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
+        for (int i = 0; i < cards.length(); i++) {
+            JSONObject json = cards.getJSONObject(i);
+            int atk = json.getInt("atk");
+            int hp = json.getInt("hp");
+            int cost = json.getInt("cost");
+            CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(json.getInt("id"));
+
+            setCard(atk, hp, cost, cardInfo, hBoxCardsChildren);
+        }
+    }
+
+    public void setDeck(JSONArray deck) {
+        for (int i = 0; i < deck.length(); i++) {
+            JSONObject json = deck.getJSONObject(i);
+            CardRepository.CardTemplate card = CardRepository.getCardTemplate(json.getInt("id"));
+            this.deck.add(new Card(card));
+        }
+    }
+
+    private void setCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
+        Image sprite = Card.SpriteBuilder()
+                .addImage(cardInfo.getPortraitUrl())
+                .addRarity(cardInfo.getRarity())
+                .setBase()
+                .scale(2)
+                .build();
+
+        ImageView img = new ImageView();
+        img.setImage(sprite);
+
+        layoutCards.add(img);
+
+        Card card = new Card(cardInfo);
+        card.setAtk(atk);
+        card.setHp(hp);
+        card.setCost(cost);
+        card.associateImageView(img);
+        setOnHoverListener(img);
+        hand.add(card);
+    }
+
+    private Card getCardByImageView(ImageView iv) {
+        for (Card card : hand) {
+            if (iv.equals(card.getAssociatedImageView())) return card;
+        }
+        return null;
+    }
+
+    private void setOnHoverListener(ImageView iv) {
+        iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
+            Card card = getCardByImageView(iv);
+            if (isHovered) {
+                String actionDesc = card.getCardInfo().getActionDesc();
+                if (actionDesc.isEmpty()) cardInfo.setText(card.getCardInfo().getDescription());
+                else {
+                    cardInfo.setText(actionDesc);
+                    cardInfo.addTextLine(card.getCardInfo().getDescription());
+                }
+                cardInfo.addTextLine("ATK: ");
+                cardInfo.addText(String.valueOf(card.getAtk()));
+                cardInfo.addTextLine("HP: ");
+                cardInfo.addText(String.valueOf(card.getHp()));
+                cardInfo.addTextLine("Cost: ");
+                cardInfo.addText(String.valueOf(card.getCost()));
+                cardInfo.commitChanges();
+                cardInfo.setVisible(true);
+            }
+            else {
+                cardInfo.setVisible(false);
+                cardInfo.clear();
+            }
+        }));
+    }
+
+    private void makeCardInfoWrapText() {
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty().add(-20));
     }
 
     private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
@@ -49,44 +186,6 @@ public class BattlefieldController {
             db.setContent(content);
             mouseEvent.consume();
         };
-    }
-
-    private void onBattleStart() {
-
-    }
-
-    private void drawInitialCards() {
-
-    }
-
-    private void setCards() {
-        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
-
-
-        for (int i = 0; i < 5; i++) {
-            CardRepository.CardTemplate cardInfo;
-            if (i % 2 == 0) cardInfo = CardRepository.CardTemplate.Stone;
-            else cardInfo = CardRepository.CardTemplate.KnightStone;
-            Image sprite = Card.SpriteBuilder()
-                    .addImage(cardInfo.getPortraitUrl())
-                    .addRarity(cardInfo.getRarity())
-                    .setBase()
-                    .scale(2)
-                    .build();
-
-            ImageView img = new ImageView();
-            img.setImage(sprite);
-            img.hoverProperty().addListener((observable, oldValue, isHovered) -> {
-                if (isHovered) {
-
-                }
-            });
-            hBoxCardsChildren.add(img);
-
-            Card card = new Card(cardInfo);
-            card.associateImageView(img);
-            hand.add(card);
-        }
     }
 
     private void makeCardsDraggable() {
@@ -100,5 +199,15 @@ public class BattlefieldController {
                 counter++;
             }
         }
+    }
+
+    public void setBackground(String bg) {
+        String url = GameApplication.class.getResource("/assets/images/background/" + bg).toString();
+        background.setImage(new Image(url));
+    }
+
+    public void setHandBackground() {
+        String url = GameApplication.class.getResource("/assets/images/hand_bg.png").toString();
+        handBg.setImage(new Image(url));
     }
 }
