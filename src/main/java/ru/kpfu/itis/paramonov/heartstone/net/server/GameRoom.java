@@ -94,7 +94,7 @@ public class GameRoom {
     }
 
     public void onStart() {
-        //setActivePlayer();
+        setActivePlayer();
         setBackground();
         sendGameDeck();
     }
@@ -104,6 +104,11 @@ public class GameRoom {
     private void setActivePlayer() {
         if (random.nextBoolean()) activePlayer = client1;
         else activePlayer = client2;
+
+        JSONObject response = new JSONObject();
+        response.put("room_action", RoomAction.BEGIN_TURN);
+        response.put("status", "ok");
+        sendResponse(response.toString(), activePlayer);
     }
 
     public void sendGameDeck() {
