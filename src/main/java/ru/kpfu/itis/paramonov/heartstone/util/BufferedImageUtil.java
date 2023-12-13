@@ -2,6 +2,7 @@ package ru.kpfu.itis.paramonov.heartstone.util;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -13,7 +14,7 @@ import java.io.*;
 public class BufferedImageUtil {
     public static BufferedImage addImage(BufferedImage target, String src) {
         try {
-            BufferedImage bufferedImage = ImageIO.read(new File(src));
+            BufferedImage bufferedImage = ImageIO.read(GameApplication.class.getResource(src));
             Graphics g = target.getGraphics();
             g.drawImage(bufferedImage, 0, 0, null);
             g.dispose();

@@ -63,7 +63,6 @@ public class GameRoom {
     }
 
     private void drawCard(JSONObject response, GameServer.Client client) {
-        JSONObject card = new JSONObject();
         JSONArray deck = new JSONArray();
         Card cardToDraw;
         if (client.equals(client1)) {
@@ -95,7 +94,7 @@ public class GameRoom {
     }
 
     public void onStart() {
-        setActivePlayer();
+        //setActivePlayer();
         setBackground();
         sendGameDeck();
     }
@@ -128,6 +127,7 @@ public class GameRoom {
         for (Card card : deck) {
             if (counter <= handSize) putCardInfo(card, arrayHand);
             else putCardInfo(card, arrayDeck);
+            counter++;
         }
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);

@@ -10,6 +10,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
 import java.io.*;
 import java.net.Socket;
@@ -76,7 +77,6 @@ public class GameClient {
             try {
                 while (true) {
                     String response = input.readLine();
-                    System.out.println(response);
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(response);
                         try {
@@ -111,8 +111,10 @@ public class GameClient {
                                 }
 
                                 case END_TURN -> {
+                                    BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.RED);
                                 }
                                 case BEGIN_TURN -> {
+                                    BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
                                     System.out.println(response);
                                 }
                             }

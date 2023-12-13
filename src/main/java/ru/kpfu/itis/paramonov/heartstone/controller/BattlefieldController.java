@@ -57,13 +57,17 @@ public class BattlefieldController {
     private void initialize() {
         controller = this;
         setHandBackground();
-        addEndTurnBtn();
+        addEndTurnBtn(GameButton.GameButtonStyle.RED);
         makeCardsDraggable();
     }
 
-    private void addEndTurnBtn() {
+    public void changeEndTurnButton(GameButton.GameButtonStyle style) {
+        vBoxBtnEndTurn.getChildren().remove(btnEndTurn);
+        addEndTurnBtn(style);
+    }
+    private void addEndTurnBtn(GameButton.GameButtonStyle style) {
         GameButton btnEndTurn = GameButton.builder()
-                .setBase()
+                .setStyle(style)
                 .setText(GameButton.GameButtonText.END_TURN)
                 .scale(3)
                 .build();
