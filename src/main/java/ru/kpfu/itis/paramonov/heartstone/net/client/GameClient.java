@@ -77,18 +77,19 @@ public class GameClient {
             try {
                 while (true) {
                     String response = input.readLine();
+                    System.out.println(response);
                     Platform.runLater(() -> {
                         JSONObject json = new JSONObject(response);
                         try {
                             switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
                                 case CONNECT -> {
                                     if (checkStatus(json))
-                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                 }
                                 case LOGIN, REGISTER -> {
                                     if (checkStatus(json)) {
                                         setGameUser(json);
-                                        GameApplication.getApplication().loadScene("/main_menu.fxml");
+                                        GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
                                     }
                                 }
                             }
@@ -98,13 +99,13 @@ public class GameClient {
                                 case GET_BACKGROUND -> {
                                     String bg = json.getString("background");
                                     if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().setBackground(bg);
                                 }
                                 case GET_BATTLE_DECK -> {
                                     if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/battlefield.fxml");
+                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().setHand(json.getJSONArray("hand"));
                                     BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
@@ -114,8 +115,10 @@ public class GameClient {
                                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.RED);
                                 }
                                 case BEGIN_TURN -> {
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
+                                    }
                                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
-                                    System.out.println(response);
                                 }
                             }
                         } catch (JSONException ignored) {}

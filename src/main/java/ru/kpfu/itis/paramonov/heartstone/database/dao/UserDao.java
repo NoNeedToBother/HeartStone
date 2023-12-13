@@ -72,13 +72,16 @@ public class UserDao {
 
     private String DEFAULT_DECK = "[1,1,1,1,1]";
 
+    private int DEFAULT_MONEY = 500;
+
     public void save(String login, String password) throws SQLException {
-        String sql = "insert into users (login, password, deck, cards) values (?, ?, ?, ?)";
+        String sql = "insert into users (login, password, deck, cards, money) values (?, ?, ?, ?, ?)";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, login);
         statement.setString(2, password);
         statement.setString(3, DEFAULT_DECK);
         statement.setString(4, DEFAULT_CARDS);
+        statement.setInt(5, DEFAULT_MONEY);
 
         statement.executeUpdate();
     }

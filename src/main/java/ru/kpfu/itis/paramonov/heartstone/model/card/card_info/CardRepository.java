@@ -1,8 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +62,7 @@ public class CardRepository {
         COMMON, RARE, EPIC, LEGENDARY
     }
 
-    private static final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
+    private static final String DEFAULT_PATH = "/assets/images/cards";
 
     public static CardTemplate getCardTemplate(int id) {
         for (CardTemplate card : CardTemplate.values()) {

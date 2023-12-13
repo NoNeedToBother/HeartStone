@@ -33,8 +33,13 @@ public class RegisterController {
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        setTextFieldsStyle();
         addGameButtons();
         setOnClickListeners();
+    }
+
+    private void setTextFieldsStyle() {
+        registerMenu.getStylesheets().add(GameApplication.class.getResource("/css/text-fields.css").toString());
     }
 
     private void addGameButtons() {
@@ -57,7 +62,7 @@ public class RegisterController {
 
     private void setOnClickListeners() {
         btnGoToLogin.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/login.fxml");
+            application.loadScene("/fxml/login.fxml");
             mouseEvent.consume();
         });
 

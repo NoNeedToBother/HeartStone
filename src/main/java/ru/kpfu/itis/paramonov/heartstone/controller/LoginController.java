@@ -29,9 +29,14 @@ public class LoginController {
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        setTextFieldsStyle();
         addGameButtons();
         setOnClickListeners();
     }
+
+     private void setTextFieldsStyle() {
+        loginMenu.getStylesheets().add(GameApplication.class.getResource("/css/text-fields.css").toString());
+     }
 
     private void addGameButtons() {
         GameButton btnLogin = GameButton.builder()
@@ -65,7 +70,7 @@ public class LoginController {
         });
 
         btnGoToRegister.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/register.fxml");
+            application.loadScene("/fxml/register.fxml");
             mouseEvent.consume();
         });
     }
