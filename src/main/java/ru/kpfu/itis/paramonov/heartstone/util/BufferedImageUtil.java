@@ -38,20 +38,4 @@ public class BufferedImageUtil {
         target = after;
         return target;
     }
-
-    private static String DEFAULT_IMAGE_PATH = "D:\\projects\\HeartStone\\src\\main\\resources\\assets\\images";
-
-    public static void getFromSrcAndSetImage(String src, ImageView target) {
-        File file = new File(DEFAULT_IMAGE_PATH + src);
-        try {
-            BufferedImage img = ImageIO.read(file);
-            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                ImageIO.write(img, "PNG", out);
-                InputStream in = new ByteArrayInputStream(out.toByteArray());
-                target.setImage(new Image(in));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -29,9 +29,14 @@ public class LoginController {
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        setTextFieldsStyle();
         addGameButtons();
         setOnClickListeners();
     }
+
+     private void setTextFieldsStyle() {
+        loginMenu.getStylesheets().add(GameApplication.class.getResource("/css/text-fields.css").toString());
+     }
 
     private void addGameButtons() {
         GameButton btnLogin = GameButton.builder()
