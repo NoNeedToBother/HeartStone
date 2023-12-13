@@ -10,8 +10,7 @@ import java.util.List;
 public class CardRepository {
 
     public enum CardAction {
-        SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, COST_UP, COST_DOWN, REVIVE, ATTACK, CHOOSE, CHOOSE_RANDOM, CONSUME,
-        FREEZE;
+        SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, COST_UP, COST_DOWN, ATTACK, CHOOSE, CHOOSE_RANDOM, CONSUME, FREEZE;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -45,11 +44,21 @@ public class CardRepository {
     }
 
     public enum KeyWord {
-        BATTLE_CRY, LAST_WISH, CONSUME //etc
+        BATTLE_CRY("Triggers when card is played from hand"),
+        LAST_WISH("Triggers when card hp is less than "),
+        CONSUME("Destroys other card to trigger effect"),
+        REVIVE("Summons a card that was once on battlefield"),
+        PUNISHMENT("Triggers when card is attacked and survives damage");
+
+        private String description;
+
+        KeyWord(String description) {
+            this.description = description;
+        }
     }
 
     public enum Faction {
-        STONE, ELEMENTAL //etc
+        NO_FACTION, STONE, ELEMENTAL //etc
     }
 
     public enum Rarity {
@@ -76,22 +85,30 @@ public class CardRepository {
     }
 
     public enum CardTemplate {
-        Stone(1, 1, 1, 0, "", "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
+        Stone(1, "Stone", 1, 1, 0, "", "Just an ordinary stone", DEFAULT_PATH + "/basic_stone.png",
                 null, null, Faction.STONE, Rarity.COMMON),
-        KnightStone(2, 4, 5, 6, "Battlecry: gives +2/2 to chosen stone", "On guard of Stoneland since childhood", DEFAULT_PATH + "/knight_stone.png",
+        KnightStone(2, "Stoneland knight", 4, 5, 6, "Battlecry: gives +2/2 to chosen stone", "On guard of Stoneland since childhood", DEFAULT_PATH + "/knight_stone.png",
                 List.of(CardAction.CHOOSE, CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.STONE, Rarity.RARE),
 
-        FireElemental(3, 1, 1, 2, "Battlecry: deal 2 damage to random enemy", "This is fine",
+        FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to random enemy", "This is fine",
                 DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.CHOOSE_RANDOM, CardAction.ATTACK.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON),
 
-        FirePack(4, 2, 2, 5, "Consume: fire elemental to get +2/2", "Fire elementals tend to form groups and attack innocent ice elementals",
+        FirePack(4, "Fire elemental pack", 2, 2, 5, "Consume: fire elemental to get +2/2", "Fire elementals tend to form groups and attack innocent ice elementals",
                 DEFAULT_PATH + "/fire_pack.png", List.of(CardAction.CONSUME.setTargets(3)), List.of(KeyWord.CONSUME),
-                Faction.ELEMENTAL, Rarity.EPIC);
+                Faction.ELEMENTAL, Rarity.EPIC),
+
+        IceElemental(5, "Ice elemental", 2, 1, 1, "Battlecry: freezes chosen enemy", "What a beautiful discovery", DEFAULT_PATH + "/ice_elemental.png",
+                List.of(CardAction.CHOOSE, CardAction.FREEZE), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.COMMON),
+
+        TheRock(6, "The Rock", 4, 4, 5, "Punishment: attacks enemy hero", "His gaze will punish you", DEFAULT_PATH + "/dwayne_rock.png",
+                List.of(CardAction.ATTACK), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY);
 
 
         private int id;
+
+        private String name;
 
         private int hp;
 
@@ -113,9 +130,10 @@ public class CardRepository {
 
         private Rarity rarity;
 
-        CardTemplate(int id, int hp, int atk, int cost, String actionDesc, String description, String imageUrl, List<CardAction> actions,
+        CardTemplate(int id, String name, int hp, int atk, int cost, String actionDesc, String description, String imageUrl, List<CardAction> actions,
                      List<KeyWord> keyWords, Faction faction, Rarity rarity) {
             this.id = id;
+            this.name = name;
             this.hp = hp;
             this.atk = atk;
             this.cost = cost;
