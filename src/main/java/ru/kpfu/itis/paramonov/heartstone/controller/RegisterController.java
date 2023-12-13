@@ -44,14 +44,14 @@ public class RegisterController {
 
     private void addGameButtons() {
         GameButton btnRegister = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.REGISTER)
                 .scale(3)
                 .build();
         this.btnRegister = btnRegister;
 
         GameButton btnGoToLogin = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.GO_LOGIN)
                 .scale(3)
                 .build();

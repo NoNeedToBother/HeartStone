@@ -1,7 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
@@ -30,21 +29,21 @@ public class MainMenuController {
 
     private void addButtons() {
         GameButton btnPlay = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.PLAY)
                 .scale(4)
                 .build();
         this.btnPlay = btnPlay;
 
         GameButton btnDeck = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.DECK)
                 .scale(4)
                 .build();
         this.btnDeck = btnDeck;
 
         GameButton btnQuit = GameButton.builder()
-                .setBase()
+                .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.QUIT)
                 .scale(4)
                 .build();

@@ -14,13 +14,17 @@ public class GameButton extends Button {
     public enum GameButtonText {
         LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN
     }
+
+    public enum GameButtonStyle {
+        BASE, GREEN, RED
+    }
     public static class ButtonBuilder {
         private BufferedImage img;
 
         private int imgWidth = 46;
         private int imgHeight = 14;
 
-        private final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images/buttons";
+        private final String DEFAULT_PATH = "/assets/images/buttons";
 
         public ButtonBuilder() {
             setBlankImg();
@@ -37,8 +41,19 @@ public class GameButton extends Button {
             return this;
         }
 
-        public ButtonBuilder setBase() {
-            return addImageToBufferedImage(DEFAULT_PATH + "/base_button.png");
+        public ButtonBuilder setStyle(GameButtonStyle style) {
+            switch (style) {
+                case BASE -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/base_button.png");
+                }
+                case RED -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/red_button.png");
+                }
+                case GREEN -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/green_button.png");
+                }
+                default -> throw new RuntimeException("Impossible");
+            }
         }
 
         public ButtonBuilder setText(GameButtonText text) {

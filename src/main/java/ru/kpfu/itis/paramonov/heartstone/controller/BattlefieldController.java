@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
@@ -37,6 +39,8 @@ public class BattlefieldController {
     private AnchorPane root;
 
     private List<Card> hand = new ArrayList<>();
+
+    private List<Card> deck = new ArrayList<>();
 
     @FXML
     private ImageView background;
@@ -60,23 +64,37 @@ public class BattlefieldController {
     private void initialize() {
         controller = this;
         setHandBackground();
+        addEndTurnBtn(GameButton.GameButtonStyle.RED)
         makeCardInfoWrapText();
-        addEndTurnBtn();
         makeCardsDraggable();
     }
 
-    private void addEndTurnBtn() {
+    public void changeEndTurnButton(GameButton.GameButtonStyle style) {
+        vBoxBtnEndTurn.getChildren().remove(btnEndTurn);
+        addEndTurnBtn(style);
+    }
+    private void addEndTurnBtn(GameButton.GameButtonStyle style) {
         GameButton btnEndTurn = GameButton.builder()
-                .setBase()
+                .setStyle(style)
                 .setText(GameButton.GameButtonText.END_TURN)
                 .scale(3)
                 .build();
         this.btnEndTurn = btnEndTurn;
 
         vBoxBtnEndTurn.getChildren().add(btnEndTurn);
+
+        this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.ROOM)
+                    .setRoomAction(GameRoom.RoomAction.END_TURN)
+                    .build();
+
+            GameApplication.getApplication().getClient().sendMessage(msg);
+            mouseEvent.consume();
+        });
     }
 
-    public void setCards(JSONArray cards) {
+    public void setHand(JSONArray cards) {
         hand.clear();
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
         for (int i = 0; i < cards.length(); i++) {
@@ -87,6 +105,14 @@ public class BattlefieldController {
             CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(json.getInt("id"));
 
             setCard(atk, hp, cost, cardInfo, hBoxCardsChildren);
+        }
+    }
+
+    public void setDeck(JSONArray deck) {
+        for (int i = 0; i < deck.length(); i++) {
+            JSONObject json = deck.getJSONObject(i);
+            CardRepository.CardTemplate card = CardRepository.getCardTemplate(json.getInt("id"));
+            this.deck.add(new Card(card));
         }
     }
 

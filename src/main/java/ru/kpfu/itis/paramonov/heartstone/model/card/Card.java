@@ -71,7 +71,7 @@ public class Card implements Sprite, Serializable{
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
         private BufferedImage img;
 
-        private final String DEFAULT_PATH = "D:/projects/HeartStone/src/main/resources/assets/images";
+        private final String DEFAULT_PATH = "/assets/images";
 
         public CardSpriteBuilder() {
             setBlankImg();
