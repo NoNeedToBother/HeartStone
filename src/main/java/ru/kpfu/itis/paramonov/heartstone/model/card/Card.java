@@ -14,8 +14,6 @@ public class Card implements Sprite, Serializable{
 
     private int hp;
 
-    private int maxHp;
-
     private int atk;
 
     private int cost;
@@ -28,8 +26,6 @@ public class Card implements Sprite, Serializable{
         this.cardInfo = cardInfo;
 
         this.hp = cardInfo.getHp();
-
-        this.maxHp = cardInfo.getHp();
 
         this.atk = cardInfo.getAtk();
 
