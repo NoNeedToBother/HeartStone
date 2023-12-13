@@ -86,6 +86,8 @@ public class GameServer {
         private BufferedWriter output;
         private GameServer server;
 
+        private GameRoom currentRoom = null;
+
         private boolean isDisconnected = false;
 
         private boolean connected = false;
@@ -115,7 +117,10 @@ public class GameServer {
                         if (checkEntityIsServer(json)) {
                             response = handleServerMessage(json);
                         }
-                        else response = null;
+                        else {
+                            currentRoom.handleMessage(json, this);
+                            response = null;
+                        }
 
                         if (response != null) server.sendResponse(response, this);
                     }
@@ -148,6 +153,8 @@ public class GameServer {
                                 server.sendResponse(response.toString(), this);
                                 GameRoom room = new GameRoom(this, otherClient, server);
                                 server.rooms.add(room);
+                                this.currentRoom = room;
+                                otherClient.setCurrentRoom(room);
                                 room.onStart();
                             }
                         }
@@ -238,6 +245,14 @@ public class GameServer {
 
         public BufferedReader getInput() {
             return input;
+        }
+
+        public GameRoom getCurrentRoom() {
+            return currentRoom;
+        }
+
+        public void setCurrentRoom(GameRoom currentRoom) {
+            this.currentRoom = currentRoom;
         }
     }
 }
