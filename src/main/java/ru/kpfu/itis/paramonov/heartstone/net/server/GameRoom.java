@@ -13,16 +13,22 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_BATTLE_DECK, DRAW_CARD, BEGIN_TURN, END_TURN
+        GET_BACKGROUND, GET_BATTLE_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD
     }
 
-    private GameServer.Client client1;
+    private GameServer.Client player1;
 
-    private GameServer.Client client2;
+    private GameServer.Client player2;
 
     private GameServer.Client activePlayer;
 
     private GameServer server;
+
+    /*
+
+    private List<Card> player1FieldCards = new ArrayList<>();
+
+    private List<Card> player2FieldCards = new ArrayList<>();
 
     private List<Card> player1Hand = new ArrayList<>();
 
@@ -30,23 +36,35 @@ public class GameRoom {
 
     private List<Card> player1Deck = new ArrayList<>();
 
-    private List<Card> player2Deck = new ArrayList<>();
+    private List<Card> player2Deck = new ArrayList<>();*/
+
+    HashMap<String, List<Card>> player1AllCards = getPlayersMaps();
+
+    HashMap<String, List<Card>> player2AllCards = getPlayersMaps();
 
     private UserService service = new UserService();
 
     Random random = new Random();
 
-    public GameRoom(GameServer.Client client1, GameServer.Client client2, GameServer server) {
-        this.client1 = client1;
-        this.client2 = client2;
+    public GameRoom(GameServer.Client player1, GameServer.Client player2, GameServer server) {
+        this.player1 = player1;
+        this.player2 = player2;
         this.server = server;
+    }
+
+    private HashMap<String, List<Card>> getPlayersMaps() {
+        HashMap<String, List<Card>> res = new HashMap<>();
+        res.put("field", new ArrayList<>());
+        res.put("hand", new ArrayList<>());
+        res.put("deck", new ArrayList<>());
+        return res;
     }
 
     public void handleMessage(JSONObject msg, GameServer.Client client) {
         switch (RoomAction.valueOf(msg.getString("room_action"))) {
             case END_TURN -> {
-                if (client.equals(client1)) activePlayer = client2;
-                else activePlayer = client1;
+                if (client.equals(player1)) activePlayer = player2;
+                else activePlayer = player1;
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -65,17 +83,25 @@ public class GameRoom {
     private void drawCard(JSONObject response, GameServer.Client client) {
         JSONArray deck = new JSONArray();
         Card cardToDraw;
-        if (client.equals(client1)) {
-            cardToDraw = player1Deck.remove(0);
-            putDeckInfo(player1Deck, deck);
 
-        } else {
-            cardToDraw = player2Deck.remove(0);
-            putDeckInfo(player2Deck, deck);
+        Map<String, List<Card>> allCards;
+        if (client.equals(player1)) allCards = player1AllCards;
+        else allCards = player2AllCards;
+
+        cardToDraw = allCards.get("deck").remove(0);
+        putDeckInfo(allCards.get("deck"), deck);
+        if (allCards.get("hand").size() == HAND_SIZE) {
+            response.put("card_status", "burned");
+        }
+        else {
+            allCards.get("hand").add(cardToDraw);
+            response.put("card_status", "drawn");
         }
         putCardInfo(cardToDraw, response);
+
         response.put("deck", deck);
     }
+
 
     private void putDeckInfo(List<Card> deck, JSONArray deckArray) {
         for (Card card : deck) {
@@ -96,14 +122,14 @@ public class GameRoom {
     public void onStart() {
         setActivePlayer();
         setBackground();
-        sendGameDeck();
+        sendGameHandAndDeck();
     }
 
 
 
     private void setActivePlayer() {
-        if (random.nextBoolean()) activePlayer = client1;
-        else activePlayer = client2;
+        if (random.nextBoolean()) activePlayer = player1;
+        else activePlayer = player2;
 
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.BEGIN_TURN);
@@ -111,14 +137,21 @@ public class GameRoom {
         sendResponse(response.toString(), activePlayer);
     }
 
-    public void sendGameDeck() {
-        player1Deck = getShuffledDeck(client1);
-        player2Deck = getShuffledDeck(client2);
-        sendHandAndDeck(player1Deck, client1);
-        sendHandAndDeck(player2Deck, client2);
+    public void sendGameHandAndDeck() {
+        player1AllCards.put("deck", getShuffledDeck(player1));
+        player2AllCards.put("deck", getShuffledDeck(player2));
+        sendHandAndDeck(player1AllCards.get("deck"), player1);
+        sendHandAndDeck(player2AllCards.get("deck"), player2);
+        /*
+        player1Deck = getShuffledDeck(player1);
+        player2Deck = getShuffledDeck(player2);
+        sendHandAndDeck(player1Deck, player1);
+        sendHandAndDeck(player2Deck, player2);*/
     }
 
-    private final int STANDARD_HAND_SIZE = 5;
+    private final int INITIAL_HAND_SIZE = 4;
+
+    private final int HAND_SIZE = 6;
 
     private void sendHandAndDeck(List<Card> deck, GameServer.Client client) {
         JSONObject response = new JSONObject();
@@ -126,7 +159,7 @@ public class GameRoom {
         JSONArray arrayHand = new JSONArray();
         JSONArray arrayDeck = new JSONArray();
 
-        int handSize = STANDARD_HAND_SIZE;
+        int handSize = INITIAL_HAND_SIZE;
         int counter = 1;
 
         for (Card card : deck) {
@@ -136,6 +169,8 @@ public class GameRoom {
         }
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);
+
+        if (client.equals(activePlayer)) drawCard(response, client);
 
         sendResponse(response.toString(), client);
     }
@@ -188,19 +223,17 @@ public class GameRoom {
         int randomBg = random.nextInt(1, BACKGROUND_AMOUNT + 1);
         json.put("status", "OK");
         json.put("background", "bg_" + randomBg + ".png");
-        server.sendResponse(json.toString(), client1);
-        server.sendResponse(json.toString(), client2);
+        server.sendResponse(json.toString(), player1);
+        server.sendResponse(json.toString(), player2);
     }
 
-    public void sendHandMessage(GameServer.Client client) {
-
+    public GameServer.Client getPlayer1() {
+        return player1;
     }
 
-    public GameServer.Client getClient1() {
-        return client1;
+    public GameServer.Client getPlayer2() {
+        return player2;
     }
 
-    public GameServer.Client getClient2() {
-        return client2;
-    }
+
 }
