@@ -122,8 +122,8 @@ public class BattlefieldController {
     private void setCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
         Image sprite = Card.SpriteBuilder()
                 .addImage(cardInfo.getPortraitUrl())
-                .addRarity(cardInfo.getRarity())
                 .setBase()
+                .addRarity(cardInfo.getRarity())
                 .scale(2)
                 .build();
 
@@ -152,18 +152,23 @@ public class BattlefieldController {
         iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
             Card card = getCardByImageView(iv);
             if (isHovered) {
-                String actionDesc = card.getCardInfo().getActionDesc();
-                if (actionDesc.isEmpty()) cardInfo.setText(card.getCardInfo().getDescription());
-                else {
-                    cardInfo.setText(actionDesc);
-                    cardInfo.addTextLine(card.getCardInfo().getDescription());
-                }
+                cardInfo.setText(card.getCardInfo().getName());
+                cardInfo.addTextLine(card.getCardInfo().getActionDesc());
                 cardInfo.addTextLine("ATK: ");
                 cardInfo.addText(String.valueOf(card.getAtk()));
                 cardInfo.addTextLine("HP: ");
                 cardInfo.addText(String.valueOf(card.getHp()));
                 cardInfo.addTextLine("Cost: ");
                 cardInfo.addText(String.valueOf(card.getCost()));
+                if (!card.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
+                    cardInfo.addTextLine("Faction: ");
+                    cardInfo.addText(String.valueOf(card.getCardInfo().getFaction()).toLowerCase());
+                }
+                cardInfo.addTextLine("");
+                for (CardRepository.KeyWord keyWord : card.getCardInfo().getKeyWords()) {
+                    cardInfo.addTextLine(keyWord.getDisplayName() + ": ");
+                    cardInfo.addText(keyWord.getDescription());
+                }
                 cardInfo.commitChanges();
                 cardInfo.setVisible(true);
             }
