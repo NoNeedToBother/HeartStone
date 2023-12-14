@@ -84,7 +84,9 @@ public class GameClient {
                             switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
                                 case CONNECT -> {
                                     if (checkStatus(json))
-                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
+                                        if (BattlefieldController.getController() == null) {
+                                            GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
+                                        }
                                 }
                                 case LOGIN, REGISTER -> {
                                     if (checkStatus(json)) {
@@ -108,8 +110,11 @@ public class GameClient {
                                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().setHand(json.getJSONArray("hand"));
-                                    if (json.getString("card_status").equals("drawn"))
-                                        BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
+                                    try {
+                                        if (json.getString("card_status").equals("drawn"))
+                                            BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
+                                    } catch (JSONException ignored) {
+                                    }
                                     BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
                                 }
 
@@ -121,7 +126,13 @@ public class GameClient {
                                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
-
+                                    try {
+                                        try {
+                                            if (json.getString("card_status").equals("drawn"))
+                                                BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
+                                        } catch (JSONException ignored) {}
+                                        BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                                    } catch (JSONException ignored) {}
                                 }
                             }
                         } catch (JSONException ignored) {}

@@ -27,7 +27,7 @@ public class GameButton extends Button {
 
     public static class ButtonBuilder {
 
-        GameButton btn;
+        GameButton btn = new GameButton();
 
         private BufferedImage img;
 
@@ -112,7 +112,6 @@ public class GameButton extends Button {
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 ImageIO.write(img, "PNG", out);
                 InputStream in = new ByteArrayInputStream(out.toByteArray());
-                setBlankImg();
                 btnImg = new Image(in);
                 btn.setPrefHeight(imgHeight);
                 btn.setPrefWidth(imgWidth);
@@ -124,9 +123,8 @@ public class GameButton extends Button {
             }
         }
     }
-    private static final ButtonBuilder builder = new ButtonBuilder();
 
     public static ButtonBuilder builder() {
-        return builder;
+        return new ButtonBuilder();
     }
 }

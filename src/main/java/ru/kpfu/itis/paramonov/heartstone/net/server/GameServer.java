@@ -75,6 +75,14 @@ public class GameServer {
         }
     }
 
+    public void startRoom(Client client1, Client client2) {
+        GameRoom room = new GameRoom(client1, client2, this);
+        client1.setCurrentRoom(room);
+        client2.setCurrentRoom(room);
+        this.rooms.add(room);
+        room.onStart();
+    }
+
     public static void main(String[] args) {
         GameServer gameServer = new GameServer();
         gameServer.start();
@@ -139,7 +147,7 @@ public class GameServer {
                 try {
                     server.clientsToConnect.add(this);
                     while (!connected && !isDisconnected) {
-                        Thread.sleep(50);
+                        Thread.sleep(100);
                         for (Client otherClient : server.clientsToConnect) {
                             if (connected) break;
                             if (!this.equals(otherClient)) {
@@ -147,15 +155,11 @@ public class GameServer {
                                 connected = true;
                                 server.clientsToConnect.remove(this);
                                 server.clientsToConnect.remove(otherClient);
+                                if (currentRoom == null) server.startRoom(this, otherClient);
                                 JSONObject response = new JSONObject();
                                 response.put("server_action", "CONNECT");
                                 response.put("status", "OK");
                                 server.sendResponse(response.toString(), this);
-                                GameRoom room = new GameRoom(this, otherClient, server);
-                                server.rooms.add(room);
-                                this.currentRoom = room;
-                                otherClient.setCurrentRoom(room);
-                                room.onStart();
                             }
                         }
                     }

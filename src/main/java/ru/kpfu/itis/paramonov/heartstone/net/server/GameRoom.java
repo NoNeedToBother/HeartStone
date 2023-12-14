@@ -24,20 +24,6 @@ public class GameRoom {
 
     private GameServer server;
 
-    /*
-
-    private List<Card> player1FieldCards = new ArrayList<>();
-
-    private List<Card> player2FieldCards = new ArrayList<>();
-
-    private List<Card> player1Hand = new ArrayList<>();
-
-    private List<Card> player2Hand = new ArrayList<>();
-
-    private List<Card> player1Deck = new ArrayList<>();
-
-    private List<Card> player2Deck = new ArrayList<>();*/
-
     HashMap<String, List<Card>> player1AllCards = getPlayersMaps();
 
     HashMap<String, List<Card>> player2AllCards = getPlayersMaps();
@@ -54,9 +40,9 @@ public class GameRoom {
 
     private HashMap<String, List<Card>> getPlayersMaps() {
         HashMap<String, List<Card>> res = new HashMap<>();
-        res.put("field", new ArrayList<>());
-        res.put("hand", new ArrayList<>());
-        res.put("deck", new ArrayList<>());
+        res.put("field", Collections.synchronizedList(new ArrayList<>()));
+        res.put("hand", Collections.synchronizedList(new ArrayList<>()));
+        res.put("deck", Collections.synchronizedList(new ArrayList<>()));
         return res;
     }
 
@@ -88,17 +74,21 @@ public class GameRoom {
         if (client.equals(player1)) allCards = player1AllCards;
         else allCards = player2AllCards;
 
-        cardToDraw = allCards.get("deck").remove(0);
-        putDeckInfo(allCards.get("deck"), deck);
-        if (allCards.get("hand").size() == HAND_SIZE) {
-            response.put("card_status", "burned");
-        }
-        else {
-            allCards.get("hand").add(cardToDraw);
-            response.put("card_status", "drawn");
-        }
-        putCardInfo(cardToDraw, response);
+        System.out.println(allCards.get("hand").size());
 
+        try {
+            cardToDraw = allCards.get("deck").remove(0);
+            putDeckInfo(allCards.get("deck"), deck);
+            if (allCards.get("hand").size() == HAND_SIZE) {
+                response.put("card_status", "burned");
+            } else {
+                allCards.get("hand").add(cardToDraw);
+                response.put("card_status", "drawn");
+            }
+            putCardInfo(cardToDraw, response);
+        } catch (IndexOutOfBoundsException e) {
+            response.put("card_status", "no_card");
+        }
         response.put("deck", deck);
     }
 
@@ -140,6 +130,14 @@ public class GameRoom {
     public void sendGameHandAndDeck() {
         player1AllCards.put("deck", getShuffledDeck(player1));
         player2AllCards.put("deck", getShuffledDeck(player2));
+
+        /*
+        List<Card> player1Hand = new ArrayList<>();
+        List<Card> player2Hand = new ArrayList<>();
+
+        for (int i = 0; i < INITIAL_HAND_SIZE; i++) {
+            player1Hand.add(player1AllCards.g)
+        }*/
         sendHandAndDeck(player1AllCards.get("deck"), player1);
         sendHandAndDeck(player2AllCards.get("deck"), player2);
         /*
@@ -159,14 +157,22 @@ public class GameRoom {
         JSONArray arrayHand = new JSONArray();
         JSONArray arrayDeck = new JSONArray();
 
-        int handSize = INITIAL_HAND_SIZE;
         int counter = 1;
 
+        List<Card> handCards = new ArrayList<>();
+
         for (Card card : deck) {
-            if (counter <= handSize) putCardInfo(card, arrayHand);
+            if (counter <= INITIAL_HAND_SIZE) {
+                handCards.add(card);
+                putCardInfo(card, arrayHand);
+            }
             else putCardInfo(card, arrayDeck);
             counter++;
         }
+        deck.removeAll(handCards);
+        if (client.equals(player1)) player1AllCards.put("hand", handCards);
+        else player2AllCards.put("hand", handCards);
+
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);
 
