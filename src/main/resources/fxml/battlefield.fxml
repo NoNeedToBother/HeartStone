@@ -25,8 +25,17 @@
         <BattleCardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 
+    <ImageView fx:id="cardPlacement" AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180"/>
+    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180" fx:id="hBoxFieldCards" spacing="10">
+        <HBox prefWidth="30"/>
+    </HBox>
+
+    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="420" fx:id="hBoxOpponentFieldCards" spacing="10">
+        <HBox prefWidth="30"/>
+    </HBox>
+
     <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
 
-    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxCards" spacing="30">
+    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxHandCards" spacing="30">
     </HBox>
 </AnchorPane>

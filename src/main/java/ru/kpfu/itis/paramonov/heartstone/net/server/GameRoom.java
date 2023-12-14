@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD
+        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT
     }
 
     private GameServer.Client player1;
@@ -67,6 +67,31 @@ public class GameRoom {
                 responseBegin.put("status", "ok");
                 sendResponse(responseBegin.toString(), activePlayer);
                 drawCard(activePlayer);
+            }
+
+            case PLAY_CARD -> {
+                Map<String, List<Card>> allCards;
+                if (client.equals(player1)) allCards = player1AllCards;
+                else allCards = player2AllCards;
+                int pos = Integer.parseInt(msg.getString("pos"));
+                List<Card> hand = allCards.get("hand");
+                hand.remove(pos);
+                List<Card> field = allCards.get("field");
+                Card card = getCard(msg);
+                field.add(card);
+
+                GameServer.Client clientToSend;
+                if (client.equals(player1)) clientToSend = player2;
+                else clientToSend = player1;
+
+                JSONObject response = new JSONObject();
+                response.put("room_action", RoomAction.PLAY_CARD_OPPONENT.toString());
+                response.put("status", "ok");
+                response.put("hp", card.getHp());
+                response.put("atk", card.getAtk());
+                response.put("cost", card.getCost());
+                response.put("id", card.getCardInfo().getId());
+                sendResponse(response.toString(), clientToSend);
             }
         }
     }
@@ -179,6 +204,15 @@ public class GameRoom {
         JSONObject jsonCard = getJsonCard(card);
 
         response.put("card", jsonCard);
+    }
+
+    private Card getCard(JSONObject json) {
+        return new Card(
+                Integer.parseInt(json.getString("id")),
+                Integer.parseInt(json.getString("hp")),
+                Integer.parseInt(json.getString("atk")),
+                Integer.parseInt(json.getString("cost"))
+        );
     }
 
     private JSONObject getJsonCard(Card card) {

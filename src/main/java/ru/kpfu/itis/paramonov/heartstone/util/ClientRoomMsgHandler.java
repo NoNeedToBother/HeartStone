@@ -34,6 +34,7 @@ public class ClientRoomMsgHandler {
                     if (BattlefieldController.getController() == null) {
                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                     }
+                    BattlefieldController.getController().setActive(true);
                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
                     try {
                         BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
@@ -47,6 +48,9 @@ public class ClientRoomMsgHandler {
                         BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
                     }
                     BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                }
+                case PLAY_CARD_OPPONENT -> {
+                    BattlefieldController.getController().addOpponentCard(json);
                 }
             }
         } catch (JSONException ignored) {}

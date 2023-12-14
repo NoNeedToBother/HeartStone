@@ -36,6 +36,13 @@ public class Card implements Sprite, Serializable{
         this.cost = cardInfo.getCost();
     }
 
+    public Card(int id, int hp, int atk, int cost) {
+        this.hp = hp;
+        this.atk = atk;
+        this.cost = cost;
+        this.cardInfo = CardRepository.getCardTemplate(id);
+    }
+
     public int getHp() {
         return hp;
     }
