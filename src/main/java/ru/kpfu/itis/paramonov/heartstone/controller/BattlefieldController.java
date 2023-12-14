@@ -65,7 +65,7 @@ public class BattlefieldController {
     @FXML
     private BattleCardInfo cardInfo;
 
-    private Card selectedHandCard = null;
+    private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
 
@@ -118,12 +118,14 @@ public class BattlefieldController {
     private void addCardPlacements() {
         cardPlacement.setImage(new Image(GameApplication.class.getResource("/assets/images/card_placement.png").toString()));
         cardPlacement.setOnMouseClicked(mouseEvent -> {
-            if (selectedHandCard != null && active) {
-                if (field.size() == MAX_FIELD_SIZE) {
+            if (selectedCard != null && active) {
+                if (field.size() == MAX_FIELD_SIZE ||
+                        getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
                     mouseEvent.consume();
                     return;
                 }
-                Card card = selectedHandCard;
+
+                Card card = selectedCard;
 
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -179,36 +181,39 @@ public class BattlefieldController {
         );
     }
 
-    private void onHandCardSelected(ImageView card) {
-        if (selectedHandCard != null) {
-            deselectCardFromHand(selectedHandCard.getAssociatedImageView());
+    private void onCardSelected(ImageView card) {
+        if (selectedCard != null) {
+            deselectCard(selectedCard.getAssociatedImageView());
         }
-        selectedHandCard = getHandCardByImageView(card);
-        selectCardFromHand(card);
+        Card selected = getHandCardByImageView(card);
+        if (selected == null) selected = getFieldCardByImageView(card);
+        selectedCard = selected;
+        selectCard(card);
     }
 
     private void onHandCardDeselected(ImageView card) {
-        selectedHandCard = null;
-        deselectCardFromHand(card);
+        selectedCard = null;
+        deselectCard(card);
     }
 
-    private void selectCardFromHand(ImageView card) {
+    private void selectCard(ImageView card) {
         Image sprite = Card.SpriteBuilder()
-                .addImage(selectedHandCard.getCardInfo().getPortraitUrl())
+                .addImage(selectedCard.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.SELECTED.toString())
-                .addRarity(selectedHandCard.getCardInfo().getRarity())
+                .addRarity(selectedCard.getCardInfo().getRarity())
                 .scale(2)
                 .build();
 
         card.setImage(sprite);
     }
 
-    private void deselectCardFromHand(ImageView card) {
-        Card handCard = getHandCardByImageView(card);
+    private void deselectCard(ImageView card) {
+        Card deselected = getHandCardByImageView(card);
+        if (deselected == null) deselected = getFieldCardByImageView(card);
         Image sprite = Card.SpriteBuilder()
-                .addImage(handCard.getCardInfo().getPortraitUrl())
+                .addImage(deselected.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(handCard.getCardInfo().getRarity())
+                .addRarity(deselected.getCardInfo().getRarity())
                 .scale(2)
                 .build();
 
@@ -268,11 +273,13 @@ public class BattlefieldController {
         hand.add(card);
 
         img.setOnMouseClicked(mouseEvent -> {
-            if (selectedHandCard != null) {
-                if (getHandCardByImageView(img) == selectedHandCard) onHandCardDeselected(img);
-                else onHandCardSelected(img);
+            if (selectedCard != null) {
+                Card imgCard = getHandCardByImageView(img);
+                if (imgCard == null) imgCard = getFieldCardByImageView(img);
+                if (imgCard == selectedCard) onHandCardDeselected(img);
+                else onCardSelected(img);
             }
-            else onHandCardSelected(img);
+            else onCardSelected(img);
             mouseEvent.consume();
         });
         layoutCards.add(img);
