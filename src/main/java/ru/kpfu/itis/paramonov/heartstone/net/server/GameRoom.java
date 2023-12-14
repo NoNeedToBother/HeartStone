@@ -125,6 +125,13 @@ public class GameRoom {
                 putOpponentChanges(attackedResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
                 if (client.equals(player1)) sendResponse(attackedResponse.toString(), player2);
                 else sendResponse(attackedResponse.toString(), player1);
+
+                if (attacker.getHp() <= 0) {
+                    System.out.println(attackerField.remove(attacker));
+                }
+                if (attacked.getHp() <= 0) {
+                    System.out.println(attackedField.remove(attacked));
+                }
             }
         }
     }
@@ -138,9 +145,10 @@ public class GameRoom {
         JSONArray changes = new JSONArray();
         for (int pos = 0; pos < positions.length; pos++) {
             JSONObject changedCard = new JSONObject();
+            System.out.println(field.get(pos).getCardInfo().getName());
             changedCard.put("pos", positions[pos]);
-            changedCard.put("hp", field.get(pos).getHp());
-            changedCard.put("atk", field.get(pos).getAtk());
+            changedCard.put("hp", field.get(positions[pos]).getHp());
+            changedCard.put("atk", field.get(positions[pos]).getAtk());
             changes.put(changedCard);
         }
         return changes;

@@ -1,6 +1,7 @@
 module ru.kpfu.itis.paramonov.heartstone {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.swing;
     requires java.desktop;
     requires java.sql;
     requires org.json;

@@ -17,6 +17,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,6 +188,8 @@ public class BattlefieldController {
                     .setParameter("attacker_pos", String.valueOf(field.indexOf(selectedCard)))
                     .build();
 
+            onCardDeselected(selectedCard.getAssociatedImageView());
+
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
 
@@ -194,8 +197,37 @@ public class BattlefieldController {
 
     }
 
-    private void updateCards(JSONObject json) {
-        JSONArray changes = json.getJSONArray("stat_changes");
+    public void updateCards(JSONObject json) {
+        JSONArray thisChanges = json.getJSONArray("stat_changes");
+        JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
+
+        for (int i = 0; i < thisChanges.length(); i++) {
+            JSONObject cardChange = thisChanges.getJSONObject(i);
+            applyChanges(field, cardChange);
+        }
+
+        for (int i = 0; i < opponentChanges.length(); i++) {
+            JSONObject cardChange = opponentChanges.getJSONObject(i);
+            applyChanges(opponentField, cardChange);
+        }
+    }
+
+    private void applyChanges(List<Card> field, JSONObject cardChange) {
+        int pos = cardChange.getInt("pos");
+        int hp = cardChange.getInt("hp");
+        int atk = cardChange.getInt("atk");
+        Card cardToChange = field.get(pos);
+        cardToChange.setHp(hp);
+        cardToChange.setAtk(atk);
+        if (cardToChange.getHp() <= 0) {
+            field.remove(cardToChange);
+            Animations.crackCard(cardToChange.getAssociatedImageView(), this);
+        }
+    }
+
+    public void deleteCard(ImageView iv) {
+        hBoxFieldCards.getChildren().remove(iv);
+        hBoxOpponentFieldCards.getChildren().remove(iv);
     }
 
     private Card getCard(JSONObject json) {

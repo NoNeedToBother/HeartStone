@@ -53,7 +53,7 @@ public class ClientRoomMsgHandler {
                     BattlefieldController.getController().addOpponentCard(json);
                 }
                 case CARD_CARD_ATTACK -> {
-
+                    BattlefieldController.getController().updateCards(json);
                 }
             }
         } catch (JSONException ignored) {}
