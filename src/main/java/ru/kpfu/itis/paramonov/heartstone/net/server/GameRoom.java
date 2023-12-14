@@ -38,6 +38,12 @@ public class GameRoom {
         this.server = server;
     }
 
+    public void onStart() {
+        setActivePlayer();
+        setBackground();
+        sendGameHandAndDeck();
+    }
+
     private HashMap<String, List<Card>> getPlayersMaps() {
         HashMap<String, List<Card>> res = new HashMap<>();
         res.put("field", Collections.synchronizedList(new ArrayList<>()));
@@ -110,14 +116,6 @@ public class GameRoom {
             throw new RuntimeException(e);
         }
     }
-
-    public void onStart() {
-        setActivePlayer();
-        setBackground();
-        sendGameHandAndDeck();
-    }
-
-
 
     private void setActivePlayer() {
         if (random.nextBoolean()) activePlayer = player1;
@@ -222,14 +220,4 @@ public class GameRoom {
         server.sendResponse(json.toString(), player1);
         server.sendResponse(json.toString(), player2);
     }
-
-    public GameServer.Client getPlayer1() {
-        return player1;
-    }
-
-    public GameServer.Client getPlayer2() {
-        return player2;
-    }
-
-
 }

@@ -1,16 +1,10 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
 import javafx.application.Platform;
-import org.json.JSONException;
-import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
-import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.model.user.User;
-import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
-import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
-import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.ClientRoomMsgHandler;
+import ru.kpfu.itis.paramonov.heartstone.util.ClientServerMsgHandler;
 
 import java.io.*;
 import java.net.Socket;
@@ -79,80 +73,15 @@ public class GameClient {
                     String response = input.readLine();
                     System.out.println(response);
                     Platform.runLater(() -> {
-                        JSONObject json = new JSONObject(response);
-                        try {
-                            switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
-                                case CONNECT -> {
-                                    if (checkStatus(json))
-                                        if (BattlefieldController.getController() == null) {
-                                            GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                                        }
-                                }
-                                case LOGIN, REGISTER -> {
-                                    if (checkStatus(json)) {
-                                        setGameUser(json);
-                                        GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
-                                    }
-                                }
-                            }
-                        } catch (JSONException ignored) {}
-                        try {
-                            switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
-                                case GET_BACKGROUND -> {
-                                    String bg = json.getString("background");
-                                    if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                                    }
-                                    BattlefieldController.getController().setBackground(bg);
-                                }
-                                case GET_HAND_AND_DECK -> {
-                                    if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                                    }
-                                    BattlefieldController.getController().setHand(json.getJSONArray("hand"));
-                                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
-                                }
-
-                                case END_TURN -> {
-                                    BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.RED);
-                                }
-                                case BEGIN_TURN -> {
-                                    if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                                    }
-                                    BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
-                                    try {
-                                        BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
-                                    } catch (JSONException ignored) {}
-                                }
-                                case DRAW_CARD -> {
-                                    if (BattlefieldController.getController() == null) {
-                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                                    }
-                                    if (json.getString("card_status").equals("drawn")) {
-                                        BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
-                                    }
-                                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
-                                }
-                            }
-                        } catch (JSONException ignored) {}
+                        ClientServerMsgHandler serverMsgHandler = new ClientServerMsgHandler();
+                        serverMsgHandler.handle(response);
+                        ClientRoomMsgHandler roomMsgHandler = new ClientRoomMsgHandler();
+                        roomMsgHandler.handle(response);
                     });
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        private boolean checkStatus(JSONObject json) {
-            return json.getString("status").equals("OK");
-        }
-
-        private void setGameUser(JSONObject json) {
-            User user = User.getInstance();
-            user.setLogin(json.getString("login"));
-            user.setDeck(CardRepository.getCardsById(json.getString("deck")));
-            user.setCards(CardRepository.getCardsById(json.getString("cards")));
-            user.setMoney(json.getInt("money"));
         }
 
         public BufferedWriter getOutput() {

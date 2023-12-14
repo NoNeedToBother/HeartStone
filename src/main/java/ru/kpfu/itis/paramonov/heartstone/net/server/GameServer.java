@@ -147,7 +147,7 @@ public class GameServer {
                 try {
                     server.clientsToConnect.add(this);
                     while (!connected && !isDisconnected) {
-                        Thread.sleep(1);
+                        Thread.sleep(50);
                         for (Client otherClient : server.clientsToConnect) {
                             if (connected) break;
                             if (!this.equals(otherClient)) {

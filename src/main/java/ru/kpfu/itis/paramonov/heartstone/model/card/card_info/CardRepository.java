@@ -1,7 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CardRepository {
