@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_BATTLE_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD
+        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD
     }
 
     private GameServer.Client player1;
@@ -59,22 +59,21 @@ public class GameRoom {
                 JSONObject responseBegin = new JSONObject();
                 responseBegin.put("room_action", RoomAction.BEGIN_TURN.toString());
                 responseBegin.put("status", "ok");
-
-                drawCard(responseBegin, activePlayer);
                 sendResponse(responseBegin.toString(), activePlayer);
+                drawCard(activePlayer);
             }
         }
     }
 
-    private void drawCard(JSONObject response, GameServer.Client client) {
+    private void drawCard(GameServer.Client client) {
+        JSONObject response = new JSONObject();
+        response.put("room_action", RoomAction.DRAW_CARD.toString());
         JSONArray deck = new JSONArray();
         Card cardToDraw;
 
         Map<String, List<Card>> allCards;
         if (client.equals(player1)) allCards = player1AllCards;
         else allCards = player2AllCards;
-
-        System.out.println(allCards.get("hand").size());
 
         try {
             cardToDraw = allCards.get("deck").remove(0);
@@ -90,6 +89,9 @@ public class GameRoom {
             response.put("card_status", "no_card");
         }
         response.put("deck", deck);
+        response.put("status", "ok");
+
+        sendResponse(response.toString(), client);
     }
 
 
@@ -131,20 +133,8 @@ public class GameRoom {
         player1AllCards.put("deck", getShuffledDeck(player1));
         player2AllCards.put("deck", getShuffledDeck(player2));
 
-        /*
-        List<Card> player1Hand = new ArrayList<>();
-        List<Card> player2Hand = new ArrayList<>();
-
-        for (int i = 0; i < INITIAL_HAND_SIZE; i++) {
-            player1Hand.add(player1AllCards.g)
-        }*/
         sendHandAndDeck(player1AllCards.get("deck"), player1);
         sendHandAndDeck(player2AllCards.get("deck"), player2);
-        /*
-        player1Deck = getShuffledDeck(player1);
-        player2Deck = getShuffledDeck(player2);
-        sendHandAndDeck(player1Deck, player1);
-        sendHandAndDeck(player2Deck, player2);*/
     }
 
     private final int INITIAL_HAND_SIZE = 4;
@@ -153,7 +143,7 @@ public class GameRoom {
 
     private void sendHandAndDeck(List<Card> deck, GameServer.Client client) {
         JSONObject response = new JSONObject();
-        response.put("room_action", RoomAction.GET_BATTLE_DECK.toString());
+        response.put("room_action", RoomAction.GET_HAND_AND_DECK.toString());
         JSONArray arrayHand = new JSONArray();
         JSONArray arrayDeck = new JSONArray();
 
@@ -176,7 +166,7 @@ public class GameRoom {
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);
 
-        if (client.equals(activePlayer)) drawCard(response, client);
+        if (client.equals(activePlayer)) drawCard(client);
 
         sendResponse(response.toString(), client);
     }

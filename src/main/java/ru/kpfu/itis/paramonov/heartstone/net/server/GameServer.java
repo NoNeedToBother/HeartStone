@@ -19,7 +19,7 @@ public class GameServer {
     private ServerSocket serverSocket;
     private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
-    private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
 
     private List<GameRoom> rooms = new ArrayList<>();
 
@@ -147,19 +147,17 @@ public class GameServer {
                 try {
                     server.clientsToConnect.add(this);
                     while (!connected && !isDisconnected) {
-                        Thread.sleep(100);
+                        Thread.sleep(1);
                         for (Client otherClient : server.clientsToConnect) {
                             if (connected) break;
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
                                 connected = true;
-                                server.clientsToConnect.remove(this);
-                                server.clientsToConnect.remove(otherClient);
-                                if (currentRoom == null) server.startRoom(this, otherClient);
-                                JSONObject response = new JSONObject();
-                                response.put("server_action", "CONNECT");
-                                response.put("status", "OK");
-                                server.sendResponse(response.toString(), this);
+                                synchronized (server.clientsToConnect) {
+                                    if (server.clientsToConnect.remove(this) && server.clientsToConnect.remove(otherClient)) {
+                                        server.startRoom(this, otherClient);
+                                    }
+                                }
                             }
                         }
                     }

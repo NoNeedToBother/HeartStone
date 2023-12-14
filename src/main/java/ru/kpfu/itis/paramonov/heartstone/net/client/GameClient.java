@@ -105,16 +105,11 @@ public class GameClient {
                                     }
                                     BattlefieldController.getController().setBackground(bg);
                                 }
-                                case GET_BATTLE_DECK -> {
+                                case GET_HAND_AND_DECK -> {
                                     if (BattlefieldController.getController() == null) {
                                         GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                                     }
                                     BattlefieldController.getController().setHand(json.getJSONArray("hand"));
-                                    try {
-                                        if (json.getString("card_status").equals("drawn"))
-                                            BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
-                                    } catch (JSONException ignored) {
-                                    }
                                     BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
                                 }
 
@@ -127,12 +122,17 @@ public class GameClient {
                                     }
                                     BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
                                     try {
-                                        try {
-                                            if (json.getString("card_status").equals("drawn"))
-                                                BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
-                                        } catch (JSONException ignored) {}
                                         BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
                                     } catch (JSONException ignored) {}
+                                }
+                                case DRAW_CARD -> {
+                                    if (BattlefieldController.getController() == null) {
+                                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
+                                    }
+                                    if (json.getString("card_status").equals("drawn")) {
+                                        BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
+                                    }
+                                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
                                 }
                             }
                         } catch (JSONException ignored) {}
