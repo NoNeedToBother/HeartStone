@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT
+        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK
     }
 
     private GameServer.Client player1;
@@ -93,7 +93,62 @@ public class GameRoom {
                 response.put("id", card.getCardInfo().getId());
                 sendResponse(response.toString(), clientToSend);
             }
+
+            case CARD_CARD_ATTACK -> {
+                List<Card> attackerField;
+                List<Card> attackedField;
+                if (client.equals(player1)) {
+                    attackerField = player1AllCards.get("field");
+                    attackedField = player2AllCards.get("field");
+                }
+                else {
+                    attackerField = player2AllCards.get("field");
+                    attackedField = player1AllCards.get("field");
+                }
+
+                Card attacker = attackerField.get(Integer.parseInt(msg.getString("attacker_pos")));
+                Card attacked = attackedField.get(Integer.parseInt(msg.getString("attacked_pos")));
+                attacked.decreaseHp(attacker.getAtk());
+                attacker.decreaseHp(attacked.getAtk());
+
+                JSONObject attackerResponse = new JSONObject();
+                attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
+                attackerResponse.put("status", "ok");
+                putFieldChanges(attackerResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
+                putOpponentChanges(attackerResponse, attackedField, Integer.parseInt(msg.getString("attacked_pos")));
+                sendResponse(attackerResponse.toString(), client);
+
+                JSONObject attackedResponse = new JSONObject();
+                attackedResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
+                attackedResponse.put("status", "ok");
+                putFieldChanges(attackedResponse, attackedField, Integer.parseInt(msg.getString("attacked_pos")));
+                putOpponentChanges(attackedResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
+                if (client.equals(player1)) sendResponse(attackedResponse.toString(), player2);
+                else sendResponse(attackedResponse.toString(), player1);
+            }
         }
+    }
+
+    private void putFieldChanges(JSONObject response, List<Card> field, int... positions) {
+        JSONArray changes = getFieldChanges(field, positions);
+        response.put("stat_changes", changes);
+    }
+
+    private JSONArray getFieldChanges(List<Card> field, int... positions) {
+        JSONArray changes = new JSONArray();
+        for (int pos = 0; pos < positions.length; pos++) {
+            JSONObject changedCard = new JSONObject();
+            changedCard.put("pos", positions[pos]);
+            changedCard.put("hp", field.get(pos).getHp());
+            changedCard.put("atk", field.get(pos).getAtk());
+            changes.put(changedCard);
+        }
+        return changes;
+    }
+
+    private void putOpponentChanges(JSONObject response, List<Card> field, int... positions) {
+        JSONArray changes = getFieldChanges(field, positions);
+        response.put("opponent_stat_changes", changes);
     }
 
     private void drawCard(GameServer.Client client) {

@@ -52,6 +52,9 @@ public class ClientRoomMsgHandler {
                 case PLAY_CARD_OPPONENT -> {
                     BattlefieldController.getController().addOpponentCard(json);
                 }
+                case CARD_CARD_ATTACK -> {
+
+                }
             }
         } catch (JSONException ignored) {}
     }

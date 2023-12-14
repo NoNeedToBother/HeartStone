@@ -79,6 +79,14 @@ public class Card implements Sprite, Serializable{
         return imageView;
     }
 
+    public void decreaseHp(int hp) {
+        this.hp -= hp;
+    }
+
+    public void increaseHp(int hp) {
+        this.hp += hp;
+    }
+
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
         private BufferedImage img = new BufferedImage(48, 64, BufferedImage.TYPE_INT_ARGB);
 

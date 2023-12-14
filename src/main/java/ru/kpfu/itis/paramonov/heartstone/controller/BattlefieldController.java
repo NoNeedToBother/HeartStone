@@ -139,7 +139,7 @@ public class BattlefieldController {
                 GameApplication.getApplication().getClient().sendMessage(msg);
 
                 ImageView cardIv = card.getAssociatedImageView();
-                onHandCardDeselected(cardIv);
+                onCardDeselected(cardIv);
 
                 hBoxHandCards.getChildren().remove(cardIv);
                 hand.remove(card);
@@ -168,8 +168,34 @@ public class BattlefieldController {
 
         card.associateImageView(cardIv);
 
+        cardIv.setOnMouseClicked(mouseEvent -> {
+            if (!active || selectedCard == null) {
+                mouseEvent.consume();
+                return;
+            }
+            Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
+            if (handCard != null) {
+                mouseEvent.consume();
+                return;
+            }
+            Card selected = getOpponentFieldCardByImageView(cardIv);
+
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.ROOM)
+                    .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
+                    .setParameter("attacked_pos", String.valueOf(opponentField.indexOf(selected)))
+                    .setParameter("attacker_pos", String.valueOf(field.indexOf(selectedCard)))
+                    .build();
+
+            GameApplication.getApplication().getClient().sendMessage(msg);
+        });
+
         hBoxOpponentFieldCards.getChildren().add(cardIv);
 
+    }
+
+    private void updateCards(JSONObject json) {
+        JSONArray changes = json.getJSONArray("stat_changes");
     }
 
     private Card getCard(JSONObject json) {
@@ -191,7 +217,7 @@ public class BattlefieldController {
         selectCard(card);
     }
 
-    private void onHandCardDeselected(ImageView card) {
+    private void onCardDeselected(ImageView card) {
         selectedCard = null;
         deselectCard(card);
     }
@@ -276,7 +302,7 @@ public class BattlefieldController {
             if (selectedCard != null) {
                 Card imgCard = getHandCardByImageView(img);
                 if (imgCard == null) imgCard = getFieldCardByImageView(img);
-                if (imgCard == selectedCard) onHandCardDeselected(img);
+                if (imgCard == selectedCard) onCardDeselected(img);
                 else onCardSelected(img);
             }
             else onCardSelected(img);
