@@ -24,8 +24,6 @@ public class ServerMessage {
 
     private Map<String, String> params = new HashMap<>();
 
-    private static ServerMessageBuilder builder = new ServerMessageBuilder();
-
     public static class ServerMessageBuilder {
         ServerMessage message = new ServerMessage();
 
@@ -75,6 +73,6 @@ public class ServerMessage {
      */
 
     public static ServerMessageBuilder builder() {
-        return builder;
+        return new ServerMessageBuilder();
     }
 }

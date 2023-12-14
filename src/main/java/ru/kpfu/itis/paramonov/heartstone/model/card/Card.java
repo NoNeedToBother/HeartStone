@@ -22,6 +22,10 @@ public class Card implements Sprite, Serializable{
 
     private ImageView imageView;
 
+    public enum CardStyle {
+        BASE, SELECTED;
+    }
+
     public Card(CardRepository.CardTemplate cardInfo) {
         this.cardInfo = cardInfo;
 
@@ -30,6 +34,13 @@ public class Card implements Sprite, Serializable{
         this.atk = cardInfo.getAtk();
 
         this.cost = cardInfo.getCost();
+    }
+
+    public Card(int id, int hp, int atk, int cost) {
+        this.hp = hp;
+        this.atk = atk;
+        this.cost = cost;
+        this.cardInfo = CardRepository.getCardTemplate(id);
     }
 
     public int getHp() {
@@ -68,18 +79,18 @@ public class Card implements Sprite, Serializable{
         return imageView;
     }
 
+    public void decreaseHp(int hp) {
+        this.hp -= hp;
+    }
+
+    public void increaseHp(int hp) {
+        this.hp += hp;
+    }
+
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
-        private BufferedImage img;
+        private BufferedImage img = new BufferedImage(48, 64, BufferedImage.TYPE_INT_ARGB);
 
         private final String DEFAULT_PATH = "/assets/images/cards";
-
-        public CardSpriteBuilder() {
-            setBlankImg();
-        }
-
-        private void setBlankImg() {
-            img = new BufferedImage(48, 64, BufferedImage.TYPE_INT_ARGB);
-        }
 
         private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
             img = BufferedImageUtil.addImage(img, imgUrl);
@@ -87,8 +98,16 @@ public class Card implements Sprite, Serializable{
         }
 
         @Override
-        public SpriteBuilder<Image> setBase() {
-            return addImageToBufferedImage(DEFAULT_PATH + "/base_card.png");
+        public SpriteBuilder<Image> setStyle(String style) {
+            switch (CardStyle.valueOf(style)) {
+                case BASE -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/base_card.png");
+                }
+                case SELECTED -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/selected_card.png");
+                }
+                default -> {throw new RuntimeException("Impossible");}
+            }
         }
 
         @Override
@@ -128,7 +147,6 @@ public class Card implements Sprite, Serializable{
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 ImageIO.write(img, "PNG", out);
                 InputStream in = new ByteArrayInputStream(out.toByteArray());
-                setBlankImg();
                 return new Image(in);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -136,9 +154,7 @@ public class Card implements Sprite, Serializable{
         }
     }
 
-    private static final CardSpriteBuilder builder = new CardSpriteBuilder();
-
     public static CardSpriteBuilder SpriteBuilder() {
-        return builder;
+        return new CardSpriteBuilder();
     }
 }
