@@ -1,12 +1,10 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -52,6 +50,8 @@ public class BattlefieldController {
     @FXML
     private BattleCardInfo cardInfo;
 
+    private Card selectedHandCard = null;
+
     private static BattlefieldController controller = null;
 
     public static BattlefieldController getController() {
@@ -64,7 +64,6 @@ public class BattlefieldController {
         setHandBackground();
         addEndTurnBtn(GameButton.GameButtonStyle.RED);
         makeCardInfoWrapText();
-        makeCardsDraggable();
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
@@ -96,8 +95,43 @@ public class BattlefieldController {
         });
     }
 
+    private void onCardSelected(ImageView card) {
+        if (selectedHandCard != null) {
+            deselectCardFromHand(selectedHandCard.getAssociatedImageView());
+        }
+        selectedHandCard = getHandCardByImageView(card);
+        selectCardFromHand(card);
+    }
+
+    private void onCardDeselected(ImageView card) {
+        selectedHandCard = null;
+        deselectCardFromHand(card);
+    }
+
+    private void selectCardFromHand(ImageView card) {
+        Image sprite = Card.SpriteBuilder()
+                .addImage(selectedHandCard.getCardInfo().getPortraitUrl())
+                .setStyle(Card.CardStyle.SELECTED.toString())
+                .addRarity(selectedHandCard.getCardInfo().getRarity())
+                .scale(2)
+                .build();
+
+        card.setImage(sprite);
+    }
+
+    private void deselectCardFromHand(ImageView card) {
+        Card handCard = getHandCardByImageView(card);
+        Image sprite = Card.SpriteBuilder()
+                .addImage(handCard.getCardInfo().getPortraitUrl())
+                .setStyle(Card.CardStyle.BASE.toString())
+                .addRarity(handCard.getCardInfo().getRarity())
+                .scale(2)
+                .build();
+
+        card.setImage(sprite);
+    }
+
     public void setHand(JSONArray cards) {
-        hand.clear();
         ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
         for (int i = 0; i < cards.length(); i++) {
             JSONObject json = cards.getJSONObject(i);
@@ -111,7 +145,7 @@ public class BattlefieldController {
         int cost = card.getInt("cost");
         CardRepository.CardTemplate cardInfo = CardRepository.getCardTemplate(card.getInt("id"));
 
-        setCard(atk, hp, cost, cardInfo, hBox);
+        setHandCard(atk, hp, cost, cardInfo, hBox);
     }
 
     public void addCardToHand(JSONObject card) {
@@ -130,18 +164,16 @@ public class BattlefieldController {
         this.deck = tempDeck;
     }
 
-    private void setCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
+    private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
         Image sprite = Card.SpriteBuilder()
                 .addImage(cardInfo.getPortraitUrl())
-                .setBase()
+                .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardInfo.getRarity())
                 .scale(2)
                 .build();
 
         ImageView img = new ImageView();
         img.setImage(sprite);
-
-        layoutCards.add(img);
 
         Card card = new Card(cardInfo);
         card.setAtk(atk);
@@ -150,9 +182,19 @@ public class BattlefieldController {
         card.associateImageView(img);
         setOnHoverListener(img);
         hand.add(card);
+
+        img.setOnMouseClicked(mouseEvent -> {
+            if (selectedHandCard != null) {
+                if (getHandCardByImageView(img) == selectedHandCard) onCardDeselected(img);
+                else onCardSelected(img);
+            }
+            else onCardSelected(img);
+            mouseEvent.consume();
+        });
+        layoutCards.add(img);
     }
 
-    private Card getCardByImageView(ImageView iv) {
+    private Card getHandCardByImageView(ImageView iv) {
         for (Card card : hand) {
             if (iv.equals(card.getAssociatedImageView())) return card;
         }
@@ -161,7 +203,7 @@ public class BattlefieldController {
 
     private void setOnHoverListener(ImageView iv) {
         iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
-            Card card = getCardByImageView(iv);
+            Card card = getHandCardByImageView(iv);
             if (isHovered) {
                 cardInfo.setText(card.getCardInfo().getName());
                 cardInfo.addTextLine(card.getCardInfo().getActionDesc());
@@ -192,29 +234,6 @@ public class BattlefieldController {
 
     private void makeCardInfoWrapText() {
         cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty().add(-20));
-    }
-
-    private EventHandler<MouseEvent> getDragEventHandler(ImageView iv, Card card) {
-        return mouseEvent -> {
-            Dragboard db = iv.startDragAndDrop(TransferMode.COPY);
-            ClipboardContent content = new ClipboardContent();
-            content.putImage(iv.getImage());
-            db.setContent(content);
-            mouseEvent.consume();
-        };
-    }
-
-    private void makeCardsDraggable() {
-        ObservableList<Node> hBoxCardsChildren = hBoxCards.getChildren();
-        int counter = 0;
-
-        for (Node element : hBoxCardsChildren) {
-            if (element instanceof ImageView) {
-                ImageView iv = (ImageView) element;
-                iv.setOnDragDetected(getDragEventHandler(iv, hand.get(counter)));
-                counter++;
-            }
-        }
     }
 
     public void setBackground(String bg) {
