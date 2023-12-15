@@ -164,11 +164,19 @@ public class BattlefieldController {
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
 
+        manaBar.setMana(mana - card.getCost(), maxMana);
+        mana -= card.getCost();
+
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
+    }
+
+    public void changeOpponentMana(int newOpponentMana) {
+        opponentMana = newOpponentMana;
+        opponentManaBar.setMana(newOpponentMana, maxOpponentMana);
     }
 
     public void addOpponentCard(JSONObject json) {

@@ -110,9 +110,15 @@ public class GameRoom {
 
             case PLAY_CARD -> {
                 Card playedCard = PlayedCardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
+                HashMap<String, Integer> mana;
+                if (client.equals(player1)) mana = player1Mana;
+                else mana = player2Mana;
+                int newMana = mana.get("mana") - playedCard.getCost();
+                mana.put("mana", newMana);
 
                 JSONObject response = new JSONObject();
                 PlayedCardHelper.putPlayedCardForOpponent(response, playedCard);
+                response.put("opponent_mana", newMana);
                 sendResponse(response.toString(), getOtherPlayer(client));
             }
 

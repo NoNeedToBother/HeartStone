@@ -11,7 +11,7 @@ public class ManaHelper {
         HashMap<String, Integer> mana;
         if (activePlayer.equals(player1)) mana = player1Mana;
         else mana = player2Mana;
-        mana.put("mana", mana.get("mana") + 1);
+        mana.put("mana", mana.get("maxMana") + 1);
         mana.put("maxMana", mana.get("maxMana") + 1);
         putManaInfo(response, mana);
         return mana;
@@ -32,4 +32,5 @@ public class ManaHelper {
         putOpponentManaInfo(response, mana);
         response.put("status", "ok");
     }
+
 }
