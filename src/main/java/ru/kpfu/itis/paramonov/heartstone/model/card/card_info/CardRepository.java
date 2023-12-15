@@ -95,6 +95,22 @@ public class CardRepository {
         return res;
     }
 
+    public static List<CardTemplate> getCardsById(List<Integer> ids) {
+        List<CardTemplate> res = new ArrayList<>();
+        for (Integer id : ids) {
+            res.add(getCardTemplate(id));
+        }
+        return res;
+    }
+
+    public static List<Integer> getCardsByRarity(Rarity rarity) {
+        List<Integer> res = new ArrayList<>();
+        for (CardTemplate cardTemplate : CardTemplate.values()) {
+            if (cardTemplate.getRarity().equals(rarity)) res.add(cardTemplate.id);
+        }
+        return res;
+    }
+
     public enum CardTemplate {
         Stone(1, "Stone", 1, 1, 0, "", DEFAULT_PATH + "/basic_stone.png",
                 List.of(), List.of(), Faction.STONE, Rarity.COMMON),

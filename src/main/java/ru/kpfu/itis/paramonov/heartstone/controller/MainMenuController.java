@@ -3,9 +3,11 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
+import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 
 public class MainMenuController {
 
@@ -16,7 +18,12 @@ public class MainMenuController {
 
     private GameButton btnDeck;
 
+    private GameButton btnPacks;
+
     private GameButton btnQuit;
+
+    @FXML
+    private MoneyInfo moneyInfo;
 
     private GameApplication application = null;
 
@@ -24,12 +31,17 @@ public class MainMenuController {
     private void initialize() {
         application = GameApplication.getApplication();
         addButtons();
+        setMoney();
         setOnClickListeners();
+    }
+
+    private void setMoney() {
+        moneyInfo.setMoney(User.getInstance().getMoney());
     }
 
     private void addButtons() {
         GameButton btnPlay = GameButton.builder()
-                .setStyle(GameButton.GameButtonStyle.BASE)
+                .setStyle(GameButton.GameButtonStyle.GREEN)
                 .setText(GameButton.GameButtonText.PLAY)
                 .scale(4)
                 .build();
@@ -42,18 +54,32 @@ public class MainMenuController {
                 .build();
         this.btnDeck = btnDeck;
 
-        GameButton btnQuit = GameButton.builder()
+        GameButton btnPacks = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
+                .setText(GameButton.GameButtonText.OPEN_PACKS)
+                .scale(4)
+                .build();
+        this.btnPacks = btnPacks;
+
+        GameButton btnQuit = GameButton.builder()
+                .setStyle(GameButton.GameButtonStyle.RED)
                 .setText(GameButton.GameButtonText.QUIT)
                 .scale(4)
                 .build();
         this.btnQuit = btnQuit;
 
-        mainMenu.getChildren().addAll(btnPlay, btnDeck, btnQuit);
+        mainMenu.getChildren().addAll(btnPlay, btnDeck, btnPacks, btnQuit);
     }
 
     private void setOnClickListeners() {
-        btnPlay.setOnMouseClicked(mouseEvent -> onPlayClicked());
+        btnPlay.setOnMouseClicked(mouseEvent -> {
+            onPlayClicked();
+            mouseEvent.consume();
+        });
+        btnPacks.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().loadScene("/fxml/packs.fxml");
+            mouseEvent.consume();
+        });
         btnQuit.setOnMouseClicked(mouseEvent -> {
             GameApplication.getApplication().disconnect();
             System.exit(0);
