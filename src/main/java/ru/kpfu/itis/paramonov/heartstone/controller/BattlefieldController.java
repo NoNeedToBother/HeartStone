@@ -132,10 +132,6 @@ public class BattlefieldController {
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
                         .setParameter("pos", String.valueOf(hand.indexOf(card)))
-                        .setParameter("atk", String.valueOf(card.getAtk()))
-                        .setParameter("hp", String.valueOf(card.getHp()))
-                        .setParameter("cost", String.valueOf(card.getCost()))
-                        .setParameter("id", String.valueOf(card.getCardInfo().getId()))
                         .build();
                 GameApplication.getApplication().getClient().sendMessage(msg);
 

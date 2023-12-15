@@ -75,9 +75,8 @@ public class GameRoom {
                 else allCards = player2AllCards;
                 int pos = Integer.parseInt(msg.getString("pos"));
                 List<Card> hand = allCards.get("hand");
-                hand.remove(pos);
+                Card card = hand.remove(pos);
                 List<Card> field = allCards.get("field");
-                Card card = getCard(msg);
                 field.add(card);
 
                 GameServer.Client clientToSend;
@@ -168,7 +167,6 @@ public class GameRoom {
         Map<String, List<Card>> allCards;
         if (client.equals(player1)) allCards = player1AllCards;
         else allCards = player2AllCards;
-
         try {
             cardToDraw = allCards.get("deck").remove(0);
             putDeckInfo(allCards.get("deck"), deck);
@@ -252,9 +250,9 @@ public class GameRoom {
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);
 
-        if (client.equals(activePlayer)) drawCard(client);
-
         sendResponse(response.toString(), client);
+
+        if (client.equals(activePlayer)) drawCard(client);
     }
 
     private void putCardInfo(Card card, JSONArray responseCards) {
