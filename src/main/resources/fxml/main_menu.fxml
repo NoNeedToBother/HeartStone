@@ -6,6 +6,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.text.Text?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.MainMenuController"
@@ -13,5 +16,7 @@
 
     <VBox layoutX="560" layoutY="200" fx:id="mainMenu" spacing="10">
     </VBox>
+
+    <MoneyInfo layoutY="650" layoutX="570" fx:id="moneyInfo"/>
 
 </AnchorPane>
