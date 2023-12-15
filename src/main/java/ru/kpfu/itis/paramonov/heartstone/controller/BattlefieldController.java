@@ -9,6 +9,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
@@ -17,6 +18,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
 import java.util.ArrayList;
@@ -66,6 +68,20 @@ public class BattlefieldController {
     @FXML
     private BattleCardInfo cardInfo;
 
+    @FXML
+    private ManaBar manaBar;
+
+    @FXML
+    private ManaBar opponentManaBar;
+
+    private int mana = 0;
+
+    private int maxMana = 0;
+
+    private int opponentMana = 0;
+
+    private int maxOpponentMana = 0;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -81,6 +97,8 @@ public class BattlefieldController {
         addEndTurnBtn(GameButton.GameButtonStyle.RED);
         addCardPlacements();
         makeCardInfoWrapText();
+        manaBar.setMana(0, 0);
+        opponentManaBar.setMana(0, 0);
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
@@ -114,42 +132,43 @@ public class BattlefieldController {
         });
     }
 
-    private final int MAX_FIELD_SIZE = 6;
-
     private void addCardPlacements() {
         cardPlacement.setImage(new Image(GameApplication.class.getResource("/assets/images/card_placement.png").toString()));
         cardPlacement.setOnMouseClicked(mouseEvent -> {
             if (selectedCard != null && active) {
-                if (field.size() == MAX_FIELD_SIZE ||
-                        getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
+                if (getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
                     mouseEvent.consume();
                     return;
                 }
-
-                Card card = selectedCard;
-
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                        .setParameter("pos", String.valueOf(hand.indexOf(card)))
-                        .setParameter("atk", String.valueOf(card.getAtk()))
-                        .setParameter("hp", String.valueOf(card.getHp()))
-                        .setParameter("cost", String.valueOf(card.getCost()))
-                        .setParameter("id", String.valueOf(card.getCardInfo().getId()))
+                        .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
+                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)))
                         .build();
                 GameApplication.getApplication().getClient().sendMessage(msg);
-
-                ImageView cardIv = card.getAssociatedImageView();
-                onCardDeselected(cardIv);
-
-                hBoxHandCards.getChildren().remove(cardIv);
-                hand.remove(card);
-                field.add(card);
-                hBoxFieldCards.getChildren().add(cardIv);
-                setOnHoverListener(cardIv, "field");
             }
             mouseEvent.consume();
         });
+    }
+
+    public void placeCard(int handPos) {
+        Card card = hand.get(handPos);
+
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.ROOM)
+                .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
+                .setParameter("pos", String.valueOf(handPos))
+                .build();
+        GameApplication.getApplication().getClient().sendMessage(msg);
+
+        ImageView cardIv = card.getAssociatedImageView();
+        onCardDeselected(cardIv);
+
+        hBoxHandCards.getChildren().remove(cardIv);
+        hand.remove(card);
+        field.add(card);
+        hBoxFieldCards.getChildren().add(cardIv);
+        setOnHoverListener(cardIv, "field");
     }
 
     public void addOpponentCard(JSONObject json) {
@@ -417,5 +436,38 @@ public class BattlefieldController {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void setMana(JSONObject json) {
+        Integer mana = null;
+        Integer maxMana = null;
+        Integer opponentMana = null;
+        Integer maxOpponentMana = null;
+        try {
+            mana = json.getInt("mana");
+        } catch (JSONException e) {}
+        try {
+            maxMana = json.getInt("maxMana");
+        } catch (JSONException e) {}
+        try {
+            opponentMana = json.getInt("opponentMana");
+        } catch (JSONException e) {}
+        try {
+            maxOpponentMana = json.getInt("maxOpponentMana");
+        } catch (JSONException e) {}
+        setMana(mana, maxMana, opponentMana, maxOpponentMana);
+        updateMana();
+    }
+
+    private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
+        if (mana != null) this.mana = mana;
+        if (maxMana != null) this.maxMana = maxMana;
+        if (opponentMana != null) this.opponentMana = opponentMana;
+        if (maxOpponentMana != null) this.maxOpponentMana = maxOpponentMana;
+    }
+
+    private void updateMana() {
+        manaBar.setMana(mana, maxMana);
+        opponentManaBar.setMana(opponentMana, maxOpponentMana);
     }
 }
