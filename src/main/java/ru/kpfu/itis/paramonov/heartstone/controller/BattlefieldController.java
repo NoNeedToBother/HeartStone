@@ -9,6 +9,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
@@ -73,6 +74,14 @@ public class BattlefieldController {
     @FXML
     private ManaBar opponentManaBar;
 
+    private int mana = 0;
+
+    private int maxMana = 0;
+
+    private int opponentMana = 0;
+
+    private int maxOpponentMana = 0;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -131,6 +140,11 @@ public class BattlefieldController {
             if (selectedCard != null && active) {
                 if (field.size() == MAX_FIELD_SIZE ||
                         getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
+                    mouseEvent.consume();
+                    return;
+                }
+
+                if (selectedCard.getCost() > mana) {
                     mouseEvent.consume();
                     return;
                 }
@@ -426,5 +440,38 @@ public class BattlefieldController {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public void setMana(JSONObject json) {
+        Integer mana = null;
+        Integer maxMana = null;
+        Integer opponentMana = null;
+        Integer maxOpponentMana = null;
+        try {
+            mana = json.getInt("mana");
+        } catch (JSONException e) {}
+        try {
+            maxMana = json.getInt("maxMana");
+        } catch (JSONException e) {}
+        try {
+            opponentMana = json.getInt("opponentMana");
+        } catch (JSONException e) {}
+        try {
+            maxOpponentMana = json.getInt("maxOpponentMana");
+        } catch (JSONException e) {}
+        setMana(mana, maxMana, opponentMana, maxOpponentMana);
+        updateMana();
+    }
+
+    private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
+        if (mana != null) this.mana = mana;
+        if (maxMana != null) this.maxMana = maxMana;
+        if (opponentMana != null) this.opponentMana = opponentMana;
+        if (maxOpponentMana != null) this.maxOpponentMana = maxOpponentMana;
+    }
+
+    private void updateMana() {
+        manaBar.setMana(mana, maxMana);
+        opponentManaBar.setMana(opponentMana, maxOpponentMana);
     }
 }
