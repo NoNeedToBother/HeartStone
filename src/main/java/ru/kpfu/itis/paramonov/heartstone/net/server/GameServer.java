@@ -187,6 +187,8 @@ public class GameServer {
                         handleDisconnection();
                         return null;
                     }
+                    case OPEN_1_PACK -> PackOpeningHelper.openOnePack(jsonServerMessage, response);
+                    case OPEN_5_PACKS -> PackOpeningHelper.openFivePacks(jsonServerMessage, response);
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);

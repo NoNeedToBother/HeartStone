@@ -36,8 +36,7 @@ public class MainMenuController {
     }
 
     private void setMoney() {
-        //moneyInfo.setMoney(User.getInstance().getMoney());
-        moneyInfo.setMoney(9999);
+        moneyInfo.setMoney(User.getInstance().getMoney());
     }
 
     private void addButtons() {
@@ -73,7 +72,14 @@ public class MainMenuController {
     }
 
     private void setOnClickListeners() {
-        btnPlay.setOnMouseClicked(mouseEvent -> onPlayClicked());
+        btnPlay.setOnMouseClicked(mouseEvent -> {
+            onPlayClicked();
+            mouseEvent.consume();
+        });
+        btnPacks.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().loadScene("/fxml/packs.fxml");
+            mouseEvent.consume();
+        });
         btnQuit.setOnMouseClicked(mouseEvent -> {
             GameApplication.getApplication().disconnect();
             System.exit(0);
