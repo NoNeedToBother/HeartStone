@@ -12,21 +12,24 @@ public class ClientServerMsgHandler {
     public void handle(String response) {
         JSONObject json = new JSONObject(response);
         try {
-            switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
-                case CONNECT -> {
-                    if (checkStatus(json))
-                        if (BattlefieldController.getController() == null) {
-                            GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
-                        }
-                }
-                case LOGIN, REGISTER -> {
-                    if (checkStatus(json)) {
-                        setGameUser(json);
-                        GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
+            json.getString("server_action");
+        } catch (JSONException e) {
+            return;
+        }
+        switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
+            case CONNECT -> {
+                if (checkStatus(json))
+                    if (BattlefieldController.getController() == null) {
+                        GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
                     }
+            }
+            case LOGIN, REGISTER -> {
+                if (checkStatus(json)) {
+                    setGameUser(json);
+                    GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
                 }
             }
-        } catch (JSONException ignored) {}
+        }
     }
 
     private boolean checkStatus(JSONObject json) {

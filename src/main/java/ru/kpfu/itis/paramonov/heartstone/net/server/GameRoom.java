@@ -13,20 +13,25 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK
+        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
+        GET_OPPONENT_MANA
     }
 
     private GameServer.Client player1;
 
     private GameServer.Client player2;
 
+    private HashMap<String, Integer> player1Mana = setPlayerManaMap();
+
+    private HashMap<String, Integer> player2Mana = setPlayerManaMap();
+
     private GameServer.Client activePlayer;
 
     private GameServer server;
 
-    HashMap<String, List<Card>> player1AllCards = getPlayersMaps();
+    HashMap<String, List<Card>> player1AllCards = setPlayerCardMap();
 
-    HashMap<String, List<Card>> player2AllCards = getPlayersMaps();
+    HashMap<String, List<Card>> player2AllCards = setPlayerCardMap();
 
     private UserService service = new UserService();
 
@@ -44,12 +49,26 @@ public class GameRoom {
         sendGameHandAndDeck();
     }
 
-    private HashMap<String, List<Card>> getPlayersMaps() {
+    private HashMap<String, List<Card>> setPlayerCardMap() {
         HashMap<String, List<Card>> res = new HashMap<>();
         res.put("field", Collections.synchronizedList(new ArrayList<>()));
         res.put("hand", Collections.synchronizedList(new ArrayList<>()));
         res.put("deck", Collections.synchronizedList(new ArrayList<>()));
         return res;
+    }
+
+    private HashMap<String, Integer> setPlayerManaMap() {
+        return new HashMap<>(Map.of("mana", 0, "maxMana", 0));
+    }
+
+    public GameServer.Client getNonActivePlayer() {
+        if (activePlayer.equals(player1)) return player2;
+        else return player1;
+    }
+
+    public GameServer.Client getOtherPlayer(GameServer.Client player) {
+        if (player.equals(player1)) return player2;
+        else return player1;
     }
 
     public void handleMessage(JSONObject msg, GameServer.Client client) {
@@ -65,7 +84,14 @@ public class GameRoom {
                 JSONObject responseBegin = new JSONObject();
                 responseBegin.put("room_action", RoomAction.BEGIN_TURN.toString());
                 responseBegin.put("status", "ok");
+
+                HashMap<String, Integer> resMana =
+                        ManaHelper.increaseMana(responseBegin, activePlayer, player1, player1Mana, player2Mana);
                 sendResponse(responseBegin.toString(), activePlayer);
+
+                JSONObject responseOpponentMana = new JSONObject();
+                ManaHelper.getOpponentMana(responseOpponentMana, resMana);
+                sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
                 drawCard(activePlayer);
             }
 
@@ -79,10 +105,6 @@ public class GameRoom {
                 List<Card> field = allCards.get("field");
                 field.add(card);
 
-                GameServer.Client clientToSend;
-                if (client.equals(player1)) clientToSend = player2;
-                else clientToSend = player1;
-
                 JSONObject response = new JSONObject();
                 response.put("room_action", RoomAction.PLAY_CARD_OPPONENT.toString());
                 response.put("status", "ok");
@@ -90,7 +112,7 @@ public class GameRoom {
                 response.put("atk", card.getAtk());
                 response.put("cost", card.getCost());
                 response.put("id", card.getCardInfo().getId());
-                sendResponse(response.toString(), clientToSend);
+                sendResponse(response.toString(), getOtherPlayer(client));
             }
 
             case CARD_CARD_ATTACK -> {
@@ -122,15 +144,10 @@ public class GameRoom {
                 attackedResponse.put("status", "ok");
                 putFieldChanges(attackedResponse, attackedField, Integer.parseInt(msg.getString("attacked_pos")));
                 putOpponentChanges(attackedResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
-                if (client.equals(player1)) sendResponse(attackedResponse.toString(), player2);
-                else sendResponse(attackedResponse.toString(), player1);
+                sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 
-                if (attacker.getHp() <= 0) {
-                    System.out.println(attackerField.remove(attacker));
-                }
-                if (attacked.getHp() <= 0) {
-                    System.out.println(attackedField.remove(attacked));
-                }
+                if (attacker.getHp() <= 0) attackerField.remove(attacker);
+                if (attacked.getHp() <= 0) attackedField.remove(attacked);
             }
         }
     }
@@ -210,7 +227,14 @@ public class GameRoom {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.BEGIN_TURN);
         response.put("status", "ok");
+
+        HashMap<String, Integer> resMana =
+                ManaHelper.increaseMana(response, activePlayer, player1, player1Mana, player2Mana);
         sendResponse(response.toString(), activePlayer);
+
+        JSONObject responseOpponentMana = new JSONObject();
+        ManaHelper.getOpponentMana(responseOpponentMana, resMana);
+        sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
     }
 
     public void sendGameHandAndDeck() {
