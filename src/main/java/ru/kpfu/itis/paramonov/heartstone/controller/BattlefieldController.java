@@ -132,43 +132,43 @@ public class BattlefieldController {
         });
     }
 
-    private final int MAX_FIELD_SIZE = 6;
-
     private void addCardPlacements() {
         cardPlacement.setImage(new Image(GameApplication.class.getResource("/assets/images/card_placement.png").toString()));
         cardPlacement.setOnMouseClicked(mouseEvent -> {
             if (selectedCard != null && active) {
-                if (field.size() == MAX_FIELD_SIZE ||
-                        getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
+                if (getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
                     mouseEvent.consume();
                     return;
                 }
-
-                if (selectedCard.getCost() > mana) {
-                    mouseEvent.consume();
-                    return;
-                }
-
-                Card card = selectedCard;
-
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                        .setParameter("pos", String.valueOf(hand.indexOf(card)))
+                        .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
+                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)))
                         .build();
                 GameApplication.getApplication().getClient().sendMessage(msg);
-
-                ImageView cardIv = card.getAssociatedImageView();
-                onCardDeselected(cardIv);
-
-                hBoxHandCards.getChildren().remove(cardIv);
-                hand.remove(card);
-                field.add(card);
-                hBoxFieldCards.getChildren().add(cardIv);
-                setOnHoverListener(cardIv, "field");
             }
             mouseEvent.consume();
         });
+    }
+
+    public void placeCard(int handPos) {
+        Card card = hand.get(handPos);
+
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.ROOM)
+                .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
+                .setParameter("pos", String.valueOf(handPos))
+                .build();
+        GameApplication.getApplication().getClient().sendMessage(msg);
+
+        ImageView cardIv = card.getAssociatedImageView();
+        onCardDeselected(cardIv);
+
+        hBoxHandCards.getChildren().remove(cardIv);
+        hand.remove(card);
+        field.add(card);
+        hBoxFieldCards.getChildren().add(cardIv);
+        setOnHoverListener(cardIv, "field");
     }
 
     public void addOpponentCard(JSONObject json) {

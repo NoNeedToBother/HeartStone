@@ -14,7 +14,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED
     }
 
     private GameServer.Client player1;
@@ -95,23 +95,24 @@ public class GameRoom {
                 drawCard(activePlayer);
             }
 
+            case CHECK_CARD_PLAYED -> {
+                JSONObject response = new JSONObject();
+                response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
+                int mana;
+                if (client.equals(player1)) mana = player1Mana.get("mana");
+                else mana = player2Mana.get("mana");
+
+                PlayedCardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
+                        player1AllCards, player2AllCards, mana);
+
+                sendResponse(response.toString(), client);
+            }
+
             case PLAY_CARD -> {
-                Map<String, List<Card>> allCards;
-                if (client.equals(player1)) allCards = player1AllCards;
-                else allCards = player2AllCards;
-                int pos = Integer.parseInt(msg.getString("pos"));
-                List<Card> hand = allCards.get("hand");
-                Card card = hand.remove(pos);
-                List<Card> field = allCards.get("field");
-                field.add(card);
+                Card playedCard = PlayedCardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
 
                 JSONObject response = new JSONObject();
-                response.put("room_action", RoomAction.PLAY_CARD_OPPONENT.toString());
-                response.put("status", "ok");
-                response.put("hp", card.getHp());
-                response.put("atk", card.getAtk());
-                response.put("cost", card.getCost());
-                response.put("id", card.getCardInfo().getId());
+                PlayedCardHelper.putPlayedCardForOpponent(response, playedCard);
                 sendResponse(response.toString(), getOtherPlayer(client));
             }
 
@@ -289,15 +290,6 @@ public class GameRoom {
         JSONObject jsonCard = getJsonCard(card);
 
         response.put("card", jsonCard);
-    }
-
-    private Card getCard(JSONObject json) {
-        return new Card(
-                Integer.parseInt(json.getString("id")),
-                Integer.parseInt(json.getString("hp")),
-                Integer.parseInt(json.getString("atk")),
-                Integer.parseInt(json.getString("cost"))
-        );
     }
 
     private JSONObject getJsonCard(Card card) {
