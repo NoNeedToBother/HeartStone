@@ -9,6 +9,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.text.Text?>
 <?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
@@ -38,4 +39,8 @@
 
     <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxHandCards" spacing="30">
     </HBox>
+
+    <ManaBar fx:id="manaBar" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
+
+    <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
 </AnchorPane>

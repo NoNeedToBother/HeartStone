@@ -17,6 +17,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
 import java.util.ArrayList;
@@ -66,6 +67,12 @@ public class BattlefieldController {
     @FXML
     private BattleCardInfo cardInfo;
 
+    @FXML
+    private ManaBar manaBar;
+
+    @FXML
+    private ManaBar opponentManaBar;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -81,6 +88,8 @@ public class BattlefieldController {
         addEndTurnBtn(GameButton.GameButtonStyle.RED);
         addCardPlacements();
         makeCardInfoWrapText();
+        manaBar.setMana(0, 0);
+        opponentManaBar.setMana(0, 0);
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
