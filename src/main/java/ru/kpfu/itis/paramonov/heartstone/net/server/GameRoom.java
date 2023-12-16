@@ -15,7 +15,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK;
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, GAME_END
     }
 
     private GameServer.Client player1;
@@ -33,8 +33,6 @@ public class GameRoom {
     HashMap<String, List<Card>> player1AllCards = setPlayerCardMap();
 
     HashMap<String, List<Card>> player2AllCards = setPlayerCardMap();
-
-    private UserService service = new UserService();
 
     Random random = new Random();
 
@@ -134,6 +132,22 @@ public class GameRoom {
 
                 sendResponse(responseAttacker.toString(), client);
                 sendResponse(responseAttacked.toString(), getOtherPlayer(client));
+
+                if (attackedHero.getHp() <= 0) {
+                    JSONObject responseWinner = new JSONObject();
+                    JSONObject responseDefeated = new JSONObject();
+                    if (player1Hero.getHp() <= 0 && player2Hero.getHp() <= 0) HeroHelper.onTie();
+                    else if (player1Hero.getHp() <= 0) {
+                        HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
+                        sendResponse(responseWinner.toString(), player2);
+                        sendResponse(responseDefeated.toString(), player1);
+                    }
+                    else {
+                        HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
+                        sendResponse(responseWinner.toString(), player2);
+                        sendResponse(responseDefeated.toString(), player1);
+                    }
+                }
             }
 
             case CARD_CARD_ATTACK -> {
@@ -202,8 +216,6 @@ public class GameRoom {
         Card cardToDraw;
 
         Map<String, List<Card>> allCards = getAllCards(client);
-        //if (client.equals(player1)) allCards = player1AllCards;
-        //else allCards = player2AllCards;
         try {
             cardToDraw = allCards.get("deck").remove(0);
             putDeckInfo(allCards.get("deck"), deck);
@@ -343,6 +355,7 @@ public class GameRoom {
     }
 
     private String getClientDeckCardIds(GameServer.Client client) {
+        UserService service = new UserService();
         String clientLogin = client.getUserLogin();
         String clientCardIdsString = service.get(clientLogin).getDeck();
 
@@ -360,4 +373,16 @@ public class GameRoom {
         server.sendResponse(json.toString(), player1);
         server.sendResponse(json.toString(), player2);
     }
+
+    private void end() {
+        player1.setCurrentRoom(null);
+        player2.setCurrentRoom(null);
+        player1Hero = null;
+        player2Hero = null;
+        player1AllCards = null;
+        player2AllCards = null;
+        activePlayer = null;
+        System.gc();
+    }
+
 }
