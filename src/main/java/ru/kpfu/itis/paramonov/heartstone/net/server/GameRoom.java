@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 
 import java.io.IOException;
 import java.util.*;
@@ -13,13 +14,17 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_BACKGROUND, GET_HAND_AND_DECK, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
+        GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
         GET_OPPONENT_MANA, CHECK_CARD_PLAYED
     }
 
     private GameServer.Client player1;
 
     private GameServer.Client player2;
+
+    private Hero player1Hero;
+
+    private Hero player2Hero;
 
     private HashMap<String, Integer> player1Mana = setPlayerManaMap();
 
@@ -46,7 +51,7 @@ public class GameRoom {
     public void onStart() {
         setActivePlayer();
         setBackground();
-        sendGameHandAndDeck();
+        sendInitialInfo();
     }
 
     private HashMap<String, List<Card>> setPlayerCardMap() {
@@ -168,7 +173,6 @@ public class GameRoom {
         JSONArray changes = new JSONArray();
         for (int pos = 0; pos < positions.length; pos++) {
             JSONObject changedCard = new JSONObject();
-            System.out.println(field.get(pos).getCardInfo().getName());
             changedCard.put("pos", positions[pos]);
             changedCard.put("hp", field.get(positions[pos] ).getHp());
             changedCard.put("atk", field.get(positions[pos]).getAtk());
@@ -244,21 +248,33 @@ public class GameRoom {
         sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
     }
 
-    public void sendGameHandAndDeck() {
+    private void sendInitialInfo() {
         player1AllCards.put("deck", getShuffledDeck(player1));
         player2AllCards.put("deck", getShuffledDeck(player2));
 
-        sendHandAndDeck(player1AllCards.get("deck"), player1);
-        sendHandAndDeck(player2AllCards.get("deck"), player2);
+        int player1Hp = HeroHelper.getInitialHp(player1AllCards.get("deck"));
+        int player2Hp = HeroHelper.getInitialHp(player2AllCards.get("deck"));
+
+        JSONObject player1Response = new JSONObject();
+        JSONObject player2Response = new JSONObject();
+        HeroHelper.putHpInfo(player1Response, player1Hp, player2Hp);
+        HeroHelper.putHpInfo(player2Response, player2Hp, player1Hp);
+
+        putInitialInfo(player1Response, player1AllCards.get("deck"), player1);
+        putInitialInfo(player2Response, player2AllCards.get("deck"), player2);
+
+        sendResponse(player1Response.toString(), player1);
+        sendResponse(player2Response.toString(), player2);
+
+        drawCard(activePlayer);
     }
 
     private final int INITIAL_HAND_SIZE = 4;
 
     private final int HAND_SIZE = 6;
 
-    private void sendHandAndDeck(List<Card> deck, GameServer.Client client) {
-        JSONObject response = new JSONObject();
-        response.put("room_action", RoomAction.GET_HAND_AND_DECK.toString());
+    private void putInitialInfo(JSONObject response, List<Card> deck, GameServer.Client client) {
+        response.put("room_action", RoomAction.GET_INITIAL_INFO.toString());
         JSONArray arrayHand = new JSONArray();
         JSONArray arrayDeck = new JSONArray();
 
@@ -280,10 +296,6 @@ public class GameRoom {
 
         response.put("hand", arrayHand);
         response.put("deck", arrayDeck);
-
-        sendResponse(response.toString(), client);
-
-        if (client.equals(activePlayer)) drawCard(client);
     }
 
     private void putCardInfo(Card card, JSONArray responseCards) {

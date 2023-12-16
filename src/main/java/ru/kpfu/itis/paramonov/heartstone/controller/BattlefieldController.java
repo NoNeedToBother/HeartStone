@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
@@ -74,6 +75,7 @@ public class BattlefieldController {
     @FXML
     private ManaBar opponentManaBar;
 
+
     private int mana = 0;
 
     private int maxMana = 0;
@@ -81,6 +83,10 @@ public class BattlefieldController {
     private int opponentMana = 0;
 
     private int maxOpponentMana = 0;
+
+    private Hero player;
+
+    private Hero opponent;
 
     private Card selectedCard = null;
 
@@ -102,7 +108,7 @@ public class BattlefieldController {
     }
 
     private void setHeroes() {
-
+        //Image
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {

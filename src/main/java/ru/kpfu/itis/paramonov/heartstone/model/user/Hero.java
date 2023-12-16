@@ -13,12 +13,32 @@ public class Hero implements Sprite {
 
     private int hp;
 
+    private int mana;
+
+    private int maxMana;
+
     public int getHp() {
         return hp;
     }
 
     public void setHp(int hp) {
         this.hp = hp;
+    }
+
+    public int getMana() {
+        return mana;
+    }
+
+    public void setMana(int mana) {
+        this.mana = mana;
+    }
+
+    public int getMaxMana() {
+        return maxMana;
+    }
+
+    public void setMaxMana(int maxMana) {
+        this.maxMana = maxMana;
     }
 
     public static class HeroSpriteBuilder implements SpriteBuilder<Image> {

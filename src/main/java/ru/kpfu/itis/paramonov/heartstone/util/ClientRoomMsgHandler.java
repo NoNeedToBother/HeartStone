@@ -21,7 +21,7 @@ public class ClientRoomMsgHandler {
                 String bg = json.getString("background");
                 BattlefieldController.getController().setBackground(bg);
             }
-            case GET_HAND_AND_DECK -> {
+            case GET_INITIAL_INFO -> {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
                 BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
             }
