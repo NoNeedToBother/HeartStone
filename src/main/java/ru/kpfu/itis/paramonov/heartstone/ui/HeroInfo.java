@@ -39,4 +39,8 @@ public class HeroInfo extends HBox {
     public void setPortrait(Image portrait) {
         this.portrait.setImage(portrait);
     }
+
+    public ImageView getPortrait() {
+        return portrait;
+    }
 }

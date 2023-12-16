@@ -1,10 +1,12 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -112,6 +114,20 @@ public class BattlefieldController {
         opponentHeroInfo.setPortrait(portrait);
         playerHeroInfo.changeHealth(playerHp);
         opponentHeroInfo.changeHealth(opponentHp);
+
+        ImageView opponentPortrait = opponentHeroInfo.getPortrait();
+        opponentPortrait.setOnMouseClicked(mouseEvent -> {
+            if (selectedCard == null || hand.contains(selectedCard)) {
+                mouseEvent.consume();
+                return;
+            }
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.ROOM)
+                    .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
+                    .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
+                    .build();
+            GameApplication.getApplication().getClient().sendMessage(msg);
+        });
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
