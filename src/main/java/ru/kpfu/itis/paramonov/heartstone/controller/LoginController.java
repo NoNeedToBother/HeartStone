@@ -70,7 +70,7 @@ public class LoginController {
         });
 
         btnGoToRegister.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/fxml/register.fxml");
+            application.loadScene("/register.fxml");
             mouseEvent.consume();
         });
     }

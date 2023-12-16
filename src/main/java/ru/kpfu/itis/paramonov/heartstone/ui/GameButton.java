@@ -16,7 +16,7 @@ public class GameButton extends Button {
     }
 
     public enum GameButtonStyle {
-        BASE, GREEN, RED, GOLD_100, GOLD_500
+        BASE, GREEN, RED, GOLD_100, GOLD_500, BACK
     }
 
     private boolean clickable = false;
@@ -73,6 +73,12 @@ public class GameButton extends Button {
                 case GOLD_500 -> {
                     btn.clickable = true;
                     return addImageToBufferedImage(DEFAULT_PATH + "/500g_button.png");
+                }
+                case BACK -> {
+                    btn.clickable = true;
+                    imgWidth = 20;
+                    img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_ARGB);
+                    return addImageToBufferedImage(DEFAULT_PATH + "/back_button.png");
                 }
                 default -> throw new RuntimeException("Impossible");
             }
