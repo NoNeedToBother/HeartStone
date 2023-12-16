@@ -6,6 +6,8 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 
@@ -52,7 +54,8 @@ public class Animations {
         }
     }
 
-    public static void playPackShakingAnimation(ImageView pack) {
+    public static void playPackShakingAnimation(ImageView pack, Integer cardId, JSONArray cardIds) {
+        PacksController.getController().clearCardImageViews();
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         transition.get().setNode(pack);
         transition.get().setByX(25);
@@ -84,6 +87,8 @@ public class Animations {
                         transition.get().play();
                         transition.get().setOnFinished(actionEvent4 -> {
                             PacksController.getController().notifyAnimationEnded();
+                            if (cardId != null) PacksController.getController().showCard(cardId);
+                            else PacksController.getController().showCards(cardIds);
                         });
                     });
                 });

@@ -6,12 +6,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import org.json.JSONArray;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PacksController {
 
@@ -20,6 +25,19 @@ public class PacksController {
 
     @FXML
     private ImageView cardCoverIv;
+
+    @FXML
+    private ImageView card1;
+    @FXML
+    private ImageView card2;
+    @FXML
+    private ImageView card3;
+    @FXML
+    private ImageView card4;
+    @FXML
+    private ImageView card5;
+
+    private List<ImageView> cardImageViews;
 
     private GameButton btn100g;
 
@@ -32,6 +50,7 @@ public class PacksController {
     @FXML
     private void initialize() {
         controller = this;
+        cardImageViews = List.of(card1, card2, card3, card4, card5);
         addButtons();
         setOnClickListeners();
         setCardCoverImageView();
@@ -96,11 +115,39 @@ public class PacksController {
         cardCoverIv.setImage(cardCover);
     }
 
-    public void playOpeningAnimation() {
-        Animations.playPackShakingAnimation(cardCoverIv);
+    public void playOpeningAnimation(Integer cardId, JSONArray cardIds) {
+        Animations.playPackShakingAnimation(cardCoverIv, cardId, cardIds);
     }
 
     public void notifyAnimationEnded() {
         opening = false;
+    }
+
+    public void showCard(int id) {
+        showCard(card1, id);
+    }
+
+    private void showCard(ImageView cardIv, int cardId) {
+        CardRepository.CardTemplate cardTemplate = CardRepository.getCardTemplate(cardId);
+
+        Image card = Card.SpriteBuilder()
+                .addImage(cardTemplate.getPortraitUrl())
+                .setStyle(Card.CardStyle.BASE.toString())
+                .addRarity(cardTemplate.getRarity())
+                .scale(3)
+                .build();
+        cardIv.setImage(card);
+    }
+
+    public void showCards(JSONArray jsonIds) {
+        for (int i = 0; i < jsonIds.length(); i++) {
+            showCard(cardImageViews.get(i), jsonIds.getInt(i));
+        }
+    }
+
+    public void clearCardImageViews() {
+        for (ImageView iv : cardImageViews) {
+            iv.setImage(null);
+        }
     }
 }

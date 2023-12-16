@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
@@ -30,14 +31,17 @@ public class ClientServerMsgHandler {
                     GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
                 }
             }
-            case OPEN_1_PACK -> {
+            case OPEN_1_PACK, OPEN_5_PACKS -> {
                 if (checkStatus(json)) {
-                    PacksController.getController().playOpeningAnimation();
-                }
-            }
-            case OPEN_5_PACKS -> {
-                if (checkStatus(json)) {
-                    PacksController.getController().playOpeningAnimation();
+                    Integer cardId = null;
+                    JSONArray cardIds = null;
+                    try {
+                        cardId = json.getInt("card_id");
+                    } catch (JSONException e) {}
+                    try {
+                        cardIds = json.getJSONArray("card_ids");
+                    } catch (JSONException e) {}
+                    PacksController.getController().playOpeningAnimation(cardId, cardIds);
                 }
             }
         }
