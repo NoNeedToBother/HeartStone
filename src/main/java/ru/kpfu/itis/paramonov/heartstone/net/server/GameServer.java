@@ -19,7 +19,7 @@ public class GameServer {
     private ServerSocket serverSocket;
     private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
-    private ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
 
     private List<GameRoom> rooms = new ArrayList<>();
 
@@ -73,6 +73,14 @@ public class GameServer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void startRoom(Client client1, Client client2) {
+        GameRoom room = new GameRoom(client1, client2, this);
+        client1.setCurrentRoom(room);
+        client2.setCurrentRoom(room);
+        this.rooms.add(room);
+        room.onStart();
     }
 
     public static void main(String[] args) {
@@ -145,17 +153,11 @@ public class GameServer {
                             if (!this.equals(otherClient)) {
                                 otherClient.notifyConnected();
                                 connected = true;
-                                server.clientsToConnect.remove(this);
-                                server.clientsToConnect.remove(otherClient);
-                                JSONObject response = new JSONObject();
-                                response.put("server_action", "CONNECT");
-                                response.put("status", "OK");
-                                server.sendResponse(response.toString(), this);
-                                GameRoom room = new GameRoom(this, otherClient, server);
-                                server.rooms.add(room);
-                                this.currentRoom = room;
-                                otherClient.setCurrentRoom(room);
-                                room.onStart();
+                                synchronized (server.clientsToConnect) {
+                                    if (server.clientsToConnect.remove(this) && server.clientsToConnect.remove(otherClient)) {
+                                        server.startRoom(this, otherClient);
+                                    }
+                                }
                             }
                         }
                     }
@@ -185,6 +187,8 @@ public class GameServer {
                         handleDisconnection();
                         return null;
                     }
+                    case OPEN_1_PACK -> PackOpeningHelper.openOnePack(jsonServerMessage, response);
+                    case OPEN_5_PACKS -> PackOpeningHelper.openFivePacks(jsonServerMessage, response);
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);

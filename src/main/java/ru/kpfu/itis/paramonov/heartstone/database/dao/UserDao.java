@@ -104,4 +104,13 @@ public class UserDao {
         statement.executeUpdate();
     }
 
+    public void updateMoney(String login, int money) throws SQLException {
+        String sql = "update users set money = ? where login = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, money);
+        statement.setString(2, login);
+
+        statement.executeUpdate();
+    }
+
 }

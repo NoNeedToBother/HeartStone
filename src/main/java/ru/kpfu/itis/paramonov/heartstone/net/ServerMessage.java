@@ -13,7 +13,7 @@ public class ServerMessage {
     }
 
     public enum ServerAction {
-        CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT //etc
+        CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT, OPEN_1_PACK, OPEN_5_PACKS //etc
     }
 
     private Entity entityToConnect = null;
@@ -23,8 +23,6 @@ public class ServerMessage {
     private GameRoom.RoomAction roomAction = null;
 
     private Map<String, String> params = new HashMap<>();
-
-    private static ServerMessageBuilder builder = new ServerMessageBuilder();
 
     public static class ServerMessageBuilder {
         ServerMessage message = new ServerMessage();
@@ -75,6 +73,6 @@ public class ServerMessage {
      */
 
     public static ServerMessageBuilder builder() {
-        return builder;
+        return new ServerMessageBuilder();
     }
 }

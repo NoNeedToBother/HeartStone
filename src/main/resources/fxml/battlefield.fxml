@@ -9,6 +9,8 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.text.Text?>
 <?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
@@ -25,8 +27,25 @@
         <BattleCardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 
+    <ImageView fx:id="cardPlacement" AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180"/>
+    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180" fx:id="hBoxFieldCards" spacing="10">
+        <HBox prefWidth="30"/>
+    </HBox>
+
+    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="420" fx:id="hBoxOpponentFieldCards" spacing="10">
+        <HBox prefWidth="30"/>
+    </HBox>
+
     <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
 
-    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxCards" spacing="60">
+    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxHandCards" spacing="30">
     </HBox>
+
+    <ManaBar fx:id="manaBar" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
+
+    <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
+
+    <HeroInfo fx:id="playerHeroInfo" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="100"/>
+
+    <HeroInfo fx:id="opponentHeroInfo" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="500"/>
 </AnchorPane>

@@ -57,8 +57,6 @@ public class BattleCardInfo extends Pane {
 
     public void clear() {
         text.setText("");
-        //bufferText.setText("");
         getChildren().remove(text);
-        //getChildren().remove(bufferText);
     }
 }

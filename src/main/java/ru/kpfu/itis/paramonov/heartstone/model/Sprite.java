@@ -6,11 +6,13 @@ public interface Sprite {
 
     interface SpriteBuilder<T> {
 
-        SpriteBuilder<T> setBase();
+        SpriteBuilder<T> setStyle(String style);
 
         SpriteBuilder<T> addImage(String imgUrl);
 
-        SpriteBuilder<T> addRarity(CardRepository.Rarity rarity);
+        default SpriteBuilder<T> addRarity(CardRepository.Rarity rarity) {
+            throw new RuntimeException("Stub!");
+        }
 
         SpriteBuilder<T> scale(int scale);
 

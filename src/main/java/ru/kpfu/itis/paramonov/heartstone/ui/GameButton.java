@@ -12,11 +12,11 @@ import java.io.*;
 
 public class GameButton extends Button {
     public enum GameButtonText {
-        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN
+        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN, OPEN_PACKS
     }
 
     public enum GameButtonStyle {
-        BASE, GREEN, RED
+        BASE, GREEN, RED, GOLD_100, GOLD_500
     }
 
     private boolean clickable = false;
@@ -27,7 +27,7 @@ public class GameButton extends Button {
 
     public static class ButtonBuilder {
 
-        GameButton btn;
+        GameButton btn = new GameButton();
 
         private BufferedImage img;
 
@@ -66,6 +66,14 @@ public class GameButton extends Button {
                     btn.clickable = true;
                     return addImageToBufferedImage(DEFAULT_PATH + "/green_button.png");
                 }
+                case GOLD_100 -> {
+                    btn.clickable = true;
+                    return addImageToBufferedImage(DEFAULT_PATH + "/100g_button.png");
+                }
+                case GOLD_500 -> {
+                    btn.clickable = true;
+                    return addImageToBufferedImage(DEFAULT_PATH + "/500g_button.png");
+                }
                 default -> throw new RuntimeException("Impossible");
             }
         }
@@ -96,6 +104,9 @@ public class GameButton extends Button {
                 case END_TURN -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/labels/end_turn.png");
                 }
+                case OPEN_PACKS -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/open_packs.png");
+                }
                 default -> throw new RuntimeException("Impossible");
             }
         }
@@ -112,7 +123,6 @@ public class GameButton extends Button {
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 ImageIO.write(img, "PNG", out);
                 InputStream in = new ByteArrayInputStream(out.toByteArray());
-                setBlankImg();
                 btnImg = new Image(in);
                 btn.setPrefHeight(imgHeight);
                 btn.setPrefWidth(imgWidth);
@@ -124,9 +134,8 @@ public class GameButton extends Button {
             }
         }
     }
-    private static final ButtonBuilder builder = new ButtonBuilder();
 
     public static ButtonBuilder builder() {
-        return builder;
+        return new ButtonBuilder();
     }
 }
