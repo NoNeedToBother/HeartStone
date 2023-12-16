@@ -24,6 +24,7 @@ public class ClientRoomMsgHandler {
             case GET_INITIAL_INFO -> {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
                 BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                BattlefieldController.getController().setHeroes(json);
             }
             case END_TURN -> {
                 BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.RED);

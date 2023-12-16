@@ -19,6 +19,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
@@ -44,13 +45,8 @@ public class BattlefieldController {
     @FXML
     private HBox hBoxHandCards;
 
-    @FXML
-    private AnchorPane root;
-
     private List<Card> hand = new ArrayList<>();
-
     private List<Card> field = new ArrayList<>();
-
     private List<Card> opponentField = new ArrayList<>();
 
     private List<Card> deck = new ArrayList<>();
@@ -71,22 +67,16 @@ public class BattlefieldController {
 
     @FXML
     private ManaBar manaBar;
-
     @FXML
     private ManaBar opponentManaBar;
 
-
-    private int mana = 0;
-
-    private int maxMana = 0;
-
-    private int opponentMana = 0;
-
-    private int maxOpponentMana = 0;
-
     private Hero player;
-
     private Hero opponent;
+
+    @FXML
+    private HeroInfo playerHeroInfo;
+    @FXML
+    private HeroInfo opponentHeroInfo;
 
     private Card selectedCard = null;
 
@@ -107,8 +97,21 @@ public class BattlefieldController {
         opponentManaBar.setMana(0, 0);
     }
 
-    private void setHeroes() {
-        //Image
+    public void setHeroes(JSONObject json) {
+        int playerHp = json.getInt("hp");
+        int opponentHp = json.getInt("opponent_hp");
+        player = new Hero(playerHp, playerHp, 0, 0);
+        opponent = new Hero(opponentHp, opponentHp, 0, 0);
+
+        Image portrait = Hero.spriteBuilder()
+                .addImage("/standard_hero.png")
+                .setStyle(Hero.HeroStyle.BASE.toString())
+                .scale(2)
+                .build();
+        playerHeroInfo.setPortrait(portrait);
+        opponentHeroInfo.setPortrait(portrait);
+        playerHeroInfo.changeHealth(playerHp);
+        opponentHeroInfo.changeHealth(opponentHp);
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
@@ -174,8 +177,9 @@ public class BattlefieldController {
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
 
-        manaBar.setMana(mana - card.getCost(), maxMana);
-        mana -= card.getCost();
+        int newMana = player.getMana() - card.getCost();
+        manaBar.setMana(newMana, player.getMaxMana());
+        player.setMana(newMana);
 
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
@@ -185,13 +189,13 @@ public class BattlefieldController {
     }
 
     public void changeOpponentMana(int newOpponentMana) {
-        opponentMana = newOpponentMana;
-        opponentManaBar.setMana(newOpponentMana, maxOpponentMana);
+        opponent.setMana(newOpponentMana);
+        opponentManaBar.setMana(newOpponentMana, opponent.getMaxMana());
     }
 
     public void addOpponentCard(JSONObject json) {
         Card card = getCard(json);
-        Image sprite = Card.SpriteBuilder()
+        Image sprite = Card.spriteBuilder()
                 .addImage(card.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getCardInfo().getRarity())
@@ -294,7 +298,7 @@ public class BattlefieldController {
     }
 
     private void selectCard(ImageView card) {
-        Image sprite = Card.SpriteBuilder()
+        Image sprite = Card.spriteBuilder()
                 .addImage(selectedCard.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.SELECTED.toString())
                 .addRarity(selectedCard.getCardInfo().getRarity())
@@ -307,7 +311,7 @@ public class BattlefieldController {
     private void deselectCard(ImageView card) {
         Card deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
-        Image sprite = Card.SpriteBuilder()
+        Image sprite = Card.spriteBuilder()
                 .addImage(deselected.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(deselected.getCardInfo().getRarity())
@@ -351,7 +355,7 @@ public class BattlefieldController {
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
-        Image sprite = Card.SpriteBuilder()
+        Image sprite = Card.spriteBuilder()
                 .addImage(cardInfo.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardInfo.getRarity())
@@ -480,14 +484,15 @@ public class BattlefieldController {
     }
 
     private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
-        if (mana != null) this.mana = mana;
-        if (maxMana != null) this.maxMana = maxMana;
-        if (opponentMana != null) this.opponentMana = opponentMana;
-        if (maxOpponentMana != null) this.maxOpponentMana = maxOpponentMana;
+
+        if (mana != null) player.setMana(mana);
+        if (maxMana != null) player.setMaxMana(maxMana);
+        if (opponentMana != null) opponent.setMana(opponentMana);
+        if (maxOpponentMana != null) opponent.setMaxMana(maxOpponentMana);
     }
 
     private void updateMana() {
-        manaBar.setMana(mana, maxMana);
-        opponentManaBar.setMana(opponentMana, maxOpponentMana);
+        manaBar.setMana(player.getMana(), player.getMaxMana());
+        opponentManaBar.setMana(opponent.getMana(), opponent.getMaxMana());
     }
 }

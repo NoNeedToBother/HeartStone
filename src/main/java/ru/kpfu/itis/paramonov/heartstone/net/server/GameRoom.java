@@ -248,8 +248,8 @@ public class GameRoom {
 
         int player1Hp = HeroHelper.getInitialHp(player1AllCards.get("deck"));
         int player2Hp = HeroHelper.getInitialHp(player2AllCards.get("deck"));
-        player1Hero = new Hero(player1Hp, 0, 0);
-        player2Hero = new Hero(player2Hp, 0, 0);
+        player1Hero = new Hero(player1Hp, player1Hp, 0, 0);
+        player2Hero = new Hero(player2Hp, player2Hp, 0, 0);
 
         JSONObject player1Response = new JSONObject();
         JSONObject player2Response = new JSONObject();

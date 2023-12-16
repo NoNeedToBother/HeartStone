@@ -10,6 +10,7 @@
 <?import javafx.scene.text.Text?>
 <?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
 <?import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
@@ -43,4 +44,8 @@
     <ManaBar fx:id="manaBar" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
 
     <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
+
+    <HeroInfo fx:id="playerHeroInfo" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="100"/>
+
+    <HeroInfo fx:id="opponentHeroInfo" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="500"/>
 </AnchorPane>

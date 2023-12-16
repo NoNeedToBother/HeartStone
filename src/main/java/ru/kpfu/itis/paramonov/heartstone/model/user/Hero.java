@@ -13,12 +13,15 @@ public class Hero implements Sprite {
 
     private int hp;
 
+    private int maxHp;
+
     private int mana;
 
     private int maxMana;
 
-    public Hero(int hp, int mana, int maxMana) {
+    public Hero(int hp, int maxHp, int mana, int maxMana) {
         this.hp = hp;
+        this.maxHp = maxHp;
         this.mana = mana;
         this.maxMana = maxMana;
     }
@@ -29,6 +32,14 @@ public class Hero implements Sprite {
 
     public void setHp(int hp) {
         this.hp = hp;
+    }
+
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(int maxHp) {
+        this.maxHp = maxHp;
     }
 
     public int getMana() {
@@ -83,5 +94,9 @@ public class Hero implements Sprite {
         public Image build() {
             return BufferedImageUtil.toImage(img);
         }
+    }
+
+    public static HeroSpriteBuilder spriteBuilder() {
+        return new HeroSpriteBuilder();
     }
 }

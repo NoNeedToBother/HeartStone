@@ -6,9 +6,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
 
 public class Card implements Sprite {
 
@@ -148,7 +146,7 @@ public class Card implements Sprite {
         }
     }
 
-    public static CardSpriteBuilder SpriteBuilder() {
+    public static CardSpriteBuilder spriteBuilder() {
         return new CardSpriteBuilder();
     }
 }
