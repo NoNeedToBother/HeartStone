@@ -17,6 +17,12 @@ public class Hero implements Sprite {
 
     private int maxMana;
 
+    public Hero(int hp, int mana, int maxMana) {
+        this.hp = hp;
+        this.mana = mana;
+        this.maxMana = maxMana;
+    }
+
     public int getHp() {
         return hp;
     }

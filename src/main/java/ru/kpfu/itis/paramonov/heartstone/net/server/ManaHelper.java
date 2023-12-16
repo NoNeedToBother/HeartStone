@@ -1,36 +1,37 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server;
 
 import org.json.JSONObject;
-
-import java.util.HashMap;
+import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 
 public class ManaHelper {
 
-    public static HashMap<String, Integer> increaseMana(JSONObject response, GameServer.Client activePlayer, GameServer.Client player1,
-                                    HashMap<String, Integer> player1Mana, HashMap<String, Integer> player2Mana) {
-        HashMap<String, Integer> mana;
-        if (activePlayer.equals(player1)) mana = player1Mana;
-        else mana = player2Mana;
-        mana.put("mana", mana.get("maxMana") + 1);
-        mana.put("maxMana", mana.get("maxMana") + 1);
-        putManaInfo(response, mana);
-        return mana;
+    public static Hero increaseMana(JSONObject response, GameServer.Client activePlayer, GameServer.Client player1,
+                                    Hero player1Hero, Hero player2Hero) {
+        Hero hero;
+        if (activePlayer.equals(player1)) hero = player1Hero;
+        else hero = player2Hero;
+        int newMaxMana = hero.getMaxMana() + 1;
+
+        hero.setMana(newMaxMana);
+        hero.setMaxMana(newMaxMana);
+
+        putManaInfo(response, hero);
+        return hero;
     }
 
-    private static void putManaInfo(JSONObject response, HashMap<String, Integer> mana) {
-        response.put("mana", mana.get("mana"));
-        response.put("maxMana", mana.get("maxMana"));
+    private static void putManaInfo(JSONObject response, Hero hero) {
+        response.put("mana", hero.getMana());
+        response.put("maxMana", hero.getMaxMana());
     }
 
-    private static void putOpponentManaInfo(JSONObject response, HashMap<String, Integer> mana) {
-        response.put("opponentMana", mana.get("mana"));
-        response.put("maxOpponentMana", mana.get("maxMana"));
+    private static void putOpponentManaInfo(JSONObject response, Hero opponentHero) {
+        response.put("opponentMana", opponentHero.getMana());
+        response.put("maxOpponentMana", opponentHero.getMaxMana());
     }
 
-    public static void getOpponentMana(JSONObject response, HashMap<String, Integer> mana) {
+    public static void getOpponentMana(JSONObject response, Hero opponentHero) {
         response.put("room_action", GameRoom.RoomAction.GET_OPPONENT_MANA);
-        putOpponentManaInfo(response, mana);
+        putOpponentManaInfo(response, opponentHero);
         response.put("status", "ok");
     }
-
 }

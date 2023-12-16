@@ -26,10 +26,6 @@ public class GameRoom {
 
     private Hero player2Hero;
 
-    private HashMap<String, Integer> player1Mana = setPlayerManaMap();
-
-    private HashMap<String, Integer> player2Mana = setPlayerManaMap();
-
     private GameServer.Client activePlayer;
 
     private GameServer server;
@@ -49,9 +45,9 @@ public class GameRoom {
     }
 
     public void onStart() {
-        setActivePlayer();
         setBackground();
         sendInitialInfo();
+        setActivePlayer();
     }
 
     private HashMap<String, List<Card>> setPlayerCardMap() {
@@ -60,10 +56,6 @@ public class GameRoom {
         res.put("hand", Collections.synchronizedList(new ArrayList<>()));
         res.put("deck", Collections.synchronizedList(new ArrayList<>()));
         return res;
-    }
-
-    private HashMap<String, Integer> setPlayerManaMap() {
-        return new HashMap<>(Map.of("mana", 0, "maxMana", 0));
     }
 
     public GameServer.Client getNonActivePlayer() {
@@ -90,12 +82,12 @@ public class GameRoom {
                 responseBegin.put("room_action", RoomAction.BEGIN_TURN.toString());
                 responseBegin.put("status", "ok");
 
-                HashMap<String, Integer> resMana =
-                        ManaHelper.increaseMana(responseBegin, activePlayer, player1, player1Mana, player2Mana);
+                Hero resHero =
+                        ManaHelper.increaseMana(responseBegin, activePlayer, player1, player1Hero, player2Hero);
                 sendResponse(responseBegin.toString(), activePlayer);
 
                 JSONObject responseOpponentMana = new JSONObject();
-                ManaHelper.getOpponentMana(responseOpponentMana, resMana);
+                ManaHelper.getOpponentMana(responseOpponentMana, resHero);
                 sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
                 drawCard(activePlayer);
             }
@@ -104,8 +96,8 @@ public class GameRoom {
                 JSONObject response = new JSONObject();
                 response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
                 int mana;
-                if (client.equals(player1)) mana = player1Mana.get("mana");
-                else mana = player2Mana.get("mana");
+                if (client.equals(player1)) mana = player1Hero.getMana();
+                else mana = player2Hero.getMana();
 
                 PlayedCardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
                         player1AllCards, player2AllCards, mana);
@@ -115,11 +107,11 @@ public class GameRoom {
 
             case PLAY_CARD -> {
                 Card playedCard = PlayedCardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
-                HashMap<String, Integer> mana;
-                if (client.equals(player1)) mana = player1Mana;
-                else mana = player2Mana;
-                int newMana = mana.get("mana") - playedCard.getCost();
-                mana.put("mana", newMana);
+                Hero hero;
+                if (client.equals(player1)) hero = player1Hero;
+                else hero = player2Hero;
+                int newMana = hero.getMana() - playedCard.getCost();
+                hero.setMana(newMana);
 
                 JSONObject response = new JSONObject();
                 PlayedCardHelper.putPlayedCardForOpponent(response, playedCard);
@@ -235,16 +227,18 @@ public class GameRoom {
         if (random.nextBoolean()) activePlayer = player1;
         else activePlayer = player2;
 
+        drawCard(activePlayer);
+
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.BEGIN_TURN);
         response.put("status", "ok");
 
-        HashMap<String, Integer> resMana =
-                ManaHelper.increaseMana(response, activePlayer, player1, player1Mana, player2Mana);
+        Hero resHero =
+                ManaHelper.increaseMana(response, activePlayer, player1, player1Hero, player2Hero);
         sendResponse(response.toString(), activePlayer);
 
         JSONObject responseOpponentMana = new JSONObject();
-        ManaHelper.getOpponentMana(responseOpponentMana, resMana);
+        ManaHelper.getOpponentMana(responseOpponentMana, resHero);
         sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
     }
 
@@ -254,6 +248,8 @@ public class GameRoom {
 
         int player1Hp = HeroHelper.getInitialHp(player1AllCards.get("deck"));
         int player2Hp = HeroHelper.getInitialHp(player2AllCards.get("deck"));
+        player1Hero = new Hero(player1Hp, 0, 0);
+        player2Hero = new Hero(player2Hp, 0, 0);
 
         JSONObject player1Response = new JSONObject();
         JSONObject player2Response = new JSONObject();
@@ -265,8 +261,6 @@ public class GameRoom {
 
         sendResponse(player1Response.toString(), player1);
         sendResponse(player2Response.toString(), player2);
-
-        drawCard(activePlayer);
     }
 
     private final int INITIAL_HAND_SIZE = 4;
