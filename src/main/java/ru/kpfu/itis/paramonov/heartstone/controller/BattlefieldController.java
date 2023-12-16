@@ -84,6 +84,8 @@ public class BattlefieldController {
 
     private static BattlefieldController controller = null;
 
+    private boolean attacking = false;
+
     public static BattlefieldController getController() {
         return controller;
     }
@@ -121,6 +123,8 @@ public class BattlefieldController {
                 mouseEvent.consume();
                 return;
             }
+            if (checkAttacking(mouseEvent)) return;
+
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
@@ -128,6 +132,34 @@ public class BattlefieldController {
                     .build();
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
+    }
+
+    public void playAttackingAnimation(JSONObject json) {
+        attacking = true;
+        ImageView card;
+        try {
+            int pos = json.getInt("field_pos");
+            card = field.get(pos).getAssociatedImageView();
+            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait());
+        } catch (JSONException e) {
+            int pos = json.getInt("opponent_field_pos");
+            card = opponentField.get(pos).getAssociatedImageView();
+            Animations.playCardAttacking(card, playerHeroInfo.getPortrait());
+        }
+    }
+    public void notifyAttackingAnimationStopped() {
+        attacking = false;
+    }
+    public void updateHp(JSONObject json) {
+        try {
+            int hp = json.getInt("hp");
+            playerHeroInfo.changeHealth(hp);
+        } catch (JSONException e) {}
+        try {
+            int hp = json.getInt("opponent_hp");
+            opponentHeroInfo.changeHealth(hp);
+        } catch (JSONException e) {}
+
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
@@ -161,6 +193,14 @@ public class BattlefieldController {
         });
     }
 
+    private boolean checkAttacking(MouseEvent mouseEvent) {
+        if (attacking) {
+            mouseEvent.consume();
+            return true;
+        }
+        return false;
+    }
+
     private void addCardPlacements() {
         cardPlacement.setImage(new Image(GameApplication.class.getResource("/assets/images/card_placement.png").toString()));
         cardPlacement.setOnMouseClicked(mouseEvent -> {
@@ -169,6 +209,7 @@ public class BattlefieldController {
                     mouseEvent.consume();
                     return;
                 }
+                if (checkAttacking(mouseEvent)) return;
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
@@ -231,6 +272,8 @@ public class BattlefieldController {
                 mouseEvent.consume();
                 return;
             }
+            if (checkAttacking(mouseEvent)) return;
+
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
             if (handCard != null) {
                 mouseEvent.consume();

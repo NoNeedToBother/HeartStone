@@ -7,7 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import org.json.JSONArray;
-import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 
@@ -94,5 +94,31 @@ public class Animations {
                 });
             });
         });
+    }
+
+    public static void playCardAttacking(ImageView attacker, ImageView attacked) {
+        AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
+        double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
+        double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
+        double attackedX = attacked.localToScene(attacked.getBoundsInLocal()).getCenterX();
+        double attackedY = attacked.localToScene(attacked.getBoundsInLocal()).getCenterY();
+        double deltaX = attackedX - attackerX;
+        double deltaY = attackedY - attackerY;
+        transition.get().setByX(deltaX);
+        transition.get().setByY(deltaY);
+        transition.get().setNode(attacker);
+        transition.get().setDuration(Duration.millis(400));
+        transition.get().setOnFinished(actionEvent -> {
+            transition.set(new TranslateTransition());
+            transition.get().setByX(-deltaX);
+            transition.get().setByY(-deltaY);
+            transition.get().setNode(attacker);
+            transition.get().setDuration(Duration.millis(200));
+            transition.get().setOnFinished(actionEvent1 -> {
+                BattlefieldController.getController().notifyAttackingAnimationStopped();
+            });
+            transition.get().play();
+        });
+        transition.get().play();
     }
 }

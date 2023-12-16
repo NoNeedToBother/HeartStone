@@ -130,7 +130,7 @@ public class GameRoom {
                 else attackedHero = player1Hero;
                 JSONObject responseAttacker = new JSONObject();
                 JSONObject responseAttacked = new JSONObject();
-                HeroHelper.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker);
+                HeroHelper.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker, Integer.parseInt(msg.getString("pos")));
 
                 sendResponse(responseAttacker.toString(), client);
                 sendResponse(responseAttacked.toString(), getOtherPlayer(client));

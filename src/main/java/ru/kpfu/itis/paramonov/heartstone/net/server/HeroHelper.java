@@ -19,10 +19,13 @@ public class HeroHelper {
         response.put("opponent_hp", opponentHp);
     }
 
-    public static void onHeroAttacked(JSONObject responseAttacker, JSONObject responseAttacked, Hero attackedHero, Card attacker) {
+    public static void onHeroAttacked(JSONObject responseAttacker, JSONObject responseAttacked, Hero attackedHero, Card attacker, int attackerPos) {
         responseAttacker.put("room_action", GameRoom.RoomAction.CARD_HERO_ATTACK.toString());
         responseAttacked.put("room_action", GameRoom.RoomAction.CARD_HERO_ATTACK.toString());
+        responseAttacker.put("field_pos", attackerPos);
+        responseAttacked.put("opponent_field_pos", attackerPos);
         int newHp = attackedHero.getHp() - attacker.getAtk();
+        attackedHero.setHp(newHp);
         if (newHp <= 0) onHeroDefeated();
         else {
             responseAttacker.put("opponent_hp", newHp);
