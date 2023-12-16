@@ -101,6 +101,10 @@ public class BattlefieldController {
         opponentManaBar.setMana(0, 0);
     }
 
+    private void setHeroes() {
+
+    }
+
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
         vBoxBtnEndTurn.getChildren().remove(btnEndTurn);
         addEndTurnBtn(style);
@@ -221,7 +225,6 @@ public class BattlefieldController {
         });
 
         hBoxOpponentFieldCards.getChildren().add(cardIv);
-
     }
 
     public void updateCards(JSONObject json) {
@@ -247,6 +250,9 @@ public class BattlefieldController {
         cardToChange.setHp(hp);
         cardToChange.setAtk(atk);
         if (cardToChange.getHp() <= 0) {
+            if (this.field.contains(cardToChange)) {
+                onCardDeselected(cardToChange.getAssociatedImageView());
+            }
             field.remove(cardToChange);
             Animations.playCardCrackingAnimation(cardToChange.getAssociatedImageView(), this);
         }

@@ -170,7 +170,7 @@ public class GameRoom {
             JSONObject changedCard = new JSONObject();
             System.out.println(field.get(pos).getCardInfo().getName());
             changedCard.put("pos", positions[pos]);
-            changedCard.put("hp", field.get(positions[pos]).getHp());
+            changedCard.put("hp", field.get(positions[pos] ).getHp());
             changedCard.put("atk", field.get(positions[pos]).getAtk());
             changes.put(changedCard);
         }
