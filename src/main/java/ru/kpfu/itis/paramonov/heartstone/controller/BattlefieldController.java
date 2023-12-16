@@ -248,7 +248,7 @@ public class BattlefieldController {
         cardToChange.setAtk(atk);
         if (cardToChange.getHp() <= 0) {
             field.remove(cardToChange);
-            Animations.crackCard(cardToChange.getAssociatedImageView(), this);
+            Animations.playCardCrackingAnimation(cardToChange.getAssociatedImageView(), this);
         }
     }
 

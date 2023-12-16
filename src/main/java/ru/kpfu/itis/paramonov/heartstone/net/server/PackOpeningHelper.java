@@ -31,6 +31,7 @@ public class PackOpeningHelper {
 
         if (user.getMoney() < ONE_PACK_COST) {
             response.put("status", "not_ok");
+            response.put("reason", "Not enough gold");
             return;
         }
 
@@ -39,6 +40,7 @@ public class PackOpeningHelper {
             userService.updateMoney(user.getLogin(), user.getMoney() - ONE_PACK_COST);
         }  catch (SQLException e) {
             response.put("status", "not_ok");
+            response.put("reason", "Failed to connect database, please try again later.");
             return;
         }
         Integer cardId = getRandomCard();
@@ -52,6 +54,7 @@ public class PackOpeningHelper {
 
         if (user.getMoney() < FIVE_PACK_COST) {
             response.put("status", "not_ok");
+            response.put("reason", "Not enough gold");
             return;
         }
 
@@ -60,6 +63,7 @@ public class PackOpeningHelper {
             userService.updateMoney(user.getLogin(), user.getMoney() - FIVE_PACK_COST);
         }  catch (SQLException e) {
             response.put("status", "not_ok");
+            response.put("reason", "Failed to connect database, please try again later.");
             return;
         }
         JSONArray cardIds = new JSONArray();
@@ -107,7 +111,13 @@ public class PackOpeningHelper {
         List<CardRepository.CardTemplate> gottenCards = CardRepository.getCardsById(cardIds);
 
         for (CardRepository.CardTemplate gottenCard : gottenCards) {
-            checkIfNotEnoughCopies(userCards, gottenCard, login, user);
+            checkIfNotEnoughCopies(userCards, gottenCard, user);
+        }
+        try {
+            service.updateMoney(login, user.getMoney());
+        } catch (SQLException e) {
+            response.put("status", "not_ok");
+            response.put("reason", "Failed to connect database, please try again later.");
         }
 
         StringBuilder cardIdsString = new StringBuilder("[");
@@ -121,14 +131,16 @@ public class PackOpeningHelper {
             service.updateCards(login, cardIdsString.toString());
         } catch (SQLException e) {
             response.put("status", "not_ok");
+            response.put("reason", "Failed to connect database, please try again later.");
             return;
         }
         response.put("cards", cardIdsString.toString());
         response.put("money", service.get(login).getMoney());
+        response.put("status", "ok");
     }
 
     private static void checkIfNotEnoughCopies(List<CardRepository.CardTemplate> userCards,
-            CardRepository.CardTemplate card, String login, User user) {
+            CardRepository.CardTemplate card, User user) {
         int maxCardAmount;
         if (card.getRarity().equals(CardRepository.Rarity.LEGENDARY)) maxCardAmount = 1;
         else maxCardAmount = 2;
@@ -140,8 +152,9 @@ public class PackOpeningHelper {
         }
         System.out.println(card.getName() + cardAmount);
 
-        if (cardAmount >= maxCardAmount) addGoldForCopy(card, login, user);
+        if (cardAmount >= maxCardAmount) addGoldForCopy(card, user);
         else userCards.add(card);
+
     }
 
     private static int GOLD_COMMON = 25;
@@ -149,29 +162,13 @@ public class PackOpeningHelper {
     private static int GOLD_EPIC = 150;
     private static int GOLD_LEGENDARY = 500;
 
-    private static void addGoldForCopy(CardRepository.CardTemplate card, String login, User user) {
-        UserService service = new UserService();
+    private static void addGoldForCopy(CardRepository.CardTemplate card, User user) {
         int userMoney = user.getMoney();
-        try {
-            switch (card.getRarity()) {
-                case COMMON -> {
-                    service.updateMoney(login, userMoney + GOLD_COMMON);
-                    user.setMoney(userMoney + GOLD_COMMON);
-                }
-                case RARE -> {
-                    service.updateMoney(login, user.getMoney() + GOLD_RARE);
-                    user.setMoney(userMoney + GOLD_RARE);
-                }
-                case EPIC -> {
-                    service.updateMoney(login, user.getMoney() + GOLD_EPIC);
-                    user.setMoney(userMoney + GOLD_EPIC);
-                }
-                case LEGENDARY -> {
-                    service.updateMoney(login, user.getMoney() + GOLD_LEGENDARY);
-                    user.setMoney(userMoney + GOLD_LEGENDARY);
-                }
-            }
-        } catch (SQLException e) {
+        switch (card.getRarity()) {
+            case COMMON -> user.setMoney(userMoney + GOLD_COMMON);
+            case RARE -> user.setMoney(userMoney + GOLD_RARE);
+            case EPIC -> user.setMoney(userMoney + GOLD_EPIC);
+            case LEGENDARY -> user.setMoney(userMoney + GOLD_LEGENDARY);
         }
     }
 }

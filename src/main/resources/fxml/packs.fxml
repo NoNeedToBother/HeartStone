@@ -6,10 +6,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.PacksController"
             prefHeight="720.0" prefWidth="1280.0" fx:id="root">
 
+    <ImageView fx:id="cardCoverIv" layoutX="550" layoutY="250"/>
 </AnchorPane>

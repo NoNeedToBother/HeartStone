@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
+import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
@@ -29,11 +30,21 @@ public class ClientServerMsgHandler {
                     GameApplication.getApplication().loadScene("/fxml/main_menu.fxml");
                 }
             }
+            case OPEN_1_PACK -> {
+                if (checkStatus(json)) {
+                    PacksController.getController().playOpeningAnimation();
+                }
+            }
+            case OPEN_5_PACKS -> {
+                if (checkStatus(json)) {
+                    PacksController.getController().playOpeningAnimation();
+                }
+            }
         }
     }
 
     private boolean checkStatus(JSONObject json) {
-        return json.getString("status").equals("OK");
+        return json.getString("status").equalsIgnoreCase("OK");
     }
 
     private void setGameUser(JSONObject json) {
