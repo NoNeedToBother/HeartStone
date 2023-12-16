@@ -6,11 +6,9 @@ import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
 
-public class Card implements Sprite, Serializable{
+public class Card implements Sprite {
 
     private int hp;
 
@@ -144,17 +142,11 @@ public class Card implements Sprite, Serializable{
 
         @Override
         public Image build() {
-            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                ImageIO.write(img, "PNG", out);
-                InputStream in = new ByteArrayInputStream(out.toByteArray());
-                return new Image(in);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            return BufferedImageUtil.toImage(img);
         }
     }
 
-    public static CardSpriteBuilder SpriteBuilder() {
+    public static CardSpriteBuilder spriteBuilder() {
         return new CardSpriteBuilder();
     }
 }

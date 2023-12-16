@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import javafx.scene.image.Image;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 import javax.imageio.ImageIO;
@@ -35,5 +36,15 @@ public class BufferedImageUtil {
         g2.dispose();
         target = after;
         return target;
+    }
+
+    public static Image toImage(BufferedImage target) {
+        try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            ImageIO.write(target, "PNG", out);
+            InputStream in = new ByteArrayInputStream(out.toByteArray());
+            return new Image(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

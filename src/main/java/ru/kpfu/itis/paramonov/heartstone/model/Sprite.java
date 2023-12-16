@@ -1,6 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.model;
 
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 public interface Sprite {
@@ -11,7 +10,9 @@ public interface Sprite {
 
         SpriteBuilder<T> addImage(String imgUrl);
 
-        SpriteBuilder<T> addRarity(CardRepository.Rarity rarity);
+        default SpriteBuilder<T> addRarity(CardRepository.Rarity rarity) {
+            throw new RuntimeException("Stub!");
+        }
 
         SpriteBuilder<T> scale(int scale);
 

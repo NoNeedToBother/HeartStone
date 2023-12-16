@@ -15,7 +15,6 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PacksController {
@@ -106,7 +105,7 @@ public class PacksController {
     }
 
     private void setCardCoverImageView() {
-        Image cardCover = Card.SpriteBuilder()
+        Image cardCover = Card.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
                 .setStyle(Card.CardStyle.BASE.toString())
                 .scale(3)
@@ -130,7 +129,7 @@ public class PacksController {
     private void showCard(ImageView cardIv, int cardId) {
         CardRepository.CardTemplate cardTemplate = CardRepository.getCardTemplate(cardId);
 
-        Image card = Card.SpriteBuilder()
+        Image card = Card.spriteBuilder()
                 .addImage(cardTemplate.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardTemplate.getRarity())
