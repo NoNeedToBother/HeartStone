@@ -58,6 +58,10 @@ public class ClientRoomMsgHandler {
                     System.out.println(json.getString("reason"));
                 }
             }
+            case CARD_HERO_ATTACK -> {
+                BattlefieldController.getController().updateHp(json);
+                BattlefieldController.getController().playAttackingAnimation(json);
+            }
         }
     }
 
