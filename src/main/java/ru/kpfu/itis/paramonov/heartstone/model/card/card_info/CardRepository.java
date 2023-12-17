@@ -1,7 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +7,7 @@ public class CardRepository {
 
     public enum CardAction {
         SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, COST_UP, COST_DOWN, ATTACK, CHOOSE_RANDOM, CONSUME, FREEZE,
-        CONTROL;
+        CONTROL, RUSH_ON_PLAY;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -48,7 +46,9 @@ public class CardRepository {
         CONSUME("Consume", "Destroys other card to trigger effect"),
         REVIVE("Revive", "Summons a card that was once on battlefield"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
-        BURN("Burn", "At the end of turn burned opponent card suffers damage");
+        BURN("Burn", "At the end of turn suffers damage"),
+        FREEZE("Freeze", "Cannot attack for 1 turn"),
+        RUSH("Rush", "Can  attack immediately after played");
 
         private String displayName;
 
@@ -69,11 +69,15 @@ public class CardRepository {
     }
 
     public enum Faction {
-        NO_FACTION, STONE, ELEMENTAL //etc
+        NO_FACTION, STONE, ELEMENTAL, ANIMAL //etc
     }
 
     public enum Rarity {
         COMMON, RARE, EPIC, LEGENDARY
+    }
+
+    public enum Status {
+        FROZEN, CANNOT_ATTACK, ATTACKED
     }
 
     private static final String DEFAULT_PATH = "/assets/images/cards";
@@ -127,8 +131,8 @@ public class CardRepository {
                 DEFAULT_PATH + "/fire_pack.png", List.of(CardAction.CONSUME.setTargets(3)), List.of(KeyWord.CONSUME),
                 Faction.ELEMENTAL, Rarity.EPIC),
 
-        IceElemental(5, "Ice elemental", 2, 1, 1, "Battlecry: freezes random enemy", DEFAULT_PATH + "/ice_elemental.png",
-                List.of(CardAction.CHOOSE_RANDOM, CardAction.FREEZE), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.COMMON),
+        IceElemental(5, "Ice elemental", 1, 2, 1, "Battlecry: freezes random enemy", DEFAULT_PATH + "/ice_elemental.png",
+                List.of(CardAction.CHOOSE_RANDOM, CardAction.FREEZE), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.COMMON),
 
         TheRock(6, "The Rock", 4, 4, 5, "Punishment: attacks enemy hero and gains +1/1", DEFAULT_PATH + "/dwayne_rock.png",
                 List.of(CardAction.ATTACK, CardAction.HP_UP.setStats(1), CardAction.ATK_UP.setStats(1)), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
@@ -137,15 +141,19 @@ public class CardRepository {
                 DEFAULT_PATH + "/hypnoshroom.png", List.of(CardAction.CHOOSE_RANDOM, CardAction.CONTROL),
                 List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
 
-        Whelp(8, "Dragon whelp", 2, 1, 4, "Battlecry: burn random enemy (2)", DEFAULT_PATH + "/whelp.png",
-                List.of(CardAction.CHOOSE_RANDOM, CardAction.ATTACK), List.of(KeyWord.BATTLE_CRY, KeyWord.BURN), Faction.NO_FACTION, Rarity.RARE),
+        Whelp(8, "Dragon whelp", 2, 2, 4, "Battlecry: burn random enemy (2)", DEFAULT_PATH + "/whelp.png",
+                List.of(CardAction.CHOOSE_RANDOM, CardAction.ATTACK), List.of(KeyWord.BATTLE_CRY, KeyWord.BURN), Faction.ANIMAL,
+                Rarity.RARE),
 
         Phoenix(9, "Phoenix", 2, 2, 4, "Last wish: reborns and gains +2/1", DEFAULT_PATH + "/phoenix.png",
                 List.of(CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(1)), List.of(KeyWord.LAST_WISH),
                 Faction.ELEMENTAL, Rarity.EPIC),
 
         StoneGiant(10, "Stone giant", 6, 6, 10, "Cost -1 for each your destroyed stone card", DEFAULT_PATH + "/stone_giant.png",
-                List.of(CardAction.COST_DOWN.setStats(1)), List.of(), Faction.STONE, Rarity.EPIC);
+                List.of(CardAction.COST_DOWN.setStats(1)), List.of(), Faction.STONE, Rarity.EPIC),
+
+        FierceTiger(11, "Fierce tiger", 3, 4, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
+                Rarity.RARE);
 
 
         private int id;

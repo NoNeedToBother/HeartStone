@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 
 import java.sql.SQLException;
@@ -27,6 +28,7 @@ public class HeroHelper {
         responseAttacked.put("room_action", GameRoom.RoomAction.CARD_HERO_ATTACK.toString());
         responseAttacker.put("field_pos", attackerPos);
         responseAttacked.put("opponent_field_pos", attackerPos);
+        attacker.addStatus(CardRepository.Status.ATTACKED);
         int newHp = attackedHero.getHp() - attacker.getAtk();
         attackedHero.setHp(newHp);
         if (newHp > 0) {

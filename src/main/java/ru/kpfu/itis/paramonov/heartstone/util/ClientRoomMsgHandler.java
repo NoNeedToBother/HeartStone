@@ -47,7 +47,10 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().addOpponentCard(json);
                 BattlefieldController.getController().changeOpponentMana(json.getInt("opponent_mana"));
             }
-            case CARD_CARD_ATTACK -> BattlefieldController.getController().updateCards(json);
+            case CARD_CARD_ATTACK -> {
+                BattlefieldController.getController().playAttackingAnimation(json);
+                BattlefieldController.getController().updateCards(json);
+            }
             case GET_OPPONENT_MANA -> {
                 BattlefieldController.getController().setMana(json);
             }
@@ -56,6 +59,14 @@ public class ClientRoomMsgHandler {
                     BattlefieldController.getController().placeCard(json.getInt("hand_pos"));
                 } else {
                     System.out.println(json.getString("reason"));
+                }
+            }
+            case CHECK_CARD_TO_ATTACK -> {
+                if (json.getString("status").equals("ok")) {
+                    switch (json.getString("target")) {
+                        case "hero" -> BattlefieldController.getController().attack(json.getInt("pos"), null, "hero");
+                        case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
+                    }
                 }
             }
             case CARD_HERO_ATTACK -> {
