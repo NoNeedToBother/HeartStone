@@ -23,7 +23,7 @@ public class ClientRoomMsgHandler {
             }
             case GET_INITIAL_INFO -> {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
-                BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 BattlefieldController.getController().setHeroes(json);
             }
             case END_TURN -> {
@@ -33,7 +33,7 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().setActive(true);
                 BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
                 try {
-                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                    BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 } catch (JSONException ignored) {}
                 BattlefieldController.getController().setMana(json);
             }
@@ -41,7 +41,7 @@ public class ClientRoomMsgHandler {
                 if (json.getString("card_status").equals("drawn")) {
                     BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
                 }
-                BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
             }
             case PLAY_CARD_OPPONENT -> {
                 BattlefieldController.getController().addOpponentCard(json);

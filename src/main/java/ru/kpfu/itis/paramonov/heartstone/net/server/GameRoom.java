@@ -159,11 +159,13 @@ public class GameRoom {
                     if (player1Hero.getHp() <= 0 && player2Hero.getHp() <= 0) HeroHelper.onTie();
                     else if (player1Hero.getHp() <= 0) {
                         HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
+                        end();
                         sendResponse(responseWinner.toString(), player2);
                         sendResponse(responseDefeated.toString(), player1);
                     }
                     else if (player2Hero.getHp() <= 0){
                         HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
+                        end();
                         sendResponse(responseWinner.toString(), player1);
                         sendResponse(responseDefeated.toString(), player2);
                     }
@@ -244,7 +246,6 @@ public class GameRoom {
         Map<String, List<Card>> allCards = getAllCards(client);
         try {
             cardToDraw = allCards.get("deck").remove(0);
-            putDeckInfo(allCards.get("deck"), deck);
             if (allCards.get("hand").size() == HAND_SIZE) {
                 response.put("card_status", "burned");
             } else {
@@ -255,17 +256,10 @@ public class GameRoom {
         } catch (IndexOutOfBoundsException e) {
             response.put("card_status", "no_card");
         }
-        response.put("deck", deck);
+        response.put("deck_size", allCards.get("deck").size());
         response.put("status", "ok");
 
         sendResponse(response.toString(), client);
-    }
-
-
-    private void putDeckInfo(List<Card> deck, JSONArray deckArray) {
-        for (Card card : deck) {
-            putCardInfo(card, deckArray);
-        }
     }
 
     private void sendResponse(String response, GameServer.Client client) {
@@ -327,7 +321,6 @@ public class GameRoom {
     private void putInitialInfo(JSONObject response, List<Card> deck, GameServer.Client client) {
         response.put("room_action", RoomAction.GET_INITIAL_INFO.toString());
         JSONArray arrayHand = new JSONArray();
-        JSONArray arrayDeck = new JSONArray();
 
         int counter = 1;
 
@@ -338,15 +331,13 @@ public class GameRoom {
                 handCards.add(card);
                 putCardInfo(card, arrayHand);
             }
-            else putCardInfo(card, arrayDeck);
             counter++;
         }
         deck.removeAll(handCards);
-        if (client.equals(player1)) player1AllCards.put("hand", handCards);
-        else player2AllCards.put("hand", handCards);
+        getAllCards(client).put("hand", handCards);
 
         response.put("hand", arrayHand);
-        response.put("deck", arrayDeck);
+        response.put("deck_size", deck.size());
     }
 
     private void putCardInfo(Card card, JSONArray responseCards) {

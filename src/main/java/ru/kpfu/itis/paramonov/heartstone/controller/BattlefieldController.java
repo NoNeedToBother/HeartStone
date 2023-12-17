@@ -1,13 +1,11 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
@@ -52,7 +50,7 @@ public class BattlefieldController {
     private List<Card> field = new ArrayList<>();
     private List<Card> opponentField = new ArrayList<>();
 
-    private List<Card> deck = new ArrayList<>();
+    private int deckSize;
 
     private boolean active;
 
@@ -443,14 +441,8 @@ public class BattlefieldController {
         addCardToHand(card, hBoxCardsChildren);
     }
 
-    public void setDeck(JSONArray deck) {
-        List<Card> tempDeck = new ArrayList<>();
-        for (int i = 0; i < deck.length(); i++) {
-            JSONObject json = deck.getJSONObject(i);
-            CardRepository.CardTemplate card = CardRepository.getCardTemplate(json.getInt("id"));
-            tempDeck.add(new Card(card));
-        }
-        this.deck = tempDeck;
+    public void setDeckSize(int deckSize) {
+        this.deckSize = deckSize;
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {

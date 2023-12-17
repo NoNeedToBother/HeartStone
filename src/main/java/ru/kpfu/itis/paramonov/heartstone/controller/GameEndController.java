@@ -2,7 +2,6 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
@@ -11,17 +10,12 @@ import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
 public class GameEndController {
 
-    @FXML
-    private Text title;
-
     private GameButton btnMainMenu;
 
     private GameButton btnPlay;
 
     @FXML
     private VBox buttons;
-
-    private static GameEndController controller;
 
     @FXML
     private void initialize() {
@@ -64,13 +58,5 @@ public class GameEndController {
                 .setServerAction(ServerMessage.ServerAction.CONNECT)
                 .build();
         client.sendMessage(msg);
-    }
-
-    public void setTitle(String title) {
-        this.title.setText(title);
-    }
-
-    public static GameEndController getController() {
-        return controller;
     }
 }
