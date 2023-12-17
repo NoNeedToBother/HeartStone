@@ -142,6 +142,11 @@ public class GameServer {
             connected = true;
         }
 
+        public void notifyGameEnd() {
+            currentRoom = null;
+            connected = false;
+        }
+
         private Runnable getConnectionLogic() {
             Runnable runnable = () -> {
                 try {
@@ -200,6 +205,7 @@ public class GameServer {
             server.clientsToConnect.remove(this);
             server.clients.remove(this);
             isDisconnected = true;
+            if (currentRoom != null) currentRoom.notifyDisconnected(this);
             if (connectionThread != null) connectionThread.interrupt();
         }
 

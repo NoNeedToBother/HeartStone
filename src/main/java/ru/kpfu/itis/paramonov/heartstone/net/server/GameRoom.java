@@ -8,6 +8,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -148,7 +149,7 @@ public class GameRoom {
                 else attackedHero = player1Hero;
                 JSONObject responseAttacker = new JSONObject();
                 JSONObject responseAttacked = new JSONObject();
-                HeroHelper.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker, Integer.parseInt(msg.getString("pos")));
+                PlayerHelper.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker, Integer.parseInt(msg.getString("pos")));
 
                 sendResponse(responseAttacker.toString(), client);
                 sendResponse(responseAttacked.toString(), getOtherPlayer(client));
@@ -156,15 +157,15 @@ public class GameRoom {
                 if (attackedHero.getHp() <= 0) {
                     JSONObject responseWinner = new JSONObject();
                     JSONObject responseDefeated = new JSONObject();
-                    if (player1Hero.getHp() <= 0 && player2Hero.getHp() <= 0) HeroHelper.onTie();
+                    if (player1Hero.getHp() <= 0 && player2Hero.getHp() <= 0) PlayerHelper.onTie();
                     else if (player1Hero.getHp() <= 0) {
-                        HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
+                        PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
                         end();
                         sendResponse(responseWinner.toString(), player2);
                         sendResponse(responseDefeated.toString(), player1);
                     }
                     else if (player2Hero.getHp() <= 0){
-                        HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
+                        PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
                         end();
                         sendResponse(responseWinner.toString(), player1);
                         sendResponse(responseDefeated.toString(), player2);
@@ -297,15 +298,15 @@ public class GameRoom {
         CardHelper.makeCardsUnableToAttackOnStart(player1AllCards.get("deck"));
         CardHelper.makeCardsUnableToAttackOnStart(player2AllCards.get("deck"));
 
-        int player1Hp = HeroHelper.getInitialHp(player1AllCards.get("deck"));
-        int player2Hp = HeroHelper.getInitialHp(player2AllCards.get("deck"));
+        int player1Hp = PlayerHelper.getInitialHp(player1AllCards.get("deck"));
+        int player2Hp = PlayerHelper.getInitialHp(player2AllCards.get("deck"));
         player1Hero = new Hero(player1Hp, player1Hp, 0, 0);
         player2Hero = new Hero(player2Hp, player2Hp, 0, 0);
 
         JSONObject player1Response = new JSONObject();
         JSONObject player2Response = new JSONObject();
-        HeroHelper.putHpInfo(player1Response, player1Hp, player2Hp);
-        HeroHelper.putHpInfo(player2Response, player2Hp, player1Hp);
+        PlayerHelper.putHpInfo(player1Response, player1Hp, player2Hp);
+        PlayerHelper.putHpInfo(player2Response, player2Hp, player1Hp);
 
         putInitialInfo(player1Response, player1AllCards.get("deck"), player1);
         putInitialInfo(player2Response, player2AllCards.get("deck"), player2);
@@ -393,9 +394,19 @@ public class GameRoom {
         server.sendResponse(json.toString(), player2);
     }
 
+    public void notifyDisconnected(GameServer.Client client) {
+        JSONObject response = new JSONObject();
+        response.put("room_action", RoomAction.GAME_END);
+        response.put("result", "win");
+        try {
+            PlayerHelper.updateUsers(response, getOtherPlayer(client), client);
+        } catch (SQLException e) {}
+        sendResponse(response.toString(), getOtherPlayer(client));
+    }
+
     private void end() {
-        player1.setCurrentRoom(null);
-        player2.setCurrentRoom(null);
+        player1.notifyGameEnd();
+        player2.notifyGameEnd();
         player1Hero = null;
         player2Hero = null;
         player1AllCards = null;

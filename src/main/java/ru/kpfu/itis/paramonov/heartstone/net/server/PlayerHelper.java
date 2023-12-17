@@ -10,7 +10,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import java.sql.SQLException;
 import java.util.List;
 
-public class HeroHelper {
+public class PlayerHelper {
     private final static int INITIAL_HP = 25;
 
     public static int getInitialHp(List<Card> deck) {
@@ -62,6 +62,17 @@ public class HeroHelper {
         responseDefeated.put("money", defeatedMoney);
         responseWinner.put("result", "win");
         responseDefeated.put("result", "defeat");
+    }
+
+    public static void updateUsers(JSONObject response, GameServer.Client winner, GameServer.Client defeated) throws SQLException {
+        UserService service = new UserService();
+        User winnerUser = service.get(winner.getUserLogin());
+        User defeatedUser = service.get(defeated.getUserLogin());
+        int winnerMoney = winnerUser.getMoney() + GOLD_FOR_WIN;
+        int defeatedMoney = defeatedUser.getMoney() + GOLD_FOR_DEFEAT;
+        service.updateMoney(winnerUser.getLogin(), winnerMoney);
+        service.updateMoney(defeatedUser.getLogin(), defeatedMoney);
+        response.put("money", winnerMoney);
     }
 
     public static void onTie() {}
