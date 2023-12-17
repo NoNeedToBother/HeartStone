@@ -162,10 +162,10 @@ public class GameRoom {
                         sendResponse(responseWinner.toString(), player2);
                         sendResponse(responseDefeated.toString(), player1);
                     }
-                    else {
+                    else if (player2Hero.getHp() <= 0){
                         HeroHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
-                        sendResponse(responseWinner.toString(), player2);
-                        sendResponse(responseDefeated.toString(), player1);
+                        sendResponse(responseWinner.toString(), player1);
+                        sendResponse(responseDefeated.toString(), player2);
                     }
                 }
             }

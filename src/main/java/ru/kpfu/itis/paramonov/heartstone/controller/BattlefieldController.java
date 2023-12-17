@@ -17,6 +17,7 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
+import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
@@ -135,7 +136,17 @@ public class BattlefieldController {
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
     }
+    public void onGameEnd(JSONObject json) {
+        User.getInstance().setMoney(json.getInt("money"));
+        switch (json.getString("result")) {
+            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), this);
+            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), this);
+        }
+    }
 
+    public void onGameEndAnimationEnded() {
+        GameApplication.getApplication().loadScene("/main_menu.png");
+    }
     public void attack(Integer pos, Integer opponentPos, String target) {
         String msg = null;
         switch (target) {
