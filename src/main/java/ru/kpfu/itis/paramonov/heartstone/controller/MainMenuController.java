@@ -87,6 +87,9 @@ public class MainMenuController {
             onPlayClicked();
             mouseEvent.consume();
         });
+        btnDeck.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().loadScene("/deck.fxml");
+        });
         btnPacks.setOnMouseClicked(mouseEvent -> {
             GameApplication.getApplication().loadScene("/packs.fxml");
             mouseEvent.consume();

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.DeckController"
+            prefHeight="720.0" prefWidth="1280.0">
+
+    <HBox>
+        <VBox prefWidth="200" fx:id="deck">
+            <ScrollPane prefWidth="200" prefHeight="600" fx:id="spDeckCards">
+                <VBox fx:id="vBoxDeckCards">
+
+                </VBox>
+            </ScrollPane>
+        </VBox>
+        <ScrollPane prefWidth="1080" prefHeight="600" AnchorPane.leftAnchor="20">
+            <FlowPane fx:id="fpCards" prefWidth="1080" prefHeight="710"/>
+        </ScrollPane>
+    </HBox>
+
+</AnchorPane>
