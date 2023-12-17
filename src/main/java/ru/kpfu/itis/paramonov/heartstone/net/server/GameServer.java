@@ -77,6 +77,7 @@ public class GameServer {
 
     public void startRoom(Client client1, Client client2) {
         GameRoom room = new GameRoom(client1, client2, this);
+        System.out.println("huh?");
         client1.setCurrentRoom(room);
         client2.setCurrentRoom(room);
         this.rooms.add(room);

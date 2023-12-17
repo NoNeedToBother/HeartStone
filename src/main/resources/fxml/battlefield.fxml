@@ -38,6 +38,12 @@
 
     <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
 
+    <ImageView fx:id="deckCoverIv" AnchorPane.leftAnchor="75" AnchorPane.bottomAnchor="180"/>
+    <StackPane AnchorPane.leftAnchor="190" AnchorPane.bottomAnchor="240">
+        <ImageView fx:id="deckInfoIv"/>
+        <Text fx:id="deckInfo"/>
+    </StackPane>
+
     <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxHandCards" spacing="30">
     </HBox>
 

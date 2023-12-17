@@ -7,6 +7,8 @@ import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
+import java.util.Base64;
+
 public class ClientRoomMsgHandler {
     public void handle(String response) {
         JSONObject json = new JSONObject(response);
@@ -18,6 +20,7 @@ public class ClientRoomMsgHandler {
         loadBattlefieldIfNecessary();
         switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
             case GET_BACKGROUND -> {
+                loadBattlefieldIfNecessary();
                 String bg = json.getString("background");
                 BattlefieldController.getController().setBackground(bg);
             }
@@ -73,9 +76,8 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().updateHp(json);
                 BattlefieldController.getController().playAttackingAnimation(json);
             }
-            case GAME_END -> {
-                BattlefieldController.getController().onGameEnd(json);
-            }
+            case GAME_END -> BattlefieldController.getController().onGameEnd(json);
+            case CHANGE_HP -> BattlefieldController.getController().updateHp(json);
         }
     }
 

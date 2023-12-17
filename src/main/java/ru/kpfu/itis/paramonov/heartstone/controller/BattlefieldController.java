@@ -8,6 +8,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,6 +81,13 @@ public class BattlefieldController {
     @FXML
     private HeroInfo opponentHeroInfo;
 
+    @FXML
+    private ImageView deckCoverIv;
+    @FXML
+    private ImageView deckInfoIv;
+    @FXML
+    private Text deckInfo;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -95,9 +104,21 @@ public class BattlefieldController {
         setHandBackground();
         addEndTurnBtn(GameButton.GameButtonStyle.RED);
         addCardPlacements();
+        setDeckInfo();
         makeCardInfoWrapText();
         manaBar.setMana(0, 0);
         opponentManaBar.setMana(0, 0);
+    }
+
+    private void setDeckInfo() {
+        Image deckCover = Card.spriteBuilder()
+                .addImage("/assets/images/cards/card_cover.png")
+                .setStyle(Card.CardStyle.BASE.toString())
+                .scale(2)
+                .build();
+        deckCoverIv.setImage(deckCover);
+
+        deckInfoIv.setImage(new Image(GameApplication.class.getResource("/assets/images/mana_bar/text_bg.png").toString()));
     }
 
     public void setHeroes(JSONObject json) {
@@ -443,6 +464,10 @@ public class BattlefieldController {
 
     public void setDeckSize(int deckSize) {
         this.deckSize = deckSize;
+        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 16);
+        deckInfo.setFont(font);
+        deckInfo.setText(deckSize + " cards");
+        if (deckSize == 0) deckCoverIv.setImage(null);
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {

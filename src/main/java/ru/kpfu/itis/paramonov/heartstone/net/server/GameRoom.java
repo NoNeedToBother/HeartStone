@@ -16,7 +16,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP
     }
 
     private GameServer.Client player1;
@@ -25,7 +25,11 @@ public class GameRoom {
 
     private Hero player1Hero;
 
+    private int burntCardDmgPlayer1 = 0;
+
     private Hero player2Hero;
+
+    private int burntCardDmgPlayer2 = 0;
 
     private GameServer.Client activePlayer;
 
@@ -241,8 +245,8 @@ public class GameRoom {
     private void drawCard(GameServer.Client client) {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.DRAW_CARD.toString());
-        JSONArray deck = new JSONArray();
         Card cardToDraw;
+        JSONObject opponentResponse = new JSONObject();
 
         Map<String, List<Card>> allCards = getAllCards(client);
         try {
@@ -256,6 +260,14 @@ public class GameRoom {
             putCardInfo(cardToDraw, response);
         } catch (IndexOutOfBoundsException e) {
             response.put("card_status", "no_card");
+            JSONObject responsePlayer1 = new JSONObject();
+            JSONObject responsePlayer2 = new JSONObject();
+            if (client.equals(player1)) burntCardDmgPlayer1++;
+            else burntCardDmgPlayer2++;
+            PlayerHelper.dealDamageOnCardBurnt(client, player1, burntCardDmgPlayer1, burntCardDmgPlayer2, player1Hero,
+                    player2Hero, responsePlayer1, responsePlayer2);
+            sendResponse(responsePlayer1.toString(), player1);
+            sendResponse(responsePlayer2.toString(), player2);
         }
         response.put("deck_size", allCards.get("deck").size());
         response.put("status", "ok");
@@ -412,7 +424,6 @@ public class GameRoom {
         player1AllCards = null;
         player2AllCards = null;
         activePlayer = null;
-        System.gc();
     }
 
 }
