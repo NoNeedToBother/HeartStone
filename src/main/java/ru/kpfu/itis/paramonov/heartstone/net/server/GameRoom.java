@@ -15,7 +15,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK;
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK
     }
 
     private GameServer.Client player1;
@@ -78,8 +78,14 @@ public class GameRoom {
     public void handleMessage(JSONObject msg, GameServer.Client client) {
         switch (RoomAction.valueOf(msg.getString("room_action"))) {
             case END_TURN -> {
-                if (client.equals(player1)) activePlayer = player2;
-                else activePlayer = player1;
+                if (client.equals(player1)) {
+                    activePlayer = player2;
+                    CardHelper.makeCardsAbleToAttack(player1AllCards.get("field"));
+                }
+                else {
+                    activePlayer = player1;
+                    CardHelper.makeCardsAbleToAttack(player2AllCards.get("field"));
+                }
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -104,22 +110,36 @@ public class GameRoom {
                 response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
                 int mana = getHero(client).getMana();
 
-                PlayedCardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
+                CardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
                         player1AllCards, player2AllCards, mana);
 
                 sendResponse(response.toString(), client);
             }
 
             case PLAY_CARD -> {
-                Card playedCard = PlayedCardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
+                Card playedCard = CardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
                 Hero hero = getHero(client);
                 int newMana = hero.getMana() - playedCard.getCost();
                 hero.setMana(newMana);
 
                 JSONObject response = new JSONObject();
-                PlayedCardHelper.putPlayedCardForOpponent(response, playedCard);
+                CardHelper.putPlayedCardForOpponent(response, playedCard);
                 response.put("opponent_mana", newMana);
                 sendResponse(response.toString(), getOtherPlayer(client));
+            }
+
+            case CHECK_CARD_TO_ATTACK -> {
+                JSONObject response = new JSONObject();
+                HashMap<String, List<Card>> allCards = getAllCards(client);
+                String target = msg.getString("target");
+                int pos = Integer.parseInt(msg.getString("pos"));
+                if (target.equals("hero")) {
+                    CardHelper.checkCardToAttack(response, allCards.get("field").get(pos), pos, target);
+                } else {
+                    int opponentPos = Integer.parseInt(msg.getString("opponent_pos"));
+                    CardHelper.checkCardToAttack(response, allCards.get("field").get(pos), pos, opponentPos, target);
+                }
+                sendResponse(response.toString(), client);
             }
 
             case CARD_HERO_ATTACK -> {
@@ -150,8 +170,7 @@ public class GameRoom {
 
                 Card attacker = attackerField.get(Integer.parseInt(msg.getString("attacker_pos")));
                 Card attacked = attackedField.get(Integer.parseInt(msg.getString("attacked_pos")));
-                attacked.decreaseHp(attacker.getAtk());
-                attacker.decreaseHp(attacked.getAtk());
+                CardHelper.decreaseHpOnDirectAttack(attacker, attacked);
 
                 JSONObject attackerResponse = new JSONObject();
                 attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
@@ -167,8 +186,8 @@ public class GameRoom {
                 putOpponentChanges(attackedResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 
-                if (attacker.getHp() <= 0) attackerField.remove(attacker);
-                if (attacked.getHp() <= 0) attackedField.remove(attacked);
+                CardHelper.removeDefeatedCards(attackerField);
+                CardHelper.removeDefeatedCards(attackedField);
             }
         }
     }
@@ -202,8 +221,6 @@ public class GameRoom {
         Card cardToDraw;
 
         Map<String, List<Card>> allCards = getAllCards(client);
-        //if (client.equals(player1)) allCards = player1AllCards;
-        //else allCards = player2AllCards;
         try {
             cardToDraw = allCards.get("deck").remove(0);
             putDeckInfo(allCards.get("deck"), deck);
@@ -262,6 +279,8 @@ public class GameRoom {
     private void sendInitialInfo() {
         player1AllCards.put("deck", getShuffledDeck(player1));
         player2AllCards.put("deck", getShuffledDeck(player2));
+        CardHelper.makeCardsUnableToAttackOnStart(player1AllCards.get("deck"));
+        CardHelper.makeCardsUnableToAttackOnStart(player2AllCards.get("deck"));
 
         int player1Hp = HeroHelper.getInitialHp(player1AllCards.get("deck"));
         int player2Hp = HeroHelper.getInitialHp(player2AllCards.get("deck"));

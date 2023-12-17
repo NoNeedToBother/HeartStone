@@ -127,11 +127,27 @@ public class BattlefieldController {
 
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
-                    .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
+                    .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
                     .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
+                    .setParameter("target", "hero")
                     .build();
+
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
+    }
+
+    public void attack(Integer pos, Integer opponentPos, String target) {
+        GameRoom.RoomAction action = null;
+        switch (target) {
+            case "hero" -> action = GameRoom.RoomAction.CARD_HERO_ATTACK;
+            case "card" -> action = GameRoom.RoomAction.CARD_CARD_ATTACK;
+        }
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.ROOM)
+                .setRoomAction(action)
+                .setParameter("pos", String.valueOf(pos))
+                .build();
+        GameApplication.getApplication().getClient().sendMessage(msg);
     }
 
     public void playAttackingAnimation(JSONObject json) {
