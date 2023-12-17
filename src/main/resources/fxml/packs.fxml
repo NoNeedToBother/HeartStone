@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.image.ImageView?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.PacksController"
@@ -19,4 +20,8 @@
     <ImageView fx:id="card3" layoutX="770" layoutY="100"/>
     <ImageView fx:id="card4" layoutX="170" layoutY="100"/>
     <ImageView fx:id="card5" layoutX="970" layoutY="100"/>
+
+    <MoneyInfo fx:id="moneyInfo" layoutX="560" layoutY="650"/>
+
+    <VBox AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" fx:id="vBoxBtnBack"/>
 </AnchorPane>

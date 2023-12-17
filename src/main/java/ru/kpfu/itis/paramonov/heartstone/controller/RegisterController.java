@@ -62,7 +62,7 @@ public class RegisterController {
 
     private void setOnClickListeners() {
         btnGoToLogin.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/fxml/login.fxml");
+            application.loadScene("/login.fxml");
             mouseEvent.consume();
         });
 

@@ -80,7 +80,7 @@ public class ClientRoomMsgHandler {
 
     private void loadBattlefieldIfNecessary() {
         if (BattlefieldController.getController() == null) {
-            GameApplication.getApplication().loadScene("/fxml/battlefield.fxml");
+            GameApplication.getApplication().loadScene("/battlefield.fxml");
         }
     }
 }
