@@ -62,6 +62,8 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().updateHp(json);
                 BattlefieldController.getController().playAttackingAnimation(json);
             }
+            case GAME_END -> {
+            }
         }
     }
 
