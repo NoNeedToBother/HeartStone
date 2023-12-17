@@ -59,6 +59,7 @@ public class DeckController {
 
         GameButton btnSave = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GREEN)
+                .setText(GameButton.GameButtonText.SAVE)
                 .scale(4)
                 .build();
 

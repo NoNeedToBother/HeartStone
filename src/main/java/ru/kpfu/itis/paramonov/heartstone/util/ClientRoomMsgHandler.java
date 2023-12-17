@@ -61,7 +61,7 @@ public class ClientRoomMsgHandler {
                 if (json.getString("status").equals("ok")) {
                     BattlefieldController.getController().placeCard(json.getInt("hand_pos"));
                 } else {
-                    System.out.println(json.getString("reason"));
+                    BattlefieldController.getController().showMessage(json.getString("reason"));
                 }
             }
             case CHECK_CARD_TO_ATTACK -> {
@@ -70,6 +70,8 @@ public class ClientRoomMsgHandler {
                         case "hero" -> BattlefieldController.getController().attack(json.getInt("pos"), null, "hero");
                         case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
                     }
+                } else {
+                    BattlefieldController.getController().showMessage("Card cannot attack");
                 }
             }
             case CARD_HERO_ATTACK -> {
@@ -77,7 +79,14 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().playAttackingAnimation(json);
             }
             case GAME_END -> BattlefieldController.getController().onGameEnd(json);
-            case CHANGE_HP -> BattlefieldController.getController().updateHp(json);
+            case CHANGE_HP -> {
+                try {
+                    json.getString("reason");
+                    BattlefieldController.getController().showMessage("You have no card \nand took " +
+                            json.getInt("dmg") + " damage");
+                } catch (JSONException e) {}
+                BattlefieldController.getController().updateHp(json);
+            }
         }
     }
 

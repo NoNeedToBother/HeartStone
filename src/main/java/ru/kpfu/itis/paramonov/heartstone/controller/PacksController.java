@@ -14,6 +14,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
@@ -72,6 +73,10 @@ public class PacksController {
 
     public static PacksController getController() {
         return controller;
+    }
+
+    public void showMessage(String reason, int duration) {
+        GameMessage.make(reason).show(root, duration, 500, 300);
     }
 
     private void addButtons() {

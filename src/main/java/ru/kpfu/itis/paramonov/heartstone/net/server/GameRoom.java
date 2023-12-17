@@ -246,7 +246,6 @@ public class GameRoom {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.DRAW_CARD.toString());
         Card cardToDraw;
-        JSONObject opponentResponse = new JSONObject();
 
         Map<String, List<Card>> allCards = getAllCards(client);
         try {
@@ -264,7 +263,7 @@ public class GameRoom {
             JSONObject responsePlayer2 = new JSONObject();
             if (client.equals(player1)) burntCardDmgPlayer1++;
             else burntCardDmgPlayer2++;
-            PlayerHelper.dealDamageOnCardBurnt(client, player1, burntCardDmgPlayer1, burntCardDmgPlayer2, player1Hero,
+            PlayerHelper.dealDamageOnNoCard(client, player1, burntCardDmgPlayer1, burntCardDmgPlayer2, player1Hero,
                     player2Hero, responsePlayer1, responsePlayer2);
             sendResponse(responsePlayer1.toString(), player1);
             sendResponse(responsePlayer2.toString(), player2);

@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -20,10 +21,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
-import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
-import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo;
-import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar;
+import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
 import java.util.ArrayList;
@@ -87,6 +85,9 @@ public class BattlefieldController {
     private ImageView deckInfoIv;
     @FXML
     private Text deckInfo;
+
+    @FXML
+    private AnchorPane root;
 
     private Card selectedCard = null;
 
@@ -161,6 +162,10 @@ public class BattlefieldController {
             case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), true);
             case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), false);
         }
+    }
+
+    public void showMessage(String reason) {
+        GameMessage.make(reason).show(root, 800, 500, 300);
     }
 
     public void attack(Integer pos, Integer opponentPos, String target) {
