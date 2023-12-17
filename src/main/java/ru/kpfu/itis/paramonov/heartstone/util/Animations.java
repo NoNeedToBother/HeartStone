@@ -45,6 +45,39 @@ public class Animations {
     private static void drawCardCrackingFrame(int pos, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
         img = BufferedImageUtil.addImage(img, "/assets/animations/card_cracking/card_cracking_" + pos + ".png");
+        draw(img, iv);
+    }
+
+    public static void playHeroCrackingAnimation(ImageView iv, BattlefieldController controller) {
+        final int FRAME_AMOUNT = 3;
+
+        Runnable crackingCardAnim = new Runnable() {
+            @Override
+            public void run() {
+
+                for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    drawHeroCrackingFrame(i, iv);
+                }
+                Platform.runLater(controller::onGameEndAnimationEnded);
+            }
+        };
+
+        Thread thread = new Thread(crackingCardAnim);
+        thread.start();
+    }
+
+    private static void drawHeroCrackingFrame(int pos, ImageView iv) {
+        BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
+        img = BufferedImageUtil.addImage(img, "/assets/animations/hero_cracking/hero_cracking_" + pos + ".png");
+        draw(img, iv);
+    }
+
+    private static void draw(BufferedImage img, ImageView iv) {
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             ImageIO.write(img, "PNG", out);
             InputStream in = new ByteArrayInputStream(out.toByteArray());

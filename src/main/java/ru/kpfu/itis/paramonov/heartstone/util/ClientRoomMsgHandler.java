@@ -63,6 +63,7 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().playAttackingAnimation(json);
             }
             case GAME_END -> {
+                BattlefieldController.getController().onGameEnd(json);
             }
         }
     }
