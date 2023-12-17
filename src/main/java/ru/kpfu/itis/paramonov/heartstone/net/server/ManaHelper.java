@@ -11,6 +11,7 @@ public class ManaHelper {
         if (activePlayer.equals(player1)) hero = player1Hero;
         else hero = player2Hero;
         int newMaxMana = hero.getMaxMana() + 1;
+        if (newMaxMana >= 10) newMaxMana = 10;
 
         hero.setMana(newMaxMana);
         hero.setMaxMana(newMaxMana);

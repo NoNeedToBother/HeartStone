@@ -139,14 +139,11 @@ public class BattlefieldController {
     public void onGameEnd(JSONObject json) {
         User.getInstance().setMoney(json.getInt("money"));
         switch (json.getString("result")) {
-            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), this);
-            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), this);
+            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), true);
+            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), false);
         }
     }
 
-    public void onGameEndAnimationEnded() {
-        GameApplication.getApplication().loadScene("/main_menu.png");
-    }
     public void attack(Integer pos, Integer opponentPos, String target) {
         String msg = null;
         switch (target) {

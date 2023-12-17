@@ -3,12 +3,18 @@ package ru.kpfu.itis.paramonov.heartstone.util;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.json.JSONArray;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
+import ru.kpfu.itis.paramonov.heartstone.controller.GameEndController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 
 import javax.imageio.ImageIO;
@@ -48,7 +54,7 @@ public class Animations {
         draw(img, iv);
     }
 
-    public static void playHeroCrackingAnimation(ImageView iv, BattlefieldController controller) {
+    public static void playHeroCrackingAnimation(ImageView iv, boolean win) {
         final int FRAME_AMOUNT = 3;
 
         Runnable crackingCardAnim = new Runnable() {
@@ -63,7 +69,24 @@ public class Animations {
                     }
                     drawHeroCrackingFrame(i, iv);
                 }
-                Platform.runLater(controller::onGameEndAnimationEnded);
+                Platform.runLater(() -> {
+                    FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
+                    try {
+                        AnchorPane pane = loader.load();
+                        Text title = new Text();
+                        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 64);
+                        title.setFont(font);
+                        title.setX(540);
+                        title.setY(100);
+                        if (win) title.setText("You won!");
+                        else title.setText("You lost!");
+                        pane.getChildren().add(title);
+                        Scene scene = new Scene(pane);
+                        GameApplication.getApplication().getPrimaryStage().setScene(scene);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         };
 

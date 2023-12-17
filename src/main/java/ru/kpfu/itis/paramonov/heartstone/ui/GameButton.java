@@ -12,7 +12,7 @@ import java.io.*;
 
 public class GameButton extends Button {
     public enum GameButtonText {
-        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN, OPEN_PACKS
+        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN, OPEN_PACKS, MAIN_MENU
     }
 
     public enum GameButtonStyle {
@@ -112,6 +112,9 @@ public class GameButton extends Button {
                 }
                 case OPEN_PACKS -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/labels/open_packs.png");
+                }
+                case MAIN_MENU -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/main_menu.png");
                 }
                 default -> throw new RuntimeException("Impossible");
             }
