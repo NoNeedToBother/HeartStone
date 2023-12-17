@@ -169,12 +169,16 @@ public class GameRoom {
                 }
 
                 Card attacker = attackerField.get(Integer.parseInt(msg.getString("attacker_pos")));
+                attacker.addStatus(CardRepository.Status.ATTACKED);
                 Card attacked = attackedField.get(Integer.parseInt(msg.getString("attacked_pos")));
                 CardHelper.decreaseHpOnDirectAttack(attacker, attacked);
 
                 JSONObject attackerResponse = new JSONObject();
                 attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
                 attackerResponse.put("status", "ok");
+                attackerResponse.put("pos", Integer.parseInt(msg.getString("attacker_pos")));
+                attackerResponse.put("opponent_pos", Integer.parseInt(msg.getString("attacked_pos")));
+                attackerResponse.put("anim", "attacker");
                 putFieldChanges(attackerResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
                 putOpponentChanges(attackerResponse, attackedField, Integer.parseInt(msg.getString("attacked_pos")));
                 sendResponse(attackerResponse.toString(), client);
@@ -182,6 +186,9 @@ public class GameRoom {
                 JSONObject attackedResponse = new JSONObject();
                 attackedResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
                 attackedResponse.put("status", "ok");
+                attackedResponse.put("opponent_pos", Integer.parseInt(msg.getString("attacker_pos")));
+                attackedResponse.put("pos", Integer.parseInt(msg.getString("attacked_pos")));
+                attackedResponse.put("anim", "attacked");
                 putFieldChanges(attackedResponse, attackedField, Integer.parseInt(msg.getString("attacked_pos")));
                 putOpponentChanges(attackedResponse, attackerField, Integer.parseInt(msg.getString("attacker_pos")));
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));

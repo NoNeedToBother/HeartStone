@@ -47,7 +47,10 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().addOpponentCard(json);
                 BattlefieldController.getController().changeOpponentMana(json.getInt("opponent_mana"));
             }
-            case CARD_CARD_ATTACK -> BattlefieldController.getController().updateCards(json);
+            case CARD_CARD_ATTACK -> {
+                BattlefieldController.getController().playAttackingAnimation(json);
+                BattlefieldController.getController().updateCards(json);
+            }
             case GET_OPPONENT_MANA -> {
                 BattlefieldController.getController().setMana(json);
             }
