@@ -7,6 +7,8 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Card implements Sprite {
 
@@ -15,6 +17,8 @@ public class Card implements Sprite {
     private int atk;
 
     private int cost;
+
+    private List<CardRepository.Status> statuses;
 
     private CardRepository.CardTemplate cardInfo;
 
@@ -32,6 +36,8 @@ public class Card implements Sprite {
         this.atk = cardInfo.getAtk();
 
         this.cost = cardInfo.getCost();
+
+        this.statuses = new ArrayList<>();
     }
 
     public Card(int id, int hp, int atk, int cost) {
@@ -83,6 +89,18 @@ public class Card implements Sprite {
 
     public void increaseHp(int hp) {
         this.hp += hp;
+    }
+
+    public List<CardRepository.Status> getStatuses() {
+        return statuses;
+    }
+
+    public void addStatus(CardRepository.Status status) {
+        statuses.add(status);
+    }
+
+    public void removeStatus(CardRepository.Status status) {
+        statuses.remove(status);
     }
 
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {

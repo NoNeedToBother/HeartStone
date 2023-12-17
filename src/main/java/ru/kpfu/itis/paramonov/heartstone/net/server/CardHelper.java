@@ -2,12 +2,14 @@ package ru.kpfu.itis.paramonov.heartstone.net.server;
 
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlayedCardHelper {
+public class CardHelper {
     public static Card onCardPlayed(JSONObject msg, GameServer.Client client, GameServer.Client player1,
                                     HashMap<String, List<Card>> player1AllCards, HashMap<String, List<Card>> player2AllCards) {
         Map<String, List<Card>> allCards = getAllCards(client, player1, player1AllCards, player2AllCards);
@@ -54,5 +56,54 @@ public class PlayedCardHelper {
 
         response.put("hand_pos", handPos);
         response.put("status", "ok");
+    }
+
+    public static void checkCardToAttack(JSONObject response, Card attacker, int pos, String target) {
+        response.put("room_action", GameRoom.RoomAction.CHECK_CARD_TO_ATTACK);
+        response.put("pos", pos);
+        response.put("target", target);
+        boolean canAttack = true;
+        for (CardRepository.Status status : attacker.getStatuses()) {
+            if (status.equals(CardRepository.Status.CANNOT_ATTACK) || status.equals(CardRepository.Status.FROZEN) ||
+                    status.equals(CardRepository.Status.ATTACKED)) {
+                canAttack = false;
+                break;
+            }
+        }
+        if (canAttack) response.put("status", "ok");
+        else response.put("status", "not_ok");
+    }
+
+    public static void checkCardToAttack(JSONObject response, Card attacker, int pos, int opponentPos, String target) {
+        checkCardToAttack(response, attacker, pos, target);
+        response.put("opponent_pos", opponentPos);
+    }
+
+    public static void decreaseHpOnDirectAttack(Card attacker, Card attacked) {
+        attacked.decreaseHp(attacker.getAtk());
+        attacker.decreaseHp(attacked.getAtk());
+    }
+
+    public static void removeDefeatedCards(List<Card> field) {
+        List<Card> defeatedCards = new ArrayList<>();
+        for (Card card : field) {
+            if (card.getHp() <= 0) defeatedCards.add(card);
+        }
+        field.removeAll(defeatedCards);
+    }
+
+    public static void makeCardsAbleToAttack(List<Card> field) {
+        for (Card card : field) {
+            card.removeStatus(CardRepository.Status.ATTACKED);
+        }
+    }
+
+    public static void makeCardsUnableToAttackOnStart(List<Card> deck) {
+        for (Card card : deck) {
+            CardRepository.CardTemplate cardInfo = card.getCardInfo();
+            if (!cardInfo.getActions().contains(CardRepository.CardAction.RUSH_ON_PLAY)) {
+                card.addStatus(CardRepository.Status.ATTACKED);
+            }
+        }
     }
 }

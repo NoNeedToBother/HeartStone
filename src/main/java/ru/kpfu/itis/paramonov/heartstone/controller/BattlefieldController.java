@@ -128,13 +128,14 @@ public class BattlefieldController {
 
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
-                    .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
+                    .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
                     .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
+                    .setParameter("target", "hero")
                     .build();
+
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
     }
-
     public void onGameEnd(JSONObject json) {
         User.getInstance().setMoney(json.getInt("money"));
         switch (json.getString("result")) {
@@ -146,10 +147,40 @@ public class BattlefieldController {
     public void onGameEndAnimationEnded() {
         GameApplication.getApplication().loadScene("/main_menu.png");
     }
+    public void attack(Integer pos, Integer opponentPos, String target) {
+        String msg = null;
+        switch (target) {
+            case "hero" ->
+                msg = ServerMessage.builder()
+                        .setEntityToConnect(ServerMessage.Entity.ROOM)
+                        .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
+                        .setParameter("pos", String.valueOf(pos))
+                        .build();
+            case "card" -> {
+                msg = ServerMessage.builder()
+                        .setEntityToConnect(ServerMessage.Entity.ROOM)
+                        .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
+                        .setParameter("attacked_pos", String.valueOf(opponentPos))
+                        .setParameter("attacker_pos", String.valueOf(pos))
+                        .build();
+
+                onCardDeselected(selectedCard.getAssociatedImageView());
+            }
+        }
+        GameApplication.getApplication().getClient().sendMessage(msg);
+    }
 
     public void playAttackingAnimation(JSONObject json) {
         attacking = true;
         ImageView card;
+        try {
+            int pos = json.getInt("pos");
+            int opponentPos = json.getInt("opponent_pos");
+            if (json.getString("anim").equals("attacker"))
+                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView());
+            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView());
+            return;
+        } catch (JSONException e) {}
         try {
             int pos = json.getInt("field_pos");
             card = field.get(pos).getAssociatedImageView();
@@ -296,12 +327,11 @@ public class BattlefieldController {
 
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
-                    .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
-                    .setParameter("attacked_pos", String.valueOf(opponentField.indexOf(selected)))
-                    .setParameter("attacker_pos", String.valueOf(field.indexOf(selectedCard)))
+                    .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
+                    .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
+                    .setParameter("opponent_pos", String.valueOf(opponentField.indexOf(selected)))
+                    .setParameter("target", "card")
                     .build();
-
-            onCardDeselected(selectedCard.getAssociatedImageView());
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
