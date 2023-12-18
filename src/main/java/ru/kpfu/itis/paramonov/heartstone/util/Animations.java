@@ -70,6 +70,7 @@ public class Animations {
                     drawHeroCrackingFrame(i, iv);
                 }
                 Platform.runLater(() -> {
+                    BattlefieldController.resetController();
                     FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
                     try {
                         AnchorPane pane = loader.load();

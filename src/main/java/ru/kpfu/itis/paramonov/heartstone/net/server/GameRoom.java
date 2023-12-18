@@ -267,6 +267,22 @@ public class GameRoom {
                     player2Hero, responsePlayer1, responsePlayer2);
             sendResponse(responsePlayer1.toString(), player1);
             sendResponse(responsePlayer2.toString(), player2);
+
+            if (player1Hero.getHp() <= 0 || player2Hero.getHp() <= 0) {
+                JSONObject responseWinner = new JSONObject();
+                JSONObject responseDefeated = new JSONObject();
+                if (player1Hero.getHp() <= 0) {
+                    PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
+                    sendResponse(responseWinner.toString(), player2);
+                    sendResponse(responseDefeated.toString(), player1);
+                }
+                else {
+                    PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
+                    sendResponse(responseWinner.toString(), player1);
+                    sendResponse(responseDefeated.toString(), player2);
+                }
+                end();
+            }
         }
         response.put("deck_size", allCards.get("deck").size());
         response.put("status", "ok");

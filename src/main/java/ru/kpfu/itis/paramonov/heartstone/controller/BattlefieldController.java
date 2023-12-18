@@ -99,6 +99,10 @@ public class BattlefieldController {
         return controller;
     }
 
+    public static void resetController() {
+        controller = null;
+    }
+
     @FXML
     private void initialize() {
         controller = this;
