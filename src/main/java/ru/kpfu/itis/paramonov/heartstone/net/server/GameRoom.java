@@ -86,11 +86,11 @@ public class GameRoom {
             case END_TURN -> {
                 if (client.equals(player1)) {
                     activePlayer = player2;
-                    CardHelper.makeCardsAbleToAttack(player1AllCards.get("field"));
+                    CardHelper.changeCardAbilityToAttackOnTurnEnd(player1AllCards.get("field"), player1, player2, server);
                 }
                 else {
                     activePlayer = player1;
-                    CardHelper.makeCardsAbleToAttack(player2AllCards.get("field"));
+                    CardHelper.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
                 }
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());

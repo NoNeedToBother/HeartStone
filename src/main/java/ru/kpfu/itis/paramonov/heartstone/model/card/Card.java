@@ -45,6 +45,7 @@ public class Card implements Sprite {
         this.atk = atk;
         this.cost = cost;
         this.cardInfo = CardRepository.getCardTemplate(id);
+        this.statuses = new ArrayList<>();
     }
 
     public int getHp() {

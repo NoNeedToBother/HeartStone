@@ -65,8 +65,7 @@ public class CardHelper {
         response.put("target", target);
         boolean canAttack = true;
         for (CardRepository.Status status : attacker.getStatuses()) {
-            if (status.equals(CardRepository.Status.CANNOT_ATTACK) || status.equals(CardRepository.Status.FROZEN) ||
-                    status.equals(CardRepository.Status.ATTACKED)) {
+            if (CardRepository.Status.getCardAttackRestrictionStatuses().contains(status)) {
                 canAttack = false;
                 break;
             }
@@ -93,8 +92,24 @@ public class CardHelper {
         field.removeAll(defeatedCards);
     }
 
-    public static void makeCardsAbleToAttack(List<Card> field) {
+    public static void changeCardAbilityToAttackOnTurnEnd(List<Card> field, GameServer.Client player, GameServer.Client otherPlayer,
+                                                          GameServer server) {
         for (Card card : field) {
+            if (card.getStatuses().contains(CardRepository.Status.FROZEN_2)) {
+                card.removeStatus(CardRepository.Status.FROZEN_2);
+                card.addStatus(CardRepository.Status.FROZEN_1);
+            }
+            else if (card.getStatuses().contains(CardRepository.Status.FROZEN_1)) {
+                card.removeStatus(CardRepository.Status.FROZEN_1);
+                card.removeStatus(CardRepository.Status.FROZEN);
+                JSONObject responsePlayer = new JSONObject();
+                JSONObject responseOtherPlayer = new JSONObject();
+                responsePlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+                responseOtherPlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+                putFrozenCardInfo(field.indexOf(card), responsePlayer, responseOtherPlayer, true);
+                server.sendResponse(responsePlayer.toString(), player);
+                server.sendResponse(responseOtherPlayer.toString(), otherPlayer);
+            }
             card.removeStatus(CardRepository.Status.ATTACKED);
         }
     }
@@ -122,6 +137,10 @@ public class CardHelper {
                 checkDestroyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                freezeEnemyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
+                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            }
         }
         else {
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY)) {
@@ -132,9 +151,13 @@ public class CardHelper {
                 checkDestroyOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                freezeEnemyOnPlay(player1AllCards, message, playedCard, responsePlayer2, responsePlayer1);
+                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            }
         }
         if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ON_PLAY)) {
-            checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2);
+            checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
             sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
         removeDefeatedCards(player1AllCards.get("field"));
@@ -155,6 +178,14 @@ public class CardHelper {
         responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
     }
 
+    public static void freezeEnemyOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard, JSONObject responseTargeted, JSONObject responseOther) {
+        Card frozenCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.IceElemental.getId()) {
+            frozenCard.addStatus(CardRepository.Status.FROZEN_1);
+            putFrozenCardInfo(Integer.parseInt(message.getString("opponent_pos")), responseTargeted, responseOther, false);
+        }
+    }
+
     public static void checkEnemyDamageOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard,
                                               JSONObject responseDamaged, JSONObject responseOther) {
         Card damagedCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
@@ -169,27 +200,24 @@ public class CardHelper {
     }
 
     public static void checkDamageOnPlay(HashMap<String, List<Card>> player1AllCards, HashMap<String, List<Card>> player2AllCards,
-                                         Card playedCard, JSONObject player1Response, JSONObject player2Response) {
+                                         Card playedCard, JSONObject player1Response, JSONObject player2Response, GameServer.Client client, GameServer.Client player1) {
         List<Integer> player1Indexes = new ArrayList<>();
         List<Integer> player2Indexes = new ArrayList<>();
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.CrazyPyromaniac.getId()) {
-            for (Card card : player1AllCards.get("field")) {
-                if (!card.equals(playedCard)) {
-                    for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
-                        if (action.getDamage() != 0) {
-                            card.setHp(card.getHp() - action.getDamage());
-                            player1Indexes.add(player1AllCards.get("field").indexOf(card));
-                        }
+            damageAllCardsExceptPlayedAndAdd(player1AllCards.get("field"), playedCard, player1Indexes, false);
+            damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, false);
+        }
+        else if(playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId()) {
+            damageAllCardsExceptPlayedAndAdd(player1AllCards.get("field"), playedCard, player1Indexes, true);
+            damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, true);
+            int defeatedAmount = getDefeatedCardAmount(player1AllCards.get("field")) + getDefeatedCardAmount(player2AllCards.get("field"));
+            if (defeatedAmount != 0) {
+                for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
+                    if (action.toString().equals(CardRepository.CardAction.ATK_UP.toString())) {
+                        playedCard.setAtk(playedCard.getAtk() + action.getAtkIncrease() * defeatedAmount);
                     }
-                }
-            }
-            for (Card card : player2AllCards.get("field")) {
-                if (!card.equals(playedCard)) {
-                    for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
-                        if (action.getDamage() != 0) {
-                            card.setHp(card.getHp() - action.getDamage());
-                            player2Indexes.add(player2AllCards.get("field").indexOf(card));
-                        }
+                    if (action.toString().equals(CardRepository.CardAction.HP_UP.toString())) {
+                        playedCard.setHp(playedCard.getHp() + action.getHpIncrease() * defeatedAmount);
                     }
                 }
             }
@@ -199,7 +227,29 @@ public class CardHelper {
 
         putOpponentChanges(player2Response, player1AllCards.get("field"), player1Indexes);
         putFieldChanges(player2Response, player2AllCards.get("field"), player2Indexes);
+    }
 
+    private static int getDefeatedCardAmount(List<Card> field) {
+        int res = 0;
+        for (Card card : field) {
+            if (card.getHp() <= 0) res += 1;
+        }
+        return res;
+    }
+
+    private static void damageAllCardsExceptPlayedAndAdd(List<Card> field, Card playedCard, List<Integer> playerIndexes, boolean addCard) {
+        for (Card card : field) {
+            if (!card.equals(playedCard)) {
+                for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
+                    if (action.toString().equals(CardRepository.CardAction.DAMAGE_ON_PLAY.toString())) {
+                        card.setHp(card.getHp() - action.getDamage());
+                        playerIndexes.add(field.indexOf(card));
+                    }
+                }
+            } else {
+                if (addCard) playerIndexes.add(field.indexOf(card));
+            }
+        }
     }
 
     public static void checkDestroyOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard,
@@ -218,6 +268,19 @@ public class CardHelper {
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
+    }
+
+    private static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
+        responseDamaged.put("pos", pos);
+        responseOther.put("opponent_pos", pos);
+        if (unfrozen) {
+            responseDamaged.put("status", "no_frozen");
+            responseOther.put("status", "no_frozen");
+        }
+        else {
+            responseDamaged.put("status", CardRepository.Status.FROZEN.toString());
+            responseOther.put("status", CardRepository.Status.FROZEN.toString());
+        }
     }
 
     public static void putFieldChanges(JSONObject response, List<Card> field, List<Integer> positions) {
