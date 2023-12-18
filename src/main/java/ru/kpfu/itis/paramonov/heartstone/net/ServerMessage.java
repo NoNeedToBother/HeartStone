@@ -16,6 +16,8 @@ public class ServerMessage {
         CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT, OPEN_1_PACK, OPEN_5_PACKS //etc
     }
 
+    private ServerMessage() {}
+
     private Entity entityToConnect = null;
 
     private ServerAction serverAction = null;

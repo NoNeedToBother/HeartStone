@@ -49,7 +49,7 @@ public class ClientServerMsgHandler {
                         cardIds = json.getJSONArray("card_ids");
                     } catch (JSONException e) {}
                     PacksController.getController().playOpeningAnimation(cardId, cardIds);
-                    PacksController.getController().setMoney(json.getInt("money"));
+                    PacksController.getController().updateUserInfo(json);
                     try {
                         MainMenuController.getController().setMoney(json.getInt("money"));
                     } catch (NullPointerException e) {}

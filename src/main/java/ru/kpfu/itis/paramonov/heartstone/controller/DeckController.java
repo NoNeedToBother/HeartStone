@@ -15,6 +15,7 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
@@ -43,6 +44,7 @@ public class DeckController {
     @FXML
     private void initialize() {
         setCards();
+        setDeck();
         setButtons();
     }
 
@@ -64,11 +66,29 @@ public class DeckController {
                 .build();
 
         btnSave.setOnMouseClicked(mouseEvent -> {
+            StringBuilder deck = new StringBuilder("[");
+            for (Card card : deckCards) {
+                deck.append(card.getCardInfo().getId()).append(",");
+            }
+            String stringDeck = deck.substring(0, deck.length() - 1) + "]";
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.SERVER)
+                    .setServerAction(ServerMessage.ServerAction.UPDATE_DECK)
+                    .setParameter("deck", stringDeck)
+                    .build();
+            GameApplication.getApplication().getClient().sendMessage(msg);
 
+            List<CardRepository.CardTemplate> cardInfos = new ArrayList<>();
+            for (Card card : deckCards) {
+                cardInfos.add(card.getCardInfo());
+            }
+            User.getInstance().setDeck(cardInfos);
         });
         deck.getChildren().add(0, btnBack);
         deck.getChildren().add(1, btnSave);
     }
+
+    private final int MAX_DECK_CARDS_AMOUNT = 20;
 
     private void setCards() {
         fpCards.setHgap(10);
@@ -88,9 +108,33 @@ public class DeckController {
                     mouseEvent.consume();
                     return;
                 }
+                if (deckCards.size() >= MAX_DECK_CARDS_AMOUNT) {
+                    mouseEvent.consume();
+                    return;
+                }
                 deckCards.add(ivCard);
                 DeckCardInfo deckCardInfo = new DeckCardInfo(ivCard);
+                deckCardInfo.setCard(ivCard);
+                deckCardInfo.setOnMouseClicked(cardInfoMouseEvent -> {
+                    deckCards.remove(deckCardInfo.getCard());
+                    vBoxDeckCards.getChildren().remove(deckCardInfo);
+                });
                 vBoxDeckCards.getChildren().add(deckCardInfo);
+            });
+        }
+    }
+
+    private void setDeck() {
+        List<CardRepository.CardTemplate> deck = User.getInstance().getDeck();
+        for (CardRepository.CardTemplate cardTemplate : deck) {
+            Card card = new Card(cardTemplate);
+            deckCards.add(card);
+            DeckCardInfo deckCardInfo = new DeckCardInfo(card);
+            vBoxDeckCards.getChildren().add(deckCardInfo);
+            deckCardInfo.setCard(card);
+            deckCardInfo.setOnMouseClicked(cardInfoMouseEvent -> {
+                deckCards.remove(deckCardInfo.getCard());
+                vBoxDeckCards.getChildren().remove(deckCardInfo);
             });
         }
     }

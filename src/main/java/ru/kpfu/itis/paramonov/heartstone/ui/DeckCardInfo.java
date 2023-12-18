@@ -10,6 +10,9 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 public class DeckCardInfo extends StackPane {
+
+    private Card card;
+
     public DeckCardInfo(Card card) {
         init(card);
     }
@@ -27,5 +30,13 @@ public class DeckCardInfo extends StackPane {
         text.setFill(Color.WHITE);
         text.setText(card.getCardInfo().getName());
         getChildren().addAll(iv, text);
+    }
+
+    public Card getCard() {
+        return card;
+    }
+
+    public void setCard(Card card) {
+        this.card = card;
     }
 }

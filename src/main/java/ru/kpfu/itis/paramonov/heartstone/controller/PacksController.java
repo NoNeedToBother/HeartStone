@@ -8,6 +8,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
@@ -18,6 +19,7 @@ import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PacksController {
@@ -180,7 +182,9 @@ public class PacksController {
         }
     }
 
-    public void setMoney(int money) {
-        moneyInfo.setMoney(money);
+    public void updateUserInfo(JSONObject json) {
+        moneyInfo.setMoney(json.getInt("money"));
+        List<CardRepository.CardTemplate> cards = CardRepository.getCardsById(json.getString("cards"));
+        User.getInstance().setCards(cards);
     }
 }
