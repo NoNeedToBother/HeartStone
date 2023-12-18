@@ -96,6 +96,9 @@ public class ClientRoomMsgHandler {
                     BattlefieldController.getController().applyChange(json);
                 }
             }
+            case TIMER_UPDATE -> {
+                BattlefieldController.getController().handleTimer(json);
+            }
         }
     }
 

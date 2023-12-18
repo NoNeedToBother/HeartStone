@@ -3,6 +3,7 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -88,6 +89,9 @@ public class BattlefieldController {
 
     @FXML
     private AnchorPane root;
+
+    @FXML
+    private ProgressBar progressBar;
 
     private Card selectedCard = null;
 
@@ -295,6 +299,7 @@ public class BattlefieldController {
         this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
             if (this.btnEndTurn.isClickable()) {
                 active = false;
+                progressBar.setProgress(1.0);
 
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -721,5 +726,20 @@ public class BattlefieldController {
     private void updateMana() {
         manaBar.setMana(player.getMana(), player.getMaxMana());
         opponentManaBar.setMana(opponent.getMana(), opponent.getMaxMana());
+    }
+
+    public void handleTimer(JSONObject json) {
+        if (json.getString("status").equals("end")) {
+            progressBar.setProgress(0);
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.ROOM)
+                    .setRoomAction(GameRoom.RoomAction.END_TURN)
+                    .build();
+
+            GameApplication.getApplication().getClient().sendMessage(msg);
+        } else {
+            int seconds = Integer.parseInt(json.getString("status"));
+            progressBar.setProgress(1 - (double) seconds / json.getInt("maxSeconds"));
+        }
     }
 }

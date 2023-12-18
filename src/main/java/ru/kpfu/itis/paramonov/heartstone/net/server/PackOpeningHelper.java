@@ -156,10 +156,10 @@ public class PackOpeningHelper {
 
     }
 
-    private static int GOLD_COMMON = 25;
-    private static int GOLD_RARE = 50;
-    private static int GOLD_EPIC = 150;
-    private static int GOLD_LEGENDARY = 500;
+    private static int GOLD_COMMON = 20;
+    private static int GOLD_RARE = 40;
+    private static int GOLD_EPIC = 100;
+    private static int GOLD_LEGENDARY = 300;
 
     private static void addGoldForCopy(CardRepository.CardTemplate card, User user) {
         int userMoney = user.getMoney();

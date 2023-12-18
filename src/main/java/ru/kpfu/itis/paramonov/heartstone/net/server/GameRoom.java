@@ -17,7 +17,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE, TIMER_UPDATE
     }
 
     private GameServer.Client player1;
@@ -39,6 +39,10 @@ public class GameRoom {
     HashMap<String, List<Card>> player1AllCards = setPlayerCardMap();
 
     HashMap<String, List<Card>> player2AllCards = setPlayerCardMap();
+
+    private Thread player1Timer;
+
+    private Thread player2Timer;
 
     Random random = new Random();
 
@@ -108,6 +112,7 @@ public class GameRoom {
                 JSONObject responseOpponentMana = new JSONObject();
                 ManaHelper.getOpponentMana(responseOpponentMana, resHero);
                 sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
+                launchTimer(activePlayer);
                 drawCard(activePlayer);
             }
 
@@ -182,14 +187,13 @@ public class GameRoom {
                 if (attackedHero.getHp() <= 0) {
                     JSONObject responseWinner = new JSONObject();
                     JSONObject responseDefeated = new JSONObject();
-                    if (player1Hero.getHp() <= 0 && player2Hero.getHp() <= 0) PlayerHelper.onTie();
-                    else if (player1Hero.getHp() <= 0) {
+                    if (player1Hero.getHp() <= 0) {
                         PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player2, player1);
                         end();
                         sendResponse(responseWinner.toString(), player2);
                         sendResponse(responseDefeated.toString(), player1);
                     }
-                    else if (player2Hero.getHp() <= 0){
+                    else {
                         PlayerHelper.onHeroDefeated(responseWinner, responseDefeated, player1, player2);
                         end();
                         sendResponse(responseWinner.toString(), player1);
@@ -237,6 +241,36 @@ public class GameRoom {
                 CardHelper.removeDefeatedCards(attackerField);
                 CardHelper.removeDefeatedCards(attackedField);
             }
+        }
+    }
+
+    private final int TIMER_MAX_SECONDS = 60;
+    private void launchTimer(GameServer.Client client) {
+        Runnable timerLogic = () -> {
+            int seconds = 0;
+            try {
+                while(seconds < TIMER_MAX_SECONDS && !Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(1000);
+                    seconds++;
+                    JSONObject response = new JSONObject();
+                    response.put("room_action", RoomAction.TIMER_UPDATE.toString());
+                    response.put("status", String.valueOf(seconds));
+                    response.put("maxSeconds", TIMER_MAX_SECONDS);
+                    server.sendResponse(response.toString(), client);
+                }
+            } catch (InterruptedException e) {}
+            JSONObject response = new JSONObject();
+            response.put("room_action", RoomAction.TIMER_UPDATE.toString());
+            response.put("status", "end");
+            server.sendResponse(response.toString(), client);
+        };
+        if (client.equals(player1)) {
+            player1Timer = new Thread(timerLogic);
+            player1Timer.start();
+        }
+        else {
+            player2Timer = new Thread(timerLogic);
+            player2Timer.start();
         }
     }
 
@@ -307,6 +341,7 @@ public class GameRoom {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.BEGIN_TURN);
         response.put("status", "ok");
+        launchTimer(activePlayer);
 
         Hero resHero =
                 ManaHelper.increaseMana(response, activePlayer, player1, player1Hero, player2Hero);
@@ -423,6 +458,7 @@ public class GameRoom {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.GAME_END);
         response.put("result", "win");
+        end();
         try {
             PlayerHelper.updateUsers(response, getOtherPlayer(client), client);
         } catch (SQLException e) {}
@@ -436,6 +472,8 @@ public class GameRoom {
         player2Hero = null;
         player1AllCards = null;
         player2AllCards = null;
+        player1Timer.interrupt();
+        player2Timer.interrupt();
         activePlayer = null;
     }
 
