@@ -6,7 +6,7 @@ import java.util.List;
 public class CardRepository {
 
     public enum CardAction {
-        RUSH_ON_PLAY, DAMAGE_OPPONENT_ON_PLAY;
+        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -18,7 +18,7 @@ public class CardRepository {
 
         public CardAction setStats(int stats) {
             switch (this) {
-                case DAMAGE_OPPONENT_ON_PLAY -> damage = stats;
+                case DAMAGE_ENEMY_ON_PLAY, DAMAGE_ON_PLAY -> damage = stats;
                 default -> throw new RuntimeException("Card does not support stats increase");
             }
             return this;
@@ -45,7 +45,8 @@ public class CardRepository {
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         BURN("Burn", "At the end of turn suffers damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
-        RUSH("Rush", "Can  attack immediately after played");
+        RUSH("Rush", "Can  attack immediately after played"),
+        DESTROY("Destroy", "Sets chosen enemy'hp to zero");
 
         private String displayName;
 
@@ -121,7 +122,7 @@ public class CardRepository {
                 Faction.STONE, Rarity.RARE),
 
         FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to chosen enemy",
-                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_OPPONENT_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
+                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON),
 
         FirePack(4, "Fire elemental pack", 2, 2, 5, "Consume: fire elemental to get +2/2",
@@ -138,9 +139,8 @@ public class CardRepository {
                 DEFAULT_PATH + "/hypnoshroom.png", List.of(),
                 List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
 
-        Whelp(8, "Dragon whelp", 2, 2, 4, "Battlecry: burn chosen enemy (2)", DEFAULT_PATH + "/whelp.png",
-                List.of(), List.of(KeyWord.BATTLE_CRY, KeyWord.BURN), Faction.ANIMAL,
-                Rarity.RARE),
+        Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
+                List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
 
         Phoenix(9, "Phoenix", 2, 2, 4, "Last wish: reborns and gains +2/1", DEFAULT_PATH + "/phoenix.png",
                 List.of(), List.of(KeyWord.LAST_WISH),
@@ -150,7 +150,13 @@ public class CardRepository {
                 List.of(), List.of(), Faction.STONE, Rarity.EPIC),
 
         FierceTiger(11, "Fierce tiger", 3, 4, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
-                Rarity.RARE);
+                Rarity.RARE),
+
+        StoneAssassin(12, "Stone assassin", 2, 2, 6, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
+                List.of(CardAction.DESTROY_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.STONE, Rarity.EPIC),
+
+        CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to ALL cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
+                List.of(CardAction.DAMAGE_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE);
 
 
         private int id;

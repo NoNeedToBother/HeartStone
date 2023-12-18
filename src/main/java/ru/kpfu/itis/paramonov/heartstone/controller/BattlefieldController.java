@@ -307,12 +307,12 @@ public class BattlefieldController {
                     return;
                 }
                 if (checkAttacking(mouseEvent)) return;
-                String msg = ServerMessage.builder()
+                ServerMessage.ServerMessageBuilder msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)))
-                        .build();
-                GameApplication.getApplication().getClient().sendMessage(msg);
+                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)));
+                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "battlecry");
+                GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
         });
@@ -384,8 +384,14 @@ public class BattlefieldController {
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
-            if (handCard != null && handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+            if (handCard != null && (handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
+                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY))) {
                 sendAttackingOnPlay(handCard, selected);
+                mouseEvent.consume();
+                return;
+            }
+
+            if (handCard != null) {
                 mouseEvent.consume();
                 return;
             }
@@ -419,17 +425,42 @@ public class BattlefieldController {
         JSONArray thisChanges = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
 
+        List<Card> defeatedCards = new ArrayList<>();
         for (int i = 0; i < thisChanges.length(); i++) {
             JSONObject cardChange = thisChanges.getJSONObject(i);
-            applyChanges(field, cardChange);
+            Card card = applyChanges(field, cardChange);
+            if (card.getHp() <= 0) defeatedCards.add(card);
         }
+        removeCardsFrom(defeatedCards, field);
+        defeatedCards.clear();
+
 
         for (int i = 0; i < opponentChanges.length(); i++) {
             JSONObject cardChange = opponentChanges.getJSONObject(i);
-            applyChanges(opponentField, cardChange);
+            Card card = applyChanges(opponentField, cardChange);
+            if (card.getHp() <= 0) defeatedCards.add(card);
         }
+        removeCardsFrom(defeatedCards, opponentField);
     }
 
+    private void removeCardsFrom(List<Card> cards, List<Card> from) {
+        for (Card card : cards) {
+            Animations.playCardCrackingAnimation(card.getAssociatedImageView(), this);
+        }
+        from.removeAll(cards);
+    }
+
+    private Card applyChanges(List<Card> field, JSONObject cardChange) {
+        int pos = cardChange.getInt("pos");
+        int hp = cardChange.getInt("hp");
+        int atk = cardChange.getInt("atk");
+        Card cardToChange = field.get(pos);
+        cardToChange.setHp(hp);
+        cardToChange.setAtk(atk);
+        return cardToChange;
+    }
+
+    /*
     private void applyChanges(List<Card> field, JSONObject cardChange) {
         int pos = cardChange.getInt("pos");
         int hp = cardChange.getInt("hp");
@@ -444,7 +475,7 @@ public class BattlefieldController {
             field.remove(cardToChange);
             Animations.playCardCrackingAnimation(cardToChange.getAssociatedImageView(), this);
         }
-    }
+    }*/
 
     public void deleteCard(ImageView iv) {
         hBoxFieldCards.getChildren().remove(iv);
