@@ -97,7 +97,7 @@ public class GameApplication extends Application {
         try {
             AnchorPane pane = loader.load();
             Scene scene = new Scene(pane);
-            GameApplication.getApplication().getPrimaryStage().setScene(scene);
+            getPrimaryStage().setScene(scene);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

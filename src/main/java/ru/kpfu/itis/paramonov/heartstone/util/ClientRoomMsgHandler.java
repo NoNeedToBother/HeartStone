@@ -7,6 +7,8 @@ import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
+import java.util.Base64;
+
 public class ClientRoomMsgHandler {
     public void handle(String response) {
         JSONObject json = new JSONObject(response);
@@ -18,12 +20,13 @@ public class ClientRoomMsgHandler {
         loadBattlefieldIfNecessary();
         switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
             case GET_BACKGROUND -> {
+                loadBattlefieldIfNecessary();
                 String bg = json.getString("background");
                 BattlefieldController.getController().setBackground(bg);
             }
             case GET_INITIAL_INFO -> {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
-                BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 BattlefieldController.getController().setHeroes(json);
             }
             case END_TURN -> {
@@ -33,7 +36,7 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().setActive(true);
                 BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.GREEN);
                 try {
-                    BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                    BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 } catch (JSONException ignored) {}
                 BattlefieldController.getController().setMana(json);
             }
@@ -41,7 +44,7 @@ public class ClientRoomMsgHandler {
                 if (json.getString("card_status").equals("drawn")) {
                     BattlefieldController.getController().addCardToHand(json.getJSONObject("card"));
                 }
-                BattlefieldController.getController().setDeck(json.getJSONArray("deck"));
+                BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
             }
             case PLAY_CARD_OPPONENT -> {
                 BattlefieldController.getController().addOpponentCard(json);
@@ -56,9 +59,9 @@ public class ClientRoomMsgHandler {
             }
             case CHECK_CARD_PLAYED -> {
                 if (json.getString("status").equals("ok")) {
-                    BattlefieldController.getController().placeCard(json.getInt("hand_pos"));
+                    BattlefieldController.getController().placeCard(json);
                 } else {
-                    System.out.println(json.getString("reason"));
+                    BattlefieldController.getController().showMessage(json.getString("reason"));
                 }
             }
             case CHECK_CARD_TO_ATTACK -> {
@@ -67,15 +70,24 @@ public class ClientRoomMsgHandler {
                         case "hero" -> BattlefieldController.getController().attack(json.getInt("pos"), null, "hero");
                         case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
                     }
+                } else {
+                    BattlefieldController.getController().showMessage("Card cannot attack");
                 }
             }
             case CARD_HERO_ATTACK -> {
                 BattlefieldController.getController().updateHp(json);
                 BattlefieldController.getController().playAttackingAnimation(json);
             }
-            case GAME_END -> {
-                BattlefieldController.getController().onGameEnd(json);
+            case GAME_END -> BattlefieldController.getController().onGameEnd(json);
+            case CHANGE_HP -> {
+                try {
+                    json.getString("reason");
+                    BattlefieldController.getController().showMessage("You have no card \nand took " +
+                            json.getInt("dmg") + " damage");
+                } catch (JSONException e) {}
+                BattlefieldController.getController().updateHp(json);
             }
+            case GET_CHANGE -> BattlefieldController.getController().applyChange(json);
         }
     }
 

@@ -106,4 +106,45 @@ public class CardHelper {
             }
         }
     }
+
+    public static void checkBattleCry(GameServer.Client client, GameServer.Client player1, HashMap<String, List<Card>> player1AllCards,
+                                      HashMap<String, List<Card>> player2AllCards, Card playedCard, JSONObject message,
+                                      JSONObject responsePlayer1, JSONObject responsePlayer2) {
+        responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+        responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+        if (client.equals(player1)) {
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+                checkDamageOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
+            }
+        }
+        else {
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+                checkDamageOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
+            }
+        }
+        removeDefeatedCards(player1AllCards.get("field"));
+        removeDefeatedCards(player2AllCards.get("field"));
+    }
+
+    public static void checkDamageOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard,
+                                         JSONObject responseDamaged, JSONObject responseOther) {
+        Card damagedCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId()) {
+            for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
+                if (action.getDamage() != 0) {
+                    damagedCard.setHp(damagedCard.getHp() - action.getDamage());
+                    putDamagedCardInfo(damagedCard, Integer.parseInt(message.getString("opponent_pos")), responseDamaged, responseOther);
+                }
+            }
+        }
+    }
+
+    private static void putDamagedCardInfo(Card damagedCard, int pos, JSONObject responseDamaged, JSONObject responseOther) {
+        responseDamaged.put("pos", pos);
+        responseOther.put("opponent_pos", pos);
+        responseDamaged.put("hp", damagedCard.getHp());
+        responseOther.put("hp", damagedCard.getHp());
+        responseDamaged.put("atk", damagedCard.getAtk());
+        responseOther.put("atk", damagedCard.getAtk());
+    }
 }

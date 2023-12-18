@@ -77,6 +77,7 @@ public class GameServer {
 
     public void startRoom(Client client1, Client client2) {
         GameRoom room = new GameRoom(client1, client2, this);
+        System.out.println("huh?");
         client1.setCurrentRoom(room);
         client2.setCurrentRoom(room);
         this.rooms.add(room);
@@ -142,6 +143,11 @@ public class GameServer {
             connected = true;
         }
 
+        public void notifyGameEnd() {
+            currentRoom = null;
+            connected = false;
+        }
+
         private Runnable getConnectionLogic() {
             Runnable runnable = () -> {
                 try {
@@ -189,6 +195,9 @@ public class GameServer {
                     }
                     case OPEN_1_PACK -> PackOpeningHelper.openOnePack(jsonServerMessage, response);
                     case OPEN_5_PACKS -> PackOpeningHelper.openFivePacks(jsonServerMessage, response);
+                    case UPDATE_DECK -> {
+                        handleDeckUpdating(jsonServerMessage, response);
+                    }
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -200,6 +209,7 @@ public class GameServer {
             server.clientsToConnect.remove(this);
             server.clients.remove(this);
             isDisconnected = true;
+            if (currentRoom != null) currentRoom.notifyDisconnected(this);
             if (connectionThread != null) connectionThread.interrupt();
         }
 
@@ -235,6 +245,17 @@ public class GameServer {
             response.put("deck", user.getDeck());
             response.put("cards", user.getCards());
             response.put("money", user.getMoney());
+        }
+
+        private void handleDeckUpdating(JSONObject json, JSONObject response) {
+            response.put("server_action", ServerMessage.ServerAction.UPDATE_DECK);
+            UserService service = new UserService();
+            try {
+                service.updateDeck(login, json.getString("deck"));
+                response.put("status", "ok");
+            } catch (SQLException e) {
+                response.put("status", "not_ok");
+            }
         }
 
         private void handleConnection() {

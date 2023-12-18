@@ -1,7 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
@@ -10,6 +9,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,10 +21,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
-import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
-import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo;
-import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar;
+import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
 import java.util.ArrayList;
@@ -52,7 +50,7 @@ public class BattlefieldController {
     private List<Card> field = new ArrayList<>();
     private List<Card> opponentField = new ArrayList<>();
 
-    private List<Card> deck = new ArrayList<>();
+    private int deckSize;
 
     private boolean active;
 
@@ -81,6 +79,16 @@ public class BattlefieldController {
     @FXML
     private HeroInfo opponentHeroInfo;
 
+    @FXML
+    private ImageView deckCoverIv;
+    @FXML
+    private ImageView deckInfoIv;
+    @FXML
+    private Text deckInfo;
+
+    @FXML
+    private AnchorPane root;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -91,15 +99,31 @@ public class BattlefieldController {
         return controller;
     }
 
+    public static void resetController() {
+        controller = null;
+    }
+
     @FXML
     private void initialize() {
         controller = this;
         setHandBackground();
         addEndTurnBtn(GameButton.GameButtonStyle.RED);
         addCardPlacements();
+        setDeckInfo();
         makeCardInfoWrapText();
         manaBar.setMana(0, 0);
         opponentManaBar.setMana(0, 0);
+    }
+
+    private void setDeckInfo() {
+        Image deckCover = Card.spriteBuilder()
+                .addImage("/assets/images/cards/card_cover.png")
+                .setStyle(Card.CardStyle.BASE.toString())
+                .scale(2)
+                .build();
+        deckCoverIv.setImage(deckCover);
+
+        deckInfoIv.setImage(new Image(GameApplication.class.getResource("/assets/images/mana_bar/text_bg.png").toString()));
     }
 
     public void setHeroes(JSONObject json) {
@@ -139,14 +163,15 @@ public class BattlefieldController {
     public void onGameEnd(JSONObject json) {
         User.getInstance().setMoney(json.getInt("money"));
         switch (json.getString("result")) {
-            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), this);
-            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), this);
+            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), true);
+            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), false);
         }
     }
 
-    public void onGameEndAnimationEnded() {
-        GameApplication.getApplication().loadScene("/main_menu.png");
+    public void showMessage(String reason) {
+        GameMessage.make(reason).show(root, 800, 500, 300);
     }
+
     public void attack(Integer pos, Integer opponentPos, String target) {
         String msg = null;
         switch (target) {
@@ -204,6 +229,34 @@ public class BattlefieldController {
             opponentHeroInfo.changeHealth(hp);
         } catch (JSONException e) {}
 
+    }
+
+    public void applyChange(JSONObject json) {
+        try {
+            int pos = json.getInt("pos");
+            Card damaged = field.get(pos);
+            int hp = json.getInt("hp");
+            int atk = json.getInt("atk");
+            applyChange(field, damaged, pos, hp, atk);
+        } catch (JSONException e) {}
+        try {
+            int pos = json.getInt("opponent_pos");
+            Card damaged = opponentField.get(pos);
+            int hp = json.getInt("hp");
+            int atk = json.getInt("atk");
+            applyChange(opponentField, damaged, pos, hp, atk);
+        } catch (JSONException e) {}
+    }
+
+    private void applyChange(List<Card> field, Card damaged, int pos, int hp, int atk) {
+        if (hp <= 0) {
+            field.remove(damaged);
+            Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
+        }
+        else {
+            field.get(pos).setHp(hp);
+            field.get(pos).setHp(atk);
+        }
     }
 
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
@@ -265,15 +318,25 @@ public class BattlefieldController {
         });
     }
 
-    public void placeCard(int handPos) {
+    public void placeCard(JSONObject json) {
+        int handPos = json.getInt("hand_pos");
         Card card = hand.get(handPos);
 
-        String msg = ServerMessage.builder()
+        ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                .setParameter("pos", String.valueOf(handPos))
-                .build();
-        GameApplication.getApplication().getClient().sendMessage(msg);
+                .setParameter("pos", String.valueOf(handPos));
+
+        try {
+            String cardAction = json.getString("card_action");
+            builder.setParameter("card_action", cardAction);
+            switch (cardAction) {
+                case "deal_dmg" -> builder.setParameter("opponent_pos",
+                        String.valueOf(json.getInt("opponent_pos")));
+            }
+        } catch (JSONException e) {}
+
+        GameApplication.getApplication().getClient().sendMessage(builder.build());
 
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
@@ -319,11 +382,13 @@ public class BattlefieldController {
             if (checkAttacking(mouseEvent)) return;
 
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
-            if (handCard != null) {
+            Card selected = getOpponentFieldCardByImageView(cardIv);
+
+            if (handCard != null && handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+                sendAttackingOnPlay(handCard, selected);
                 mouseEvent.consume();
                 return;
             }
-            Card selected = getOpponentFieldCardByImageView(cardIv);
 
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -337,6 +402,17 @@ public class BattlefieldController {
         });
 
         hBoxOpponentFieldCards.getChildren().add(cardIv);
+    }
+
+    private void sendAttackingOnPlay(Card handCard, Card opponentCard) {
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.ROOM)
+                .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
+                .setParameter("hand_pos", String.valueOf(hand.indexOf(handCard)))
+                .setParameter("opponent_pos", String.valueOf(opponentField.indexOf(opponentCard)))
+                .setParameter("card_action", "deal_dmg")
+                .build();
+        GameApplication.getApplication().getClient().sendMessage(msg);
     }
 
     public void updateCards(JSONObject json) {
@@ -446,14 +522,12 @@ public class BattlefieldController {
         addCardToHand(card, hBoxCardsChildren);
     }
 
-    public void setDeck(JSONArray deck) {
-        List<Card> tempDeck = new ArrayList<>();
-        for (int i = 0; i < deck.length(); i++) {
-            JSONObject json = deck.getJSONObject(i);
-            CardRepository.CardTemplate card = CardRepository.getCardTemplate(json.getInt("id"));
-            tempDeck.add(new Card(card));
-        }
-        this.deck = tempDeck;
+    public void setDeckSize(int deckSize) {
+        this.deckSize = deckSize;
+        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 16);
+        deckInfo.setFont(font);
+        deckInfo.setText(deckSize + " cards");
+        if (deckSize == 0) deckCoverIv.setImage(null);
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
