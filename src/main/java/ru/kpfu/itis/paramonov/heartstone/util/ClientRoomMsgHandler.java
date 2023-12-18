@@ -59,7 +59,7 @@ public class ClientRoomMsgHandler {
             }
             case CHECK_CARD_PLAYED -> {
                 if (json.getString("status").equals("ok")) {
-                    BattlefieldController.getController().placeCard(json.getInt("hand_pos"));
+                    BattlefieldController.getController().placeCard(json);
                 } else {
                     BattlefieldController.getController().showMessage(json.getString("reason"));
                 }
@@ -87,6 +87,7 @@ public class ClientRoomMsgHandler {
                 } catch (JSONException e) {}
                 BattlefieldController.getController().updateHp(json);
             }
+            case GET_CHANGE -> BattlefieldController.getController().applyChange(json);
         }
     }
 

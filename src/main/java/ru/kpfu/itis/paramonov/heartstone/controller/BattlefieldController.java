@@ -231,6 +231,34 @@ public class BattlefieldController {
 
     }
 
+    public void applyChange(JSONObject json) {
+        try {
+            int pos = json.getInt("pos");
+            Card damaged = field.get(pos);
+            int hp = json.getInt("hp");
+            int atk = json.getInt("atk");
+            applyChange(field, damaged, pos, hp, atk);
+        } catch (JSONException e) {}
+        try {
+            int pos = json.getInt("opponent_pos");
+            Card damaged = opponentField.get(pos);
+            int hp = json.getInt("hp");
+            int atk = json.getInt("atk");
+            applyChange(opponentField, damaged, pos, hp, atk);
+        } catch (JSONException e) {}
+    }
+
+    private void applyChange(List<Card> field, Card damaged, int pos, int hp, int atk) {
+        if (hp <= 0) {
+            field.remove(damaged);
+            Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
+        }
+        else {
+            field.get(pos).setHp(hp);
+            field.get(pos).setHp(atk);
+        }
+    }
+
     public void changeEndTurnButton(GameButton.GameButtonStyle style) {
         vBoxBtnEndTurn.getChildren().remove(btnEndTurn);
         addEndTurnBtn(style);
@@ -290,15 +318,25 @@ public class BattlefieldController {
         });
     }
 
-    public void placeCard(int handPos) {
+    public void placeCard(JSONObject json) {
+        int handPos = json.getInt("hand_pos");
         Card card = hand.get(handPos);
 
-        String msg = ServerMessage.builder()
+        ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                .setParameter("pos", String.valueOf(handPos))
-                .build();
-        GameApplication.getApplication().getClient().sendMessage(msg);
+                .setParameter("pos", String.valueOf(handPos));
+
+        try {
+            String cardAction = json.getString("card_action");
+            builder.setParameter("card_action", cardAction);
+            switch (cardAction) {
+                case "deal_dmg" -> builder.setParameter("opponent_pos",
+                        String.valueOf(json.getInt("opponent_pos")));
+            }
+        } catch (JSONException e) {}
+
+        GameApplication.getApplication().getClient().sendMessage(builder.build());
 
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
@@ -344,11 +382,13 @@ public class BattlefieldController {
             if (checkAttacking(mouseEvent)) return;
 
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
-            if (handCard != null) {
+            Card selected = getOpponentFieldCardByImageView(cardIv);
+
+            if (handCard != null && handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+                sendAttackingOnPlay(handCard, selected);
                 mouseEvent.consume();
                 return;
             }
-            Card selected = getOpponentFieldCardByImageView(cardIv);
 
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -362,6 +402,17 @@ public class BattlefieldController {
         });
 
         hBoxOpponentFieldCards.getChildren().add(cardIv);
+    }
+
+    private void sendAttackingOnPlay(Card handCard, Card opponentCard) {
+        String msg = ServerMessage.builder()
+                .setEntityToConnect(ServerMessage.Entity.ROOM)
+                .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
+                .setParameter("hand_pos", String.valueOf(hand.indexOf(handCard)))
+                .setParameter("opponent_pos", String.valueOf(opponentField.indexOf(opponentCard)))
+                .setParameter("card_action", "deal_dmg")
+                .build();
+        GameApplication.getApplication().getClient().sendMessage(msg);
     }
 
     public void updateCards(JSONObject json) {

@@ -1,6 +1,7 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
@@ -16,7 +17,7 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_BACKGROUND, GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE
     }
 
     private GameServer.Client player1;
@@ -89,6 +90,14 @@ public class GameRoom {
                     activePlayer = player1;
                     CardHelper.makeCardsAbleToAttack(player2AllCards.get("field"));
                 }
+                System.out.println("a");
+                for (Card card : player1AllCards.get("field")) {
+                    System.out.println(card.getCardInfo().getName());
+                }
+                System.out.println("b");
+                for (Card card : player2AllCards.get("field")) {
+                    System.out.println(card.getCardInfo().getName());
+                }
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -115,7 +124,13 @@ public class GameRoom {
 
                 CardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
                         player1AllCards, player2AllCards, mana);
-
+                try {
+                    String action = msg.getString("card_action");
+                    response.put("card_action", msg.getString("card_action"));
+                    switch (action) {
+                        case "deal_dmg" -> response.put("opponent_pos", Integer.parseInt(msg.getString("opponent_pos")));
+                    }
+                } catch (JSONException e) {}
                 sendResponse(response.toString(), client);
             }
 
@@ -129,6 +144,18 @@ public class GameRoom {
                 CardHelper.putPlayedCardForOpponent(response, playedCard);
                 response.put("opponent_mana", newMana);
                 sendResponse(response.toString(), getOtherPlayer(client));
+
+                if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) {
+                    try {
+                        msg.getString("card_action");
+                        JSONObject responsePlayer1 = new JSONObject();
+                        JSONObject responsePlayer2 = new JSONObject();
+                        CardHelper.checkBattleCry(client, player1, player1AllCards, player2AllCards, playedCard, msg, responsePlayer1, responsePlayer2);
+                        sendResponse(responsePlayer1.toString(), player1);
+                        sendResponse(responsePlayer2.toString(), player2);
+                    } catch (JSONException e) {
+                    }
+                }
             }
 
             case CHECK_CARD_TO_ATTACK -> {
@@ -190,7 +217,6 @@ public class GameRoom {
                 }
 
                 Card attacker = attackerField.get(Integer.parseInt(msg.getString("attacker_pos")));
-                attacker.addStatus(CardRepository.Status.ATTACKED);
                 Card attacked = attackedField.get(Integer.parseInt(msg.getString("attacked_pos")));
                 CardHelper.decreaseHpOnDirectAttack(attacker, attacked);
 
