@@ -234,28 +234,47 @@ public class BattlefieldController {
     public void applyChange(JSONObject json) {
         try {
             int pos = json.getInt("pos");
-            Card damaged = field.get(pos);
-            int hp = json.getInt("hp");
-            int atk = json.getInt("atk");
-            applyChange(field, damaged, pos, hp, atk);
+            applyChanges(json, pos, field);
         } catch (JSONException e) {}
         try {
             int pos = json.getInt("opponent_pos");
-            Card damaged = opponentField.get(pos);
-            int hp = json.getInt("hp");
-            int atk = json.getInt("atk");
-            applyChange(opponentField, damaged, pos, hp, atk);
+            applyChanges(json, pos, opponentField);
         } catch (JSONException e) {}
     }
 
-    private void applyChange(List<Card> field, Card damaged, int pos, int hp, int atk) {
-        if (hp <= 0) {
+    private void applyChanges(JSONObject json, int pos, List<Card> field) {
+        Card targeted = field.get(pos);
+        Integer hp = null;
+        try {
+            hp = json.getInt("hp");
+        } catch (JSONException e) {}
+        Integer atk = null;
+        try {
+            atk = json.getInt("atk");
+        } catch (JSONException e) {}
+        String status = null;
+        try {
+            status = json.getString("status");
+        } catch (JSONException e) {}
+        applyChange(field, targeted, pos, hp, atk, status);
+    }
+
+    private void applyChange(List<Card> field, Card damaged, int pos, Integer hp, Integer atk, String status) {
+        if (hp != null && hp <= 0) {
             field.remove(damaged);
             Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
         }
         else {
-            field.get(pos).setHp(hp);
-            field.get(pos).setHp(atk);
+            if (hp != null) field.get(pos).setHp(hp);
+            if (atk != null) field.get(pos).setHp(atk);
+            if (status != null) {
+                if (status.equals("no_frozen")) {
+                    field.get(pos).removeStatus(CardRepository.Status.FROZEN);
+                }
+                else {
+                    field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                }
+            }
         }
     }
 
@@ -307,12 +326,12 @@ public class BattlefieldController {
                     return;
                 }
                 if (checkAttacking(mouseEvent)) return;
-                String msg = ServerMessage.builder()
+                ServerMessage.ServerMessageBuilder msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)))
-                        .build();
-                GameApplication.getApplication().getClient().sendMessage(msg);
+                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)));
+                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "battlecry");
+                GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
         });
@@ -384,8 +403,15 @@ public class BattlefieldController {
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
-            if (handCard != null && handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_OPPONENT_ON_PLAY)) {
+            if (handCard != null && (handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
+                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
+                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
                 sendAttackingOnPlay(handCard, selected);
+                mouseEvent.consume();
+                return;
+            }
+
+            if (handCard != null) {
                 mouseEvent.consume();
                 return;
             }
@@ -419,31 +445,50 @@ public class BattlefieldController {
         JSONArray thisChanges = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
 
+        List<Card> defeatedCards = new ArrayList<>();
         for (int i = 0; i < thisChanges.length(); i++) {
             JSONObject cardChange = thisChanges.getJSONObject(i);
-            applyChanges(field, cardChange);
+            Card card = applyChanges(field, cardChange);
+            if (card.getHp() <= 0) defeatedCards.add(card);
         }
+        removeCardsFrom(defeatedCards, field);
+        defeatedCards.clear();
+
 
         for (int i = 0; i < opponentChanges.length(); i++) {
             JSONObject cardChange = opponentChanges.getJSONObject(i);
-            applyChanges(opponentField, cardChange);
+            Card card = applyChanges(opponentField, cardChange);
+            if (card.getHp() <= 0) defeatedCards.add(card);
         }
+        removeCardsFrom(defeatedCards, opponentField);
     }
 
-    private void applyChanges(List<Card> field, JSONObject cardChange) {
-        int pos = cardChange.getInt("pos");
-        int hp = cardChange.getInt("hp");
-        int atk = cardChange.getInt("atk");
-        Card cardToChange = field.get(pos);
-        cardToChange.setHp(hp);
-        cardToChange.setAtk(atk);
-        if (cardToChange.getHp() <= 0) {
-            if (this.field.contains(cardToChange)) {
-                onCardDeselected(cardToChange.getAssociatedImageView());
-            }
-            field.remove(cardToChange);
-            Animations.playCardCrackingAnimation(cardToChange.getAssociatedImageView(), this);
+    private void removeCardsFrom(List<Card> cards, List<Card> from) {
+        for (Card card : cards) {
+            Animations.playCardCrackingAnimation(card.getAssociatedImageView(), this);
         }
+        from.removeAll(cards);
+    }
+
+    private Card applyChanges(List<Card> field, JSONObject cardChange) {
+        int pos = cardChange.getInt("pos");
+        Card cardToChange = field.get(pos);
+        try {
+            int hp = cardChange.getInt("hp");
+            cardToChange.setHp(hp);
+        } catch (JSONException e) {}
+        try {
+            int atk = cardChange.getInt("atk");
+            cardToChange.setAtk(atk);
+        } catch (JSONException e) {}
+        try {
+            String status = cardChange.getString("status");
+            if (status.equals(CardRepository.Status.FROZEN.toString())) {
+                System.out.println("BRUH!");
+                cardToChange.addStatus(CardRepository.Status.FROZEN);
+            }
+        } catch (JSONException e) {}
+        return cardToChange;
     }
 
     public void deleteCard(ImageView iv) {
@@ -604,6 +649,12 @@ public class BattlefieldController {
                 if (!card.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
                     cardInfo.addTextLine("Faction: ");
                     cardInfo.addText(String.valueOf(card.getCardInfo().getFaction()).toLowerCase());
+                }
+                for (CardRepository.Status status : card.getStatuses()) {
+                    if (!status.isUtility()) {
+                        cardInfo.addTextLine("Status: ");
+                        cardInfo.addText(status.getDisplayName());
+                    }
                 }
                 cardInfo.addTextLine("");
                 for (CardRepository.KeyWord keyWord : card.getCardInfo().getKeyWords()) {

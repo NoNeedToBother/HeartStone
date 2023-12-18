@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
@@ -87,7 +88,14 @@ public class ClientRoomMsgHandler {
                 } catch (JSONException e) {}
                 BattlefieldController.getController().updateHp(json);
             }
-            case GET_CHANGE -> BattlefieldController.getController().applyChange(json);
+            case GET_CHANGE -> {
+                try {
+                    JSONArray msg = json.getJSONArray("stat_changes");
+                    BattlefieldController.getController().updateCards(json);
+                } catch (JSONException e) {
+                    BattlefieldController.getController().applyChange(json);
+                }
+            }
         }
     }
 

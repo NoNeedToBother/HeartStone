@@ -6,7 +6,7 @@ import java.util.List;
 public class CardRepository {
 
     public enum CardAction {
-        RUSH_ON_PLAY, DAMAGE_OPPONENT_ON_PLAY;
+        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -18,7 +18,9 @@ public class CardRepository {
 
         public CardAction setStats(int stats) {
             switch (this) {
-                case DAMAGE_OPPONENT_ON_PLAY -> damage = stats;
+                case DAMAGE_ENEMY_ON_PLAY, DAMAGE_ON_PLAY -> damage = stats;
+                case ATK_UP -> atkIncrease = stats;
+                case HP_UP -> hpIncrease = stats;
                 default -> throw new RuntimeException("Card does not support stats increase");
             }
             return this;
@@ -26,6 +28,14 @@ public class CardRepository {
 
         public int getDamage() {
             return damage;
+        }
+
+        public int getHpIncrease() {
+            return hpIncrease;
+        }
+
+        public int getAtkIncrease() {
+            return atkIncrease;
         }
 
         public CardAction setTargets(int... targets) {
@@ -45,7 +55,9 @@ public class CardRepository {
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         BURN("Burn", "At the end of turn suffers damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
-        RUSH("Rush", "Can  attack immediately after played");
+        RUSH("Rush", "Can  attack immediately after played"),
+        DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
+        OVERSATURATION("Oversaturation", "Triggers when card defeats another card");
 
         private String displayName;
 
@@ -74,7 +86,28 @@ public class CardRepository {
     }
 
     public enum Status {
-        FROZEN, CANNOT_ATTACK, ATTACKED
+        FROZEN(false, "frozen"), CANNOT_ATTACK(false, "cannot attack"), ATTACKED(true, null),
+        FROZEN_1(true, null), FROZEN_2(true, null);
+
+        private boolean utility;
+        private String displayName;
+
+        Status(boolean utility, String displayName) {
+            this.utility = utility;
+            this.displayName = displayName;
+        }
+
+        public boolean isUtility() {
+            return utility;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public static List<Status> getCardAttackRestrictionStatuses() {
+            return List.of(FROZEN, FROZEN_1, FROZEN_2, CANNOT_ATTACK, ATTACKED);
+        }
     }
 
     private static final String DEFAULT_PATH = "/assets/images/cards";
@@ -121,7 +154,7 @@ public class CardRepository {
                 Faction.STONE, Rarity.RARE),
 
         FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to chosen enemy",
-                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_OPPONENT_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
+                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON),
 
         FirePack(4, "Fire elemental pack", 2, 2, 5, "Consume: fire elemental to get +2/2",
@@ -129,7 +162,7 @@ public class CardRepository {
                 Faction.ELEMENTAL, Rarity.EPIC),
 
         IceElemental(5, "Ice elemental", 1, 2, 1, "Battlecry: freezes random enemy", DEFAULT_PATH + "/ice_elemental.png",
-                List.of(), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.COMMON),
+                List.of(CardAction.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.COMMON),
 
         TheRock(6, "The Rock", 4, 4, 5, "Punishment: attacks enemy hero and gains +1/1", DEFAULT_PATH + "/dwayne_rock.png",
                 List.of(), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
@@ -138,9 +171,8 @@ public class CardRepository {
                 DEFAULT_PATH + "/hypnoshroom.png", List.of(),
                 List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
 
-        Whelp(8, "Dragon whelp", 2, 2, 4, "Battlecry: burn chosen enemy (2)", DEFAULT_PATH + "/whelp.png",
-                List.of(), List.of(KeyWord.BATTLE_CRY, KeyWord.BURN), Faction.ANIMAL,
-                Rarity.RARE),
+        Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
+                List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
 
         Phoenix(9, "Phoenix", 2, 2, 4, "Last wish: reborns and gains +2/1", DEFAULT_PATH + "/phoenix.png",
                 List.of(), List.of(KeyWord.LAST_WISH),
@@ -150,7 +182,17 @@ public class CardRepository {
                 List.of(), List.of(), Faction.STONE, Rarity.EPIC),
 
         FierceTiger(11, "Fierce tiger", 3, 4, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
-                Rarity.RARE);
+                Rarity.RARE),
+
+        StoneAssassin(12, "Stone assassin", 2, 2, 6, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
+                List.of(CardAction.DESTROY_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.STONE, Rarity.EPIC),
+
+        CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to all other cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
+                List.of(CardAction.DAMAGE_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE),
+
+        Trantos(14, "Tran'tos", 3, 3, 6, "Battlecry: deals 3 damage to all other cards. For each defeated card +2/1",
+                DEFAULT_PATH + "/trantos.png", List.of(CardAction.DAMAGE_ON_PLAY.setStats(3), CardAction.HP_UP.setStats(1), CardAction.ATK_UP.setStats(2)),
+                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY);
 
 
         private int id;
