@@ -3,14 +3,19 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.database.util.PasswordUtil;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 
 public class LoginController {
+    @FXML
+    private AnchorPane root;
+
     @FXML
     private TextField login;
 
@@ -26,8 +31,11 @@ public class LoginController {
 
     private GameApplication application = null;
 
+    private static LoginController controller;
+
     @FXML
     private void initialize() {
+        controller = this;
         application = GameApplication.getApplication();
         setTextFieldsStyle();
         addGameButtons();
@@ -70,8 +78,16 @@ public class LoginController {
         });
 
         btnGoToRegister.setOnMouseClicked(mouseEvent -> {
-            application.loadScene("/fxml/register.fxml");
+            application.loadScene("/register.fxml");
             mouseEvent.consume();
         });
+    }
+
+    public void showMessage(String reason, int duration) {
+        GameMessage.make(reason).show(root, duration, 500, 550);
+    }
+
+    public static LoginController getController() {
+        return controller;
     }
 }

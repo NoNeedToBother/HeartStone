@@ -150,7 +150,6 @@ public class PackOpeningHelper {
         for (CardRepository.CardTemplate userCard : userCards) {
             if (userCard.equals(card)) cardAmount++;
         }
-        System.out.println(card.getName() + cardAmount);
 
         if (cardAmount >= maxCardAmount) addGoldForCopy(card, user);
         else userCards.add(card);

@@ -6,21 +6,31 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
+import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PacksController {
 
     @FXML
     private AnchorPane root;
+
+    @FXML
+    private VBox vBoxBtnBack;
+
+    private GameButton btnBack;
 
     @FXML
     private ImageView cardCoverIv;
@@ -35,6 +45,9 @@ public class PacksController {
     private ImageView card4;
     @FXML
     private ImageView card5;
+
+    @FXML
+    private MoneyInfo moneyInfo;
 
     private List<ImageView> cardImageViews;
 
@@ -51,12 +64,21 @@ public class PacksController {
         controller = this;
         cardImageViews = List.of(card1, card2, card3, card4, card5);
         addButtons();
+        setMoney();
         setOnClickListeners();
         setCardCoverImageView();
     }
 
+    private void setMoney() {
+        moneyInfo.setMoney(User.getInstance().getMoney());
+    }
+
     public static PacksController getController() {
         return controller;
+    }
+
+    public void showMessage(String reason, int duration) {
+        GameMessage.make(reason).show(root, duration, 500, 300);
     }
 
     private void addButtons() {
@@ -76,8 +98,14 @@ public class PacksController {
         btn100g.setLayoutY(550);
         btn500g.setLayoutY(550);
         btn500g.setLayoutX(820);
-
         root.getChildren().addAll(btn100g, btn500g);
+
+        GameButton btnBack = GameButton.builder()
+                .setStyle(GameButton.GameButtonStyle.BACK)
+                .scale(3)
+                .build();
+        this.btnBack = btnBack;
+        vBoxBtnBack.getChildren().add(btnBack);
     }
 
     private EventHandler<MouseEvent> getMouseEventHandler(ServerMessage.ServerAction action) {
@@ -102,6 +130,10 @@ public class PacksController {
         btn100g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_1_PACK));
 
         btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_5_PACKS));
+
+        btnBack.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().loadScene("/main_menu.fxml");
+        });
     }
 
     private void setCardCoverImageView() {
@@ -148,5 +180,11 @@ public class PacksController {
         for (ImageView iv : cardImageViews) {
             iv.setImage(null);
         }
+    }
+
+    public void updateUserInfo(JSONObject json) {
+        moneyInfo.setMoney(json.getInt("money"));
+        List<CardRepository.CardTemplate> cards = CardRepository.getCardsById(json.getString("cards"));
+        User.getInstance().setCards(cards);
     }
 }

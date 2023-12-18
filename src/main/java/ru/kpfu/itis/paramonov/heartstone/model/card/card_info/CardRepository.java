@@ -1,15 +1,12 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class CardRepository {
 
     public enum CardAction {
-        SUMMON, HP_UP, ATK_UP, HP_DOWN, ATK_DOWN, COST_UP, COST_DOWN, ATTACK, CHOOSE_RANDOM, CONSUME, FREEZE,
-        CONTROL;
+        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -21,16 +18,24 @@ public class CardRepository {
 
         public CardAction setStats(int stats) {
             switch (this) {
+                case DAMAGE_ENEMY_ON_PLAY, DAMAGE_ON_PLAY -> damage = stats;
                 case ATK_UP -> atkIncrease = stats;
-                case ATK_DOWN -> atkIncrease = -stats;
-                case HP_UP-> hpIncrease = stats;
-                case HP_DOWN -> hpIncrease = -stats;
-                case COST_UP -> costIncrease = stats;
-                case COST_DOWN -> costIncrease = -stats;
-                case ATTACK -> damage = stats;
+                case HP_UP -> hpIncrease = stats;
                 default -> throw new RuntimeException("Card does not support stats increase");
             }
             return this;
+        }
+
+        public int getDamage() {
+            return damage;
+        }
+
+        public int getHpIncrease() {
+            return hpIncrease;
+        }
+
+        public int getAtkIncrease() {
+            return atkIncrease;
         }
 
         public CardAction setTargets(int... targets) {
@@ -48,7 +53,11 @@ public class CardRepository {
         CONSUME("Consume", "Destroys other card to trigger effect"),
         REVIVE("Revive", "Summons a card that was once on battlefield"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
-        BURN("Burn", "At the end of turn burned opponent card suffers damage");
+        BURN("Burn", "At the end of turn suffers damage"),
+        FREEZE("Freeze", "Cannot attack for 1 turn"),
+        RUSH("Rush", "Can  attack immediately after played"),
+        DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
+        OVERSATURATION("Oversaturation", "Triggers when card defeats another card");
 
         private String displayName;
 
@@ -69,11 +78,36 @@ public class CardRepository {
     }
 
     public enum Faction {
-        NO_FACTION, STONE, ELEMENTAL //etc
+        NO_FACTION, STONE, ELEMENTAL, ANIMAL //etc
     }
 
     public enum Rarity {
         COMMON, RARE, EPIC, LEGENDARY
+    }
+
+    public enum Status {
+        FROZEN(false, "frozen"), CANNOT_ATTACK(false, "cannot attack"), ATTACKED(true, null),
+        FROZEN_1(true, null), FROZEN_2(true, null);
+
+        private boolean utility;
+        private String displayName;
+
+        Status(boolean utility, String displayName) {
+            this.utility = utility;
+            this.displayName = displayName;
+        }
+
+        public boolean isUtility() {
+            return utility;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public static List<Status> getCardAttackRestrictionStatuses() {
+            return List.of(FROZEN, FROZEN_1, FROZEN_2, CANNOT_ATTACK, ATTACKED);
+        }
     }
 
     private static final String DEFAULT_PATH = "/assets/images/cards";
@@ -116,36 +150,49 @@ public class CardRepository {
                 List.of(), List.of(), Faction.STONE, Rarity.COMMON),
 
         KnightStone(2, "Stoneland knight", 4, 5, 6, "Battlecry: gives +2/2 to random friendly stone", DEFAULT_PATH + "/knight_stone.png",
-                List.of(CardAction.CHOOSE_RANDOM, CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2)), List.of(KeyWord.BATTLE_CRY),
+                List.of(), List.of(KeyWord.BATTLE_CRY),
                 Faction.STONE, Rarity.RARE),
 
-        FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to random enemy",
-                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.CHOOSE_RANDOM, CardAction.ATTACK.setStats(2)), List.of(KeyWord.BATTLE_CRY),
+        FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to chosen enemy",
+                DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON),
 
         FirePack(4, "Fire elemental pack", 2, 2, 5, "Consume: fire elemental to get +2/2",
-                DEFAULT_PATH + "/fire_pack.png", List.of(CardAction.CONSUME.setTargets(3)), List.of(KeyWord.CONSUME),
+                DEFAULT_PATH + "/fire_pack.png", List.of(), List.of(KeyWord.CONSUME),
                 Faction.ELEMENTAL, Rarity.EPIC),
 
-        IceElemental(5, "Ice elemental", 2, 1, 1, "Battlecry: freezes random enemy", DEFAULT_PATH + "/ice_elemental.png",
-                List.of(CardAction.CHOOSE_RANDOM, CardAction.FREEZE), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.COMMON),
+        IceElemental(5, "Ice elemental", 1, 2, 1, "Battlecry: freezes random enemy", DEFAULT_PATH + "/ice_elemental.png",
+                List.of(CardAction.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.COMMON),
 
         TheRock(6, "The Rock", 4, 4, 5, "Punishment: attacks enemy hero and gains +1/1", DEFAULT_PATH + "/dwayne_rock.png",
-                List.of(CardAction.ATTACK, CardAction.HP_UP.setStats(1), CardAction.ATK_UP.setStats(1)), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
+                List.of(), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
 
         HypnoShroom(7, "Hypnoshroom", 4, 6, 6, "When turn ends, gains control of random opponent card",
-                DEFAULT_PATH + "/hypnoshroom.png", List.of(CardAction.CHOOSE_RANDOM, CardAction.CONTROL),
+                DEFAULT_PATH + "/hypnoshroom.png", List.of(),
                 List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
 
-        Whelp(8, "Dragon whelp", 2, 1, 4, "Battlecry: burn random enemy (2)", DEFAULT_PATH + "/whelp.png",
-                List.of(CardAction.CHOOSE_RANDOM, CardAction.ATTACK), List.of(KeyWord.BATTLE_CRY, KeyWord.BURN), Faction.NO_FACTION, Rarity.RARE),
+        Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
+                List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
 
         Phoenix(9, "Phoenix", 2, 2, 4, "Last wish: reborns and gains +2/1", DEFAULT_PATH + "/phoenix.png",
-                List.of(CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(1)), List.of(KeyWord.LAST_WISH),
+                List.of(), List.of(KeyWord.LAST_WISH),
                 Faction.ELEMENTAL, Rarity.EPIC),
 
         StoneGiant(10, "Stone giant", 6, 6, 10, "Cost -1 for each your destroyed stone card", DEFAULT_PATH + "/stone_giant.png",
-                List.of(CardAction.COST_DOWN.setStats(1)), List.of(), Faction.STONE, Rarity.EPIC);
+                List.of(), List.of(), Faction.STONE, Rarity.EPIC),
+
+        FierceTiger(11, "Fierce tiger", 3, 4, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
+                Rarity.RARE),
+
+        StoneAssassin(12, "Stone assassin", 2, 2, 6, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
+                List.of(CardAction.DESTROY_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.STONE, Rarity.EPIC),
+
+        CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to all other cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
+                List.of(CardAction.DAMAGE_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE),
+
+        Trantos(14, "Tran'tos", 3, 3, 6, "Battlecry: deals 3 damage to all other cards. For each defeated card +2/1",
+                DEFAULT_PATH + "/trantos.png", List.of(CardAction.DAMAGE_ON_PLAY.setStats(3), CardAction.HP_UP.setStats(1), CardAction.ATK_UP.setStats(2)),
+                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY);
 
 
         private int id;

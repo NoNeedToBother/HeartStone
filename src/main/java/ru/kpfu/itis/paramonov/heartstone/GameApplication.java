@@ -92,11 +92,12 @@ public class GameApplication extends Application {
     }
 
     public void loadScene(String resource) {
-        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource(resource));
+        String DEFAULT_PATH = "/fxml";
+        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource(DEFAULT_PATH + resource));
         try {
             AnchorPane pane = loader.load();
             Scene scene = new Scene(pane);
-            GameApplication.getApplication().getPrimaryStage().setScene(scene);
+            getPrimaryStage().setScene(scene);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

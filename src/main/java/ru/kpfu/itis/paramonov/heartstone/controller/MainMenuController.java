@@ -27,16 +27,27 @@ public class MainMenuController {
 
     private GameApplication application = null;
 
+    private static MainMenuController controller;
+
     @FXML
     private void initialize() {
         application = GameApplication.getApplication();
+        controller = this;
         addButtons();
         setMoney();
         setOnClickListeners();
     }
 
+    public static MainMenuController getController() {
+        return controller;
+    }
+
     private void setMoney() {
         moneyInfo.setMoney(User.getInstance().getMoney());
+    }
+
+    public void setMoney(int money) {
+        moneyInfo.setMoney(money);
     }
 
     private void addButtons() {
@@ -76,8 +87,11 @@ public class MainMenuController {
             onPlayClicked();
             mouseEvent.consume();
         });
+        btnDeck.setOnMouseClicked(mouseEvent -> {
+            GameApplication.getApplication().loadScene("/deck.fxml");
+        });
         btnPacks.setOnMouseClicked(mouseEvent -> {
-            GameApplication.getApplication().loadScene("/fxml/packs.fxml");
+            GameApplication.getApplication().loadScene("/packs.fxml");
             mouseEvent.consume();
         });
         btnQuit.setOnMouseClicked(mouseEvent -> {

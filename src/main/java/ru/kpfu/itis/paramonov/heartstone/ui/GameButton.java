@@ -12,11 +12,11 @@ import java.io.*;
 
 public class GameButton extends Button {
     public enum GameButtonText {
-        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN, OPEN_PACKS
+        LOGIN, REGISTER, GO_LOGIN, GO_REGISTER, PLAY, QUIT, DECK, END_TURN, OPEN_PACKS, MAIN_MENU, SAVE
     }
 
     public enum GameButtonStyle {
-        BASE, GREEN, RED, GOLD_100, GOLD_500
+        BASE, GREEN, RED, GOLD_100, GOLD_500, BACK
     }
 
     private boolean clickable = false;
@@ -74,6 +74,12 @@ public class GameButton extends Button {
                     btn.clickable = true;
                     return addImageToBufferedImage(DEFAULT_PATH + "/500g_button.png");
                 }
+                case BACK -> {
+                    btn.clickable = true;
+                    imgWidth = 20;
+                    img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_ARGB);
+                    return addImageToBufferedImage(DEFAULT_PATH + "/back_button.png");
+                }
                 default -> throw new RuntimeException("Impossible");
             }
         }
@@ -106,6 +112,12 @@ public class GameButton extends Button {
                 }
                 case OPEN_PACKS -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/labels/open_packs.png");
+                }
+                case MAIN_MENU -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/main_menu.png");
+                }
+                case SAVE -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/labels/save.png");
                 }
                 default -> throw new RuntimeException("Impossible");
             }
