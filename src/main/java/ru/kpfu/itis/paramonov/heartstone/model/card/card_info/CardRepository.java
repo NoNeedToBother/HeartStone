@@ -6,7 +6,8 @@ import java.util.List;
 public class CardRepository {
 
     public enum CardAction {
-        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY;
+        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
+        ON_END_TURN;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -53,11 +54,9 @@ public class CardRepository {
         CONSUME("Consume", "Destroys other card to trigger effect"),
         REVIVE("Revive", "Summons a card that was once on battlefield"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
-        BURN("Burn", "At the end of turn suffers damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
         RUSH("Rush", "Can  attack immediately after played"),
-        DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
-        OVERSATURATION("Oversaturation", "Triggers when card defeats another card");
+        DESTROY("Destroy", "Sets chosen enemy's hp to zero");
 
         private String displayName;
 
@@ -168,8 +167,7 @@ public class CardRepository {
                 List.of(), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
 
         HypnoShroom(7, "Hypnoshroom", 4, 6, 6, "When turn ends, gains control of random opponent card",
-                DEFAULT_PATH + "/hypnoshroom.png", List.of(),
-                List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
+                DEFAULT_PATH + "/hypnoshroom.png", List.of(CardAction.ON_END_TURN), List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
 
         Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
                 List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
@@ -192,7 +190,13 @@ public class CardRepository {
 
         Trantos(14, "Tran'tos", 3, 3, 6, "Battlecry: deals 3 damage to all other cards. For each defeated card +2/1",
                 DEFAULT_PATH + "/trantos.png", List.of(CardAction.DAMAGE_ON_PLAY.setStats(3), CardAction.HP_UP.setStats(1), CardAction.ATK_UP.setStats(2)),
-                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY);
+                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY),
+        TheGreatestApex(15, "The greatest apex", 7, 7, 8, "Charge", DEFAULT_PATH + "/greatest_apex.png",
+                List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.LEGENDARY),
+        Slime(16, "Slime", 3, 2, 2, "", DEFAULT_PATH + "/slime.png", List.of(), List.of(),
+                Faction.NO_FACTION, Rarity.COMMON),
+        WiseTree(17, "Wise mysterious tree", 4, 4, 6, "At the end of turn gives all other friendly cards +2/2", DEFAULT_PATH + "/wise_tree.png",
+                List.of(CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2), CardAction.ON_END_TURN), List.of(), Faction.NO_FACTION, Rarity.EPIC);
 
 
         private int id;

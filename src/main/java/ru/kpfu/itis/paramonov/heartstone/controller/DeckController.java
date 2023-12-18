@@ -16,6 +16,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
@@ -30,7 +31,9 @@ public class DeckController {
     private FlowPane fpCards;
 
     @FXML
-    private ScrollPane spDeckCards;
+    private BattleCardInfo cardInfo;
+    @FXML
+    private VBox vBoxCardInfo;
 
     @FXML
     private VBox vBoxDeckCards;
@@ -46,6 +49,7 @@ public class DeckController {
         setCards();
         setDeck();
         setButtons();
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty());
     }
 
     private void setButtons() {
@@ -121,6 +125,34 @@ public class DeckController {
                 });
                 vBoxDeckCards.getChildren().add(deckCardInfo);
             });
+
+            cardIv.hoverProperty().addListener(((observableValue, aBoolean, isHovered) -> {
+                if (isHovered) {
+                    Card infoCard = getByImageView(cardIv);
+                    cardInfo.setText(infoCard.getCardInfo().getName());
+                    cardInfo.addTextLine(infoCard.getCardInfo().getActionDesc());
+                    cardInfo.addTextLine("ATK: ");
+                    cardInfo.addText(String.valueOf(infoCard.getAtk()));
+                    cardInfo.addTextLine("HP: ");
+                    cardInfo.addText(String.valueOf(infoCard.getHp()));
+                    cardInfo.addTextLine("Cost: ");
+                    cardInfo.addText(String.valueOf(infoCard.getCost()));
+                    if (!infoCard.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
+                        cardInfo.addTextLine("Faction: ");
+                        cardInfo.addText(String.valueOf(infoCard.getCardInfo().getFaction()).toLowerCase());
+                    }
+                    cardInfo.addTextLine("");
+                    for (CardRepository.KeyWord keyWord : infoCard.getCardInfo().getKeyWords()) {
+                        cardInfo.addTextLine(keyWord.getDisplayName() + ": ");
+                        cardInfo.addText(keyWord.getDescription());
+                    }
+                    cardInfo.commitChanges();
+                    cardInfo.setVisible(true);
+                } else {
+                    cardInfo.setVisible(false);
+                    cardInfo.clear();
+                }
+            }));
         }
     }
 
@@ -167,7 +199,7 @@ public class DeckController {
                 .addImage(card.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getRarity())
-                .scale(4)
+                .scale(3)
                 .build();
     }
 }

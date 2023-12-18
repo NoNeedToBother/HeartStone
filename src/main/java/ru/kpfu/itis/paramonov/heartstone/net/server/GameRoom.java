@@ -89,13 +89,16 @@ public class GameRoom {
         switch (RoomAction.valueOf(msg.getString("room_action"))) {
             case END_TURN -> {
                 if (client.equals(player1)) {
+                    player1Timer.interrupt();
                     activePlayer = player2;
                     CardHelper.changeCardAbilityToAttackOnTurnEnd(player1AllCards.get("field"), player1, player2, server);
                 }
                 else {
+                    player2Timer.interrupt();
                     activePlayer = player1;
                     CardHelper.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
                 }
+                //CardHelper.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server);
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -249,7 +252,7 @@ public class GameRoom {
         Runnable timerLogic = () -> {
             int seconds = 0;
             try {
-                while(seconds < TIMER_MAX_SECONDS && !Thread.currentThread().isInterrupted()) {
+                while(seconds < TIMER_MAX_SECONDS) {
                     Thread.sleep(1000);
                     seconds++;
                     JSONObject response = new JSONObject();
@@ -258,11 +261,13 @@ public class GameRoom {
                     response.put("maxSeconds", TIMER_MAX_SECONDS);
                     server.sendResponse(response.toString(), client);
                 }
+                if (!Thread.currentThread().isInterrupted()) {
+                    JSONObject response = new JSONObject();
+                    response.put("room_action", RoomAction.TIMER_UPDATE.toString());
+                    response.put("status", "end");
+                    server.sendResponse(response.toString(), client);
+                }
             } catch (InterruptedException e) {}
-            JSONObject response = new JSONObject();
-            response.put("room_action", RoomAction.TIMER_UPDATE.toString());
-            response.put("status", "end");
-            server.sendResponse(response.toString(), client);
         };
         if (client.equals(player1)) {
             player1Timer = new Thread(timerLogic);
@@ -472,8 +477,12 @@ public class GameRoom {
         player2Hero = null;
         player1AllCards = null;
         player2AllCards = null;
-        player1Timer.interrupt();
-        player2Timer.interrupt();
+        try {
+            player1Timer.interrupt();
+        } catch (NullPointerException e) {}
+        try {
+            player2Timer.interrupt();
+        } catch (NullPointerException e) {}
         activePlayer = null;
     }
 

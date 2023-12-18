@@ -244,6 +244,62 @@ public class BattlefieldController {
             int pos = json.getInt("opponent_pos");
             applyChanges(json, pos, opponentField);
         } catch (JSONException e) {}
+        try {
+            int pos = json.getInt("stolen_pos");
+            hBoxFieldCards.getChildren().remove(pos);
+            field.remove(pos);
+
+            Card card = getCard(json);
+            Image sprite = Card.spriteBuilder()
+                    .addImage(card.getCardInfo().getPortraitUrl())
+                    .setStyle(Card.CardStyle.BASE.toString())
+                    .addRarity(card.getCardInfo().getRarity())
+                    .scale(2)
+                    .build();
+            ImageView iv = new ImageView(sprite);
+            card.associateImageView(iv);
+            opponentField.add(card);
+            iv.setOnMouseClicked(mouseEvent -> {
+                if (selectedCard != null) {
+                    Card imgCard = getHandCardByImageView(iv);
+                    if (imgCard == null) imgCard = getFieldCardByImageView(iv);
+                    if (imgCard == selectedCard) onCardDeselected(iv);
+                    else onCardSelected(iv);
+                }
+                else onCardSelected(iv);
+                mouseEvent.consume();
+            });
+            setOnHoverListener(iv, "opponent_field");
+            hBoxOpponentFieldCards.getChildren().add(iv);
+        } catch (JSONException e) {
+            int pos = json.getInt("gotten_pos");
+            hBoxOpponentFieldCards.getChildren().remove(pos);
+            opponentField.remove(pos);
+
+            Card card = getCard(json);
+            Image sprite = Card.spriteBuilder()
+                    .addImage(card.getCardInfo().getPortraitUrl())
+                    .setStyle(Card.CardStyle.BASE.toString())
+                    .addRarity(card.getCardInfo().getRarity())
+                    .scale(2)
+                    .build();
+            ImageView iv = new ImageView(sprite);
+            card.associateImageView(iv);
+            field.add(card);
+            iv.setOnMouseClicked(mouseEvent -> {
+                if (selectedCard != null) {
+                    Card imgCard = getHandCardByImageView(iv);
+                    if (imgCard == null) imgCard = getFieldCardByImageView(iv);
+                    if (imgCard == selectedCard) onCardDeselected(iv);
+                    else onCardSelected(iv);
+                }
+                else onCardSelected(iv);
+                mouseEvent.consume();
+            });
+            setOnHoverListener(iv, "field");
+            hBoxFieldCards.getChildren().add(iv);
+
+        }
     }
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
@@ -730,7 +786,7 @@ public class BattlefieldController {
 
     public void handleTimer(JSONObject json) {
         if (json.getString("status").equals("end")) {
-            progressBar.setProgress(0);
+            progressBar.setProgress(1.0);
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.END_TURN)

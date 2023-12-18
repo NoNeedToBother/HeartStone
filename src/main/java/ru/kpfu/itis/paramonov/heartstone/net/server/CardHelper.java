@@ -5,10 +5,7 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CardHelper {
     public static Card onCardPlayed(JSONObject msg, GameServer.Client client, GameServer.Client player1,
@@ -304,4 +301,76 @@ public class CardHelper {
         JSONArray changes = getFieldChanges(field, positions);
         response.put("opponent_stat_changes", changes);
     }
+
+    /*
+    public static void checkEndTurnCards(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
+                                         HashMap<String, List<Card>> player2AllCards, GameServer server) {
+        checkForHypnoShroom(client, player1, player2, player1AllCards, player2AllCards, server);
+    }
+
+    private static void checkForHypnoShroom(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
+                                         HashMap<String, List<Card>> player2AllCards, GameServer server) {
+        if (client.equals(player1)) {
+            List<Card> removed = new ArrayList<>();
+            List<Card> added = new ArrayList<>();
+            player1AllCards.get("field").stream()
+                    .filter(card -> card.getCardInfo().getActions().contains(CardRepository.CardAction.ON_END_TURN))
+                    .forEach(card -> {
+                        JSONObject responsePlayer1 = new JSONObject();
+                        JSONObject responsePlayer2 = new JSONObject();
+                        removed.addAll(checkEndTurnCard(card, player1AllCards, player2AllCards, responsePlayer1, responsePlayer2).get(0));
+                        added.addAll(checkEndTurnCard(card, player1AllCards, player2AllCards, responsePlayer1, responsePlayer2).get(1));
+
+                        server.sendResponse(responsePlayer1.toString(), player1);
+                        server.sendResponse(responsePlayer2.toString(), player2);
+                    });
+            player2AllCards.get("field").removeAll(removed);
+            player1AllCards.get("field").addAll(added);
+        }
+        else {
+            List<Card> removed = new ArrayList<>();
+            List<Card> added = new ArrayList<>();
+            player2AllCards.get("field").stream()
+                    .filter(card -> card.getCardInfo().getActions().contains(CardRepository.CardAction.ON_END_TURN))
+                    .forEach(card -> {
+                        JSONObject responsePlayer1 = new JSONObject();
+                        JSONObject responsePlayer2 = new JSONObject();
+                        removed.addAll(checkEndTurnCard(card, player2AllCards, player1AllCards, responsePlayer2, responsePlayer1).get(0));
+                        added.addAll(checkEndTurnCard(card, player2AllCards, player1AllCards, responsePlayer2, responsePlayer1).get(1));
+                        server.sendResponse(responsePlayer1.toString(), player1);
+                        server.sendResponse(responsePlayer2.toString(), player2);
+                    });
+            player1AllCards.get("field").removeAll(removed);
+            player2AllCards.get("field").addAll(added);
+        }
+    }
+
+    private static List<List<Card>> checkEndTurnCard(Card card, HashMap<String, List<Card>> playerCards, HashMap<String, List<Card>> otherPlayerCards,
+                                         JSONObject playerResponse, JSONObject otherPlayerResponse) {
+        List<Card> removed = new ArrayList<>();
+        List<Card> added = new ArrayList<>();
+        if (card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId()) {
+            playerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
+            otherPlayerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
+            Random random = new Random();
+            int randPos = random.nextInt(otherPlayerCards.get("field").size());
+            Card stolenCard = otherPlayerCards.get("field").get(randPos);
+
+            added.add(stolenCard);
+            removed.add(stolenCard);
+
+            playerResponse.put("gotten_pos", randPos);
+            playerResponse.put("hp", stolenCard.getHp());
+            playerResponse.put("atk", stolenCard.getAtk());
+            playerResponse.put("cost", stolenCard.getCost());
+            playerResponse.put("id", stolenCard.getCardInfo().getId());
+            otherPlayerResponse.put("stolen_pos", randPos);
+            otherPlayerResponse.put("hp", stolenCard.getHp());
+            otherPlayerResponse.put("atk", stolenCard.getAtk());
+            otherPlayerResponse.put("cost", stolenCard.getCost());
+            otherPlayerResponse.put("id", stolenCard.getCardInfo().getId());
+
+        }
+        return List.of(removed, added);
+    }*/
 }
