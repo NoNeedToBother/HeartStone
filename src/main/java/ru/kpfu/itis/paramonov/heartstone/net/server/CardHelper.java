@@ -156,7 +156,7 @@ public class CardHelper {
 
     public static void checkBattleCry(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
                                       HashMap<String, List<Card>> player2AllCards, Card playedCard, JSONObject message,
-                                      JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer server) {
+                                      JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer server, GameRoom room) {
         responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         if (client.equals(player1)) {
@@ -171,6 +171,17 @@ public class CardHelper {
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) {
                 checkDestroyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            }
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DRAW_CARD_ON_PLAY)) {
+                if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Dragon.getId()) {
+                    room.drawCard(client);
+                }
+                if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Illusionist.getId()) {
+                    room.drawCard(client);
+                    room.drawCard(client);
+                    room.drawCard(room.getOtherPlayer(client));
+                    room.drawCard(room.getOtherPlayer(client));
+                }
             }
         }
         else {
@@ -193,6 +204,29 @@ public class CardHelper {
         }
         removeDefeatedCards(player1AllCards.get("field"));
         removeDefeatedCards(player2AllCards.get("field"));
+    }
+
+    public static void checkProfessorDogOnCardDraw(List<Card> field, GameServer.Client player, GameServer.Client other, GameServer server) {
+        for (Card card : field) {
+            if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
+                card.setAtk(card.getAtk() + 2);
+                card.setHp(card.getHp() + 2);
+                JSONObject response = new JSONObject();
+                JSONObject otherResponse = new JSONObject();
+                response.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+                otherResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+                response.put("pos", field.indexOf(card));
+                response.put("atk", card.getAtk());
+                response.put("hp", card.getHp());
+
+                otherResponse.put("opponent_pos", field.indexOf(card));
+                otherResponse.put("atk", card.getAtk());
+                otherResponse.put("hp", card.getHp());
+
+                server.sendResponse(response.toString(), player);
+                server.sendResponse(otherResponse.toString(), other);
+            }
+        }
     }
 
     public static void sendResponses(JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer.Client player1,
@@ -222,11 +256,13 @@ public class CardHelper {
         Card damagedCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId() ||
                 playedCard.getCardInfo().getId() == CardRepository.CardTemplate.B_30.getId()) {
-            for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
-                if (action.getDamage() != 0) {
-                    damagedCard.setHp(damagedCard.getHp() - action.getDamage());
-                    putDamagedCardInfo(damagedCard, Integer.parseInt(message.getString("opponent_pos")), responseDamaged, responseOther);
-                }
+            if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId()) {
+                damagedCard.setHp(damagedCard.getHp() - 2);
+                putDamagedCardInfo(damagedCard, Integer.parseInt(message.getString("opponent_pos")), responseDamaged, responseOther);
+            }
+            if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.B_30.getId()) {
+                damagedCard.setHp(damagedCard.getHp() - 5);
+                putDamagedCardInfo(damagedCard, Integer.parseInt(message.getString("opponent_pos")), responseDamaged, responseOther);
             }
         }
     }
@@ -246,10 +282,10 @@ public class CardHelper {
             if (defeatedAmount != 0) {
                 for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
                     if (action.toString().equals(CardRepository.CardAction.ATK_UP.toString())) {
-                        playedCard.setAtk(playedCard.getAtk() + action.getAtkIncrease() * defeatedAmount);
+                        playedCard.setAtk(playedCard.getAtk() + 2 * defeatedAmount);
                     }
                     if (action.toString().equals(CardRepository.CardAction.HP_UP.toString())) {
-                        playedCard.setHp(playedCard.getHp() + action.getHpIncrease() * defeatedAmount);
+                        playedCard.setHp(playedCard.getHp() + defeatedAmount);
                     }
                 }
             }
@@ -274,8 +310,14 @@ public class CardHelper {
             if (!card.equals(playedCard)) {
                 for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
                     if (action.toString().equals(CardRepository.CardAction.DAMAGE_ON_PLAY.toString())) {
-                        card.setHp(card.getHp() - action.getDamage());
-                        playerIndexes.add(field.indexOf(card));
+                        if (card.getCardInfo().getId() == CardRepository.CardTemplate.CrazyPyromaniac.getId()) {
+                            card.setHp(card.getHp() - 2);
+                            playerIndexes.add(field.indexOf(card));
+                        }
+                        if (card.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId()) {
+                            card.setHp(card.getHp() - 3);
+                            playerIndexes.add(field.indexOf(card));
+                        }
                     }
                 }
             } else {
@@ -324,9 +366,11 @@ public class CardHelper {
         JSONArray changes = new JSONArray();
         for (int pos = 0; pos < positions.size(); pos++) {
             JSONObject changedCard = new JSONObject();
+            Card card = field.get(positions.get(pos));
             changedCard.put("pos", positions.get(pos));
-            changedCard.put("hp", field.get(positions.get(pos)).getHp());
-            changedCard.put("atk", field.get(positions.get(pos)).getAtk());
+            changedCard.put("hp", card.getHp());
+            changedCard.put("atk", card.getAtk());
+
             changes.put(changedCard);
         }
         return changes;
@@ -339,8 +383,21 @@ public class CardHelper {
 
 
     public static void checkEndTurnCards(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
-                                         HashMap<String, List<Card>> player2AllCards, GameServer server) {
+                                         HashMap<String, List<Card>> player2AllCards, GameServer server, GameRoom room) {
         checkForHypnoShroom(client, player1, player2, player1AllCards, player2AllCards, server);
+        if (client.equals(player1)) {
+            for (Card card : player1AllCards.get("field")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.Postman.getId()) {
+                    room.drawCard(player1);
+                }
+            }
+        } else {
+            for (Card card : player2AllCards.get("field")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.Postman.getId()) {
+                    room.drawCard(player2);
+                }
+            }
+        }
     }
 
     private static void checkForHypnoShroom(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
@@ -418,14 +475,21 @@ public class CardHelper {
                                                  List<Card> attackedField, Hero attackerHero, Hero attackedHero,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
                                                  GameServer.Client attackerPlayer, GameServer.Client attackedPlayer) {
-        if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
+        if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId() && attacked.getHp() > 0) {
             attackerHero.setHp(attackerHero.getHp() - attacked.getAtk());
-            attacked.setAtk(attacked.getAtk() + 1);
+            attacked.setAtk(attacked.getAtk() + 2);
             attacked.setHp(attacked.getHp() + 1);
             if (attackerHero.getHp() <= 0) {
                 PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
             }
+            PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         }
-        PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+        if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() && attacked.getHp() > 0) {
+            attackerHero.setHp(attackerHero.getHp() - 4);
+            if (attackerHero.getHp() <= 0) {
+                PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
+            }
+            PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+        }
     }
 }

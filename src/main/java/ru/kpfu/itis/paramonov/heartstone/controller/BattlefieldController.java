@@ -291,6 +291,7 @@ public class BattlefieldController {
         Integer atk = null;
         try {
             atk = json.getInt("atk");
+            System.out.println("YA ZDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEC " + atk);
         } catch (JSONException e) {}
         String status = null;
         try {
@@ -306,7 +307,7 @@ public class BattlefieldController {
         }
         else {
             if (hp != null) field.get(pos).setHp(hp);
-            if (atk != null) field.get(pos).setHp(atk);
+            if (atk != null) field.get(pos).setAtk(atk);
             if (status != null) {
                 if (status.equals("no_frozen")) {
                     field.get(pos).removeStatus(CardRepository.Status.FROZEN);

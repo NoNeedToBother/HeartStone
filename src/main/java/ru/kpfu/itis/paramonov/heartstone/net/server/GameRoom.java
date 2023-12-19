@@ -98,7 +98,7 @@ public class GameRoom {
                     activePlayer = player1;
                     CardHelper.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
                 }
-                CardHelper.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server);
+                CardHelper.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server, this);
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -150,11 +150,12 @@ public class GameRoom {
                 sendResponse(response.toString(), getOtherPlayer(client));
 
                 if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) {
+                    System.out.println(msg);
                     try {
                         msg.getString("card_action");
                         JSONObject responsePlayer1 = new JSONObject();
                         JSONObject responsePlayer2 = new JSONObject();
-                        CardHelper.checkBattleCry(client, player1, player2, player1AllCards, player2AllCards, playedCard, msg, responsePlayer1, responsePlayer2, server);
+                        CardHelper.checkBattleCry(client, player1, player2, player1AllCards, player2AllCards, playedCard, msg, responsePlayer1, responsePlayer2, server, this);
                     } catch (JSONException e) {
                     }
                 }
@@ -303,7 +304,7 @@ public class GameRoom {
         }
     }
 
-    private void drawCard(GameServer.Client client) {
+    public void drawCard(GameServer.Client client) {
         JSONObject response = new JSONObject();
         response.put("room_action", RoomAction.DRAW_CARD.toString());
         Card cardToDraw;
@@ -318,6 +319,7 @@ public class GameRoom {
                 response.put("card_status", "drawn");
             }
             putCardInfo(cardToDraw, response);
+            CardHelper.checkProfessorDogOnCardDraw(allCards.get("field"), client, getOtherPlayer(client), server);
         } catch (IndexOutOfBoundsException e) {
             response.put("card_status", "no_card");
             JSONObject responsePlayer1 = new JSONObject();
