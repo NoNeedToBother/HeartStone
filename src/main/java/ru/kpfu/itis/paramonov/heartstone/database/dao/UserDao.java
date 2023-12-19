@@ -68,9 +68,9 @@ public class UserDao {
         } else return null;
     }
 
-    private String DEFAULT_CARDS = "[1]";
+    private String DEFAULT_CARDS = "[1,1,2,3,4,5,5,10,11,17,21,26,29,31,34]";
 
-    private String DEFAULT_DECK = "[1,1,1,1,1]";
+    private String DEFAULT_DECK = "[1,1]";
 
     private int DEFAULT_MONEY = 500;
 

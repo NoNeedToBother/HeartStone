@@ -103,6 +103,12 @@ public class GameApplication extends Application {
         }
     }
 
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        disconnect();
+    }
+
     public static void main(String[] args) {
         launch();
     }
