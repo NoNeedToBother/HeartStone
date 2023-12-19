@@ -159,7 +159,10 @@ public class DeckController {
     private void setDeck() {
         List<CardRepository.CardTemplate> deck = User.getInstance().getDeck();
         for (CardRepository.CardTemplate cardTemplate : deck) {
-            Card card = getCardFromCards(cardTemplate.getId());
+            List<Card> cards = getCardFromCards(cardTemplate.getId());
+            Card card;
+            if (deckCards.contains(cards.get(0))) card = cards.get(1);
+            else card = cards.get(0);
             deckCards.add(card);
             DeckCardInfo deckCardInfo = new DeckCardInfo(card);
             vBoxDeckCards.getChildren().add(deckCardInfo);
@@ -171,11 +174,12 @@ public class DeckController {
         }
     }
 
-    private Card getCardFromCards(int id) {
+    private List<Card> getCardFromCards(int id) {
+        List<Card> res = new ArrayList<>();
         for (Card card : cards) {
-            if (card.getCardInfo().getId() == id) return card;
+            if (card.getCardInfo().getId() == id) res.add(card);
         }
-        return null;
+        return res;
     }
 
     private boolean checkCards(Card card) {
