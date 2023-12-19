@@ -371,7 +371,8 @@ public class BattlefieldController {
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                         .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)));
-                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "battlecry");
+                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY) ||
+                selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.DETERMINATION)) msg.setParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
@@ -527,7 +528,6 @@ public class BattlefieldController {
         try {
             String status = cardChange.getString("status");
             if (status.equals(CardRepository.Status.FROZEN.toString())) {
-                System.out.println("BRUH!");
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
             }
         } catch (JSONException e) {}

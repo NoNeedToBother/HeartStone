@@ -195,7 +195,8 @@ public class CardHelper {
     public static void checkEnemyDamageOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard,
                                               JSONObject responseDamaged, JSONObject responseOther) {
         Card damagedCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
-        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId()) {
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId() ||
+                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.B_30.getId()) {
             for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
                 if (action.getDamage() != 0) {
                     damagedCard.setHp(damagedCard.getHp() - action.getDamage());

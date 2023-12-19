@@ -158,6 +158,15 @@ public class GameRoom {
                     } catch (JSONException e) {
                     }
                 }
+
+                if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.DETERMINATION)) {
+                    try {
+                        msg.getString("card_action");
+                        JSONObject responsePlayer1 = new JSONObject();
+                        JSONObject responsePlayer2 = new JSONObject();
+                    } catch (JSONException e) {
+                    }
+                }
             }
 
             case CHECK_CARD_TO_ATTACK -> {
