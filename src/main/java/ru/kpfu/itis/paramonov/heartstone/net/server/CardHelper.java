@@ -83,8 +83,10 @@ public class CardHelper {
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
         boolean res = checkCardToAttack(client, activePlayer, opponentCards, response, attacker, pos, target);
         if (res) {
-            res = checkTaunts(opponentCards, opponentPos);
-            if (!res) response.put("reason", "You must attack card with taunt");
+            if (!attacker.getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
+                res = checkTaunts(opponentCards, opponentPos);
+                if (!res) response.put("reason", "You must attack card with taunt");
+            }
         }
         if (res) response.put("status", "ok");
         else response.put("status", "not_ok");
@@ -155,6 +157,10 @@ public class CardHelper {
         responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         if (client.equals(player1)) {
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                freezeEnemyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
+                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            }
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY)) {
                 checkEnemyDamageOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
@@ -163,22 +169,18 @@ public class CardHelper {
                 checkDestroyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
-            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
-                freezeEnemyOnPlay(player2AllCards, message, playedCard, responsePlayer2, responsePlayer1);
-                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
-            }
         }
         else {
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                freezeEnemyOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
+                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            }
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY)) {
                 checkEnemyDamageOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) {
                 checkDestroyOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
-                sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
-            }
-            if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
-                freezeEnemyOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
         }

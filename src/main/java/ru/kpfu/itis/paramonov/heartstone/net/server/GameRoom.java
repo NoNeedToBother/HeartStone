@@ -167,13 +167,16 @@ public class GameRoom {
                 int pos = Integer.parseInt(msg.getString("pos"));
                 if (target.equals("hero")) {
                     boolean res = CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
-                    if (res) {
+                    if (res && allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
                         List<Integer> positions = CardHelper.checkTaunts(getAllCards(getOtherPlayer(client)));
                         if (positions.size() > 0) {
-                            response.remove("status");
                             response.put("status", "not_ok");
                             response.put("reason", "You must attack card with taunt");
+                        } else {
+                            response.put("status", "ok");
                         }
+                    } else {
+                        response.put("status", "ok");
                     }
                 } else {
                     int opponentPos = Integer.parseInt(msg.getString("opponent_pos"));
@@ -194,6 +197,7 @@ public class GameRoom {
 
                 sendResponse(responseAttacker.toString(), client);
                 sendResponse(responseAttacked.toString(), getOtherPlayer(client));
+                attacker.addStatus(CardRepository.Status.ATTACKED);
 
                 if (attackedHero.getHp() <= 0) {
                     JSONObject responseWinner = new JSONObject();
@@ -227,6 +231,7 @@ public class GameRoom {
 
                 Card attacker = attackerField.get(Integer.parseInt(msg.getString("attacker_pos")));
                 Card attacked = attackedField.get(Integer.parseInt(msg.getString("attacked_pos")));
+                attacker.addStatus(CardRepository.Status.ATTACKED);
                 CardHelper.decreaseHpOnDirectAttack(attacker, attacked);
 
                 JSONObject attackerResponse = new JSONObject();

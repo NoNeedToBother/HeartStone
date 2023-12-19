@@ -8,7 +8,7 @@ public class CardRepository {
 
     public enum CardAction {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
-        ON_END_TURN, COST_DOWN, SELF_BUFF;
+        ON_END_TURN, COST_DOWN, IGNORE_TAUNT;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -191,7 +191,13 @@ public class CardRepository {
         A_50(20, "A-50", 3, 3, 3, "", DEFAULT_PATH + "/a50.png", List.of(), List.of(),
                 Faction.ROBOT, Rarity.COMMON),
         B_30(21, "B-30", 2, 3, 6, "Battlecry: deals 5 damage. Rush",DEFAULT_PATH + "/b30.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(5), CardAction.RUSH_ON_PLAY),
-                List.of(KeyWord.BATTLE_CRY, KeyWord.RUSH), Faction.ROBOT, Rarity.RARE);
+                List.of(KeyWord.BATTLE_CRY, KeyWord.RUSH), Faction.ROBOT, Rarity.RARE),
+        TENS_100(22, "TENS-1000", 5, 4, 5, "Rush. Ignores taunt", DEFAULT_PATH + "/tens100.png",
+                List.of(CardAction.RUSH_ON_PLAY, CardAction.IGNORE_TAUNT), List.of(KeyWord.RUSH), Faction.ROBOT, Rarity.LEGENDARY),
+        Ninja(23, "Ninja", 4, 4, 6, "Ignores taunt", DEFAULT_PATH + "/ninja.png", List.of(CardAction.IGNORE_TAUNT),
+                List.of(), Faction.NO_FACTION, Rarity.EPIC),
+        IceSorcerer(23, "Ice sorcerer", 4,4, 5, "Battlecry: freezes chosen enemy and deals 2 damage", DEFAULT_PATH + "/ice_sorcerer.png",
+                List.of(CardAction.FREEZE_ENEMY_ON_PLAY, CardAction.DAMAGE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.RARE);
 
 
         private int id;
