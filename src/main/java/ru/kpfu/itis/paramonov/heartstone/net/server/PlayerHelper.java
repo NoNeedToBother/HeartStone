@@ -39,7 +39,6 @@ public class PlayerHelper {
 
     private static final int GOLD_FOR_WIN = 200;
     private static final int GOLD_FOR_DEFEAT = 50;
-    private static final int GOLD_FOR_TIE = 75;
 
     public static void onHeroDefeated(JSONObject responseWinner, JSONObject responseDefeated, GameServer.Client winner,
                                       GameServer.Client defeated) {
@@ -74,9 +73,6 @@ public class PlayerHelper {
         service.updateMoney(defeatedUser.getLogin(), defeatedMoney);
         response.put("money", winnerMoney);
     }
-
-    public static void onTie() {}
-
     public static void dealDamageOnNoCard(GameServer.Client client, GameServer.Client player1, int player1Dmg, int player2Dmg,
                                           Hero player1Hero, Hero player2Hero, JSONObject responsePlayer1, JSONObject responsePlayer2) {
         responsePlayer1.put("room_action", GameRoom.RoomAction.CHANGE_HP);

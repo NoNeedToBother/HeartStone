@@ -54,6 +54,10 @@ public class ClientRoomMsgHandler {
             case CARD_CARD_ATTACK -> {
                 BattlefieldController.getController().playAttackingAnimation(json);
                 BattlefieldController.getController().updateCards(json);
+                try {
+                    int hp = json.getInt("hp");
+                    BattlefieldController.getController().updateHp(json);
+                } catch (JSONException e) {}
             }
             case GET_OPPONENT_MANA -> {
                 BattlefieldController.getController().setMana(json);
@@ -72,7 +76,12 @@ public class ClientRoomMsgHandler {
                         case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
                     }
                 } else {
-                    BattlefieldController.getController().showMessage("Card cannot attack");
+                    try {
+                        String reason = json.getString("reason");
+                        BattlefieldController.getController().showMessage(reason);
+                    } catch (JSONException e) {
+                        BattlefieldController.getController().showMessage("Card cannot attack");
+                    }
                 }
             }
             case CARD_HERO_ATTACK -> {
@@ -95,6 +104,9 @@ public class ClientRoomMsgHandler {
                 } catch (JSONException e) {
                     BattlefieldController.getController().applyChange(json);
                 }
+            }
+            case TIMER_UPDATE -> {
+                BattlefieldController.getController().handleTimer(json);
             }
         }
     }

@@ -3,6 +3,7 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -88,6 +89,9 @@ public class BattlefieldController {
 
     @FXML
     private AnchorPane root;
+
+    @FXML
+    private ProgressBar progressBar;
 
     private Card selectedCard = null;
 
@@ -240,6 +244,42 @@ public class BattlefieldController {
             int pos = json.getInt("opponent_pos");
             applyChanges(json, pos, opponentField);
         } catch (JSONException e) {}
+        try {
+            int pos = json.getInt("stolen_pos");
+            if (field.get(pos).equals(selectedCard)) {
+                onCardDeselected(selectedCard.getAssociatedImageView());
+            }
+            addOpponentCard(json);
+            Card stolen = field.remove(pos);
+            hBoxFieldCards.getChildren().remove(stolen.getAssociatedImageView());
+
+        } catch (JSONException e) {}
+        try {
+            int pos = json.getInt("gotten_pos");
+            Card card = getCard(json);
+            Image sprite = Card.spriteBuilder()
+                    .addImage(card.getCardInfo().getPortraitUrl())
+                    .setStyle(Card.CardStyle.BASE.toString())
+                    .addRarity(card.getCardInfo().getRarity())
+                    .scale(2)
+                    .build();
+            ImageView iv = new ImageView(sprite);
+            card.associateImageView(iv);
+            Card gotten = opponentField.remove(pos);
+            hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
+            field.add(card);
+            hBoxFieldCards.getChildren().add(iv);
+            iv.setOnMouseClicked(mouseEvent -> {
+                if (selectedCard != null) {
+                    Card imgCard = getHandCardByImageView(iv);
+                    if (imgCard == null) imgCard = getFieldCardByImageView(iv);
+                    if (imgCard == selectedCard) onCardDeselected(iv);
+                    else onCardSelected(iv);
+                } else onCardSelected(iv);
+                mouseEvent.consume();
+            });
+            setOnHoverListener(iv, "field");
+        } catch (JSONException exception) {}
     }
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
@@ -266,7 +306,7 @@ public class BattlefieldController {
         }
         else {
             if (hp != null) field.get(pos).setHp(hp);
-            if (atk != null) field.get(pos).setHp(atk);
+            if (atk != null) field.get(pos).setAtk(atk);
             if (status != null) {
                 if (status.equals("no_frozen")) {
                     field.get(pos).removeStatus(CardRepository.Status.FROZEN);
@@ -295,6 +335,7 @@ public class BattlefieldController {
         this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
             if (this.btnEndTurn.isClickable()) {
                 active = false;
+                progressBar.setProgress(1.0);
 
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -330,7 +371,7 @@ public class BattlefieldController {
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                         .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)));
-                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "battlecry");
+                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
@@ -403,12 +444,14 @@ public class BattlefieldController {
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
-            if (handCard != null && (handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
-                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
-                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
-                sendAttackingOnPlay(handCard, selected);
-                mouseEvent.consume();
-                return;
+            if (handCard != null) {
+                if ((handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                    sendAttackingOnPlay(handCard, selected);
+                    mouseEvent.consume();
+                    return;
+                }
             }
 
             if (handCard != null) {
@@ -484,7 +527,6 @@ public class BattlefieldController {
         try {
             String status = cardChange.getString("status");
             if (status.equals(CardRepository.Status.FROZEN.toString())) {
-                System.out.println("BRUH!");
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
             }
         } catch (JSONException e) {}
@@ -721,5 +763,20 @@ public class BattlefieldController {
     private void updateMana() {
         manaBar.setMana(player.getMana(), player.getMaxMana());
         opponentManaBar.setMana(opponent.getMana(), opponent.getMaxMana());
+    }
+
+    public void handleTimer(JSONObject json) {
+        if (json.getString("status").equals("end")) {
+            progressBar.setProgress(1.0);
+            String msg = ServerMessage.builder()
+                    .setEntityToConnect(ServerMessage.Entity.ROOM)
+                    .setRoomAction(GameRoom.RoomAction.END_TURN)
+                    .build();
+
+            GameApplication.getApplication().getClient().sendMessage(msg);
+        } else {
+            int seconds = Integer.parseInt(json.getString("status"));
+            progressBar.setProgress(1 - (double) seconds / json.getInt("maxSeconds"));
+        }
     }
 }
