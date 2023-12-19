@@ -14,7 +14,6 @@ public class CardRepository {
     public enum KeyWord {
         BATTLE_CRY("Battle cry", "Triggers when card is played from hand"),
         TAUNT("Taunt", "Cards must attack card with this status"),
-        REVIVE("Revive", "Summons a card that was once on battlefield"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
         RUSH("Rush", "Can  attack immediately after played"),
@@ -125,13 +124,13 @@ public class CardRepository {
                 DEFAULT_PATH + "/hypnoshroom.png", List.of(CardAction.ON_END_TURN), List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
         Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
                 List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
-        Phoenix(9, "Phoenix", 4, 4, 4, "Battlecry: deal 3 damage to chosen enemy", DEFAULT_PATH + "/phoenix.png",
+        Phoenix(9, "Phoenix", 4, 4, 4, "Battlecry: deal 4 damage to chosen enemy", DEFAULT_PATH + "/phoenix.png",
                 List.of(), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.EPIC),
         StoneGiant(10, "Stone giant", 6, 6, 6, "", DEFAULT_PATH + "/stone_giant.png",
                 List.of(), List.of(), Faction.STONE, Rarity.RARE),
         FierceTiger(11, "Fierce tiger", 3, 3, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
                 Rarity.RARE),
-        StoneAssassin(12, "Stone assassin", 2, 2, 6, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
+        StoneAssassin(12, "Stone assassin", 2, 2, 5, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
                 List.of(CardAction.DESTROY_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.STONE, Rarity.EPIC),
         CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to all other cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
                 List.of(CardAction.DAMAGE_ON_PLAY), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE),
@@ -158,7 +157,7 @@ public class CardRepository {
                 List.of(), Faction.NO_FACTION, Rarity.EPIC),
         IceSorcerer(24, "Ice sorcerer", 4,4, 5, "Battlecry: freezes chosen enemy", DEFAULT_PATH + "/ice_sorcerer.png",
                 List.of(CardAction.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.RARE),
-        Rat(25, "Rat", 3, 2, 2, "", DEFAULT_PATH + "/rat.png", List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
+        Rat(25, "Rat", 2, 3, 2, "", DEFAULT_PATH + "/rat.png", List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
         Dragon(26, "The Dragon", 8, 8, 8, "Battlecry: draw a card. Taunt", DEFAULT_PATH + "/dragon.png", List.of(CardAction.DRAW_CARD_ON_PLAY),
                 List.of(KeyWord.BATTLE_CRY, KeyWord.TAUNT), Faction.ANIMAL, Rarity.RARE),
         Illusionist(27, "Illusionist", 4, 3, 3, "Battlecry: both player draw 2 cards", DEFAULT_PATH + "/illusionist.png", List.of(CardAction.DRAW_CARD_ON_PLAY),
@@ -173,8 +172,15 @@ public class CardRepository {
                 DEFAULT_PATH + "/slime_commander.png", List.of(CardAction.DAMAGE_HERO_ON_DMG), List.of(KeyWord.BATTLE_CRY),
                 Faction.NO_FACTION, Rarity.EPIC),
         Postman(31, "Postman", 3, 3, 4, "At the end of turn draws a card", DEFAULT_PATH + "/postman.png",
-                List.of(), List.of(), Faction.NO_FACTION, Rarity.RARE);
-
+                List.of(), List.of(), Faction.NO_FACTION, Rarity.RARE),
+        MerchantRobot(32, "Merchant robot", 2, 1, 3, "Battlecry: draw a card", DEFAULT_PATH + "/merchant_robot.png",
+                List.of(CardAction.DRAW_CARD_ON_PLAY), List.of(KeyWord.BATTLE_CRY), Faction.ROBOT, Rarity.RARE),
+        BraveRat(33, "Brave rat", 4, 2, 4, "Rush", DEFAULT_PATH + "/brave_rat.png",
+                List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON),
+        SwampThing(34, "Swamp thing", 4, 6, 5, "Taunt", DEFAULT_PATH + "/swamp_thing.png", List.of(),
+                List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON),
+        Hydra(35, "Hydra", 4, 5, 7, "Battlecry: destroys an enemy. If there are still left, gains +3/3", DEFAULT_PATH + "/hydra.png", List.of(CardAction.DESTROY_ENEMY_ON_PLAY),
+                List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.ANIMAL, Rarity.EPIC);
 
         private int id;
 

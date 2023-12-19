@@ -150,7 +150,6 @@ public class GameRoom {
                 sendResponse(response.toString(), getOtherPlayer(client));
 
                 if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) {
-                    System.out.println(msg);
                     try {
                         msg.getString("card_action");
                         JSONObject responsePlayer1 = new JSONObject();
@@ -171,7 +170,6 @@ public class GameRoom {
                     boolean res = CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
                     if (res && !allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
                         List<Integer> positions = CardHelper.checkTaunts(getAllCards(getOtherPlayer(client)));
-                        System.out.println(positions);
                         if (positions.size() > 0) {
                             response.put("status", "not_ok");
                             response.put("reason", "You must attack card with taunt");

@@ -291,7 +291,6 @@ public class BattlefieldController {
         Integer atk = null;
         try {
             atk = json.getInt("atk");
-            System.out.println("YA ZDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEC " + atk);
         } catch (JSONException e) {}
         String status = null;
         try {

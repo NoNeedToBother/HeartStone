@@ -329,7 +329,8 @@ public class CardHelper {
     public static void checkDestroyOnPlay(HashMap<String, List<Card>> allCards, JSONObject message, Card playedCard,
                                           JSONObject responseDestroyed, JSONObject responseOther) {
         Card destroyedCard = allCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
-        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneAssassin.getId()) {
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneAssassin.getId() ||
+        playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Hydra.getId()) {
             destroyedCard.setHp(0);
             putDamagedCardInfo(destroyedCard, Integer.parseInt(message.getString("opponent_pos")), responseDestroyed, responseOther);
         }
