@@ -52,8 +52,7 @@ public class CardRepository {
 
     public enum KeyWord {
         BATTLE_CRY("Battle cry", "Triggers when card is played from hand"),
-        LAST_WISH("Last wish", "Triggers when card hp is less than "),
-        CONSUME("Consume", "Destroys other card to trigger effect"),
+        TAUNT("Taunt", "Cards must attack card with this status"),
         REVIVE("Revive", "Summons a card that was once on battlefield"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
@@ -150,8 +149,8 @@ public class CardRepository {
         Stone(1, "Stone", 1, 1, 0, "", DEFAULT_PATH + "/basic_stone.png",
                 List.of(), List.of(), Faction.STONE, Rarity.COMMON),
 
-        KnightStone(2, "Stoneland knight", 4, 5, 4, "", DEFAULT_PATH + "/knight_stone.png",
-                List.of(), List.of(KeyWord.BATTLE_CRY), Faction.STONE, Rarity.RARE),
+        KnightStone(2, "Stoneland knight", 4, 4, 4, "Taunt", DEFAULT_PATH + "/knight_stone.png",
+                List.of(), List.of(KeyWord.TAUNT), Faction.STONE, Rarity.RARE),
 
         FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to chosen enemy",
                 DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
@@ -187,7 +186,7 @@ public class CardRepository {
                 List.of(CardAction.ATK_UP.setStats(2), CardAction.HP_UP.setStats(2), CardAction.ON_END_TURN), List.of(), Faction.NO_FACTION, Rarity.EPIC),
         WaterGiant(18, "Water giant", 7, 7, 20, "Cost -1 for each played card", DEFAULT_PATH + "/water_giant.png",
                 List.of(CardAction.COST_DOWN.setStats(1)), List.of(), Faction.ELEMENTAL, Rarity.EPIC),
-        STAN_3000(19, "STAN-3000", 6, 6, 10, "Cost -1 for each played robot", DEFAULT_PATH + "/stan3000.png",
+        STAN_3000(19, "STAN-3000", 6, 6, 10, "Cost -1 for each played robot. Taunt", DEFAULT_PATH + "/stan3000.png",
                 List.of(CardAction.COST_DOWN.setStats(1)), List.of(), Faction.ROBOT, Rarity.EPIC),
         A_50(20, "A-50", 3, 3, 3, "", DEFAULT_PATH + "/a50.png", List.of(), List.of(),
                 Faction.ROBOT, Rarity.COMMON),

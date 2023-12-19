@@ -158,15 +158,6 @@ public class GameRoom {
                     } catch (JSONException e) {
                     }
                 }
-
-                if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.DETERMINATION)) {
-                    try {
-                        msg.getString("card_action");
-                        JSONObject responsePlayer1 = new JSONObject();
-                        JSONObject responsePlayer2 = new JSONObject();
-                    } catch (JSONException e) {
-                    }
-                }
             }
 
             case CHECK_CARD_TO_ATTACK -> {
@@ -175,10 +166,18 @@ public class GameRoom {
                 String target = msg.getString("target");
                 int pos = Integer.parseInt(msg.getString("pos"));
                 if (target.equals("hero")) {
-                    CardHelper.checkCardToAttack(client, activePlayer, response, allCards.get("field").get(pos), pos, target);
+                    boolean res = CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
+                    if (res) {
+                        List<Integer> positions = CardHelper.checkTaunts(getAllCards(getOtherPlayer(client)));
+                        if (positions.size() > 0) {
+                            response.remove("status");
+                            response.put("status", "not_ok");
+                            response.put("reason", "You must attack card with taunt");
+                        }
+                    }
                 } else {
                     int opponentPos = Integer.parseInt(msg.getString("opponent_pos"));
-                    CardHelper.checkCardToAttack(client, activePlayer, response, allCards.get("field").get(pos), pos, opponentPos, target);
+                    CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, opponentPos, target);
                 }
                 sendResponse(response.toString(), client);
             }

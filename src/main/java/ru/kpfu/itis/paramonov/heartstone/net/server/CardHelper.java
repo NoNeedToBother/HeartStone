@@ -62,7 +62,8 @@ public class CardHelper {
         response.put("status", "ok");
     }
 
-    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, JSONObject response,
+    public static boolean checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer,
+                                         HashMap<String, List<Card>> opponentCards, JSONObject response,
                                          Card attacker, int pos, String target) {
         response.put("room_action", GameRoom.RoomAction.CHECK_CARD_TO_ATTACK);
         response.put("pos", pos);
@@ -75,14 +76,33 @@ public class CardHelper {
                 break;
             }
         }
-        if (canAttack) response.put("status", "ok");
-        else response.put("status", "not_ok");
+        return canAttack;
     }
 
-    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer,
+    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, HashMap<String, List<Card>> opponentCards,
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
-        checkCardToAttack(client, activePlayer, response, attacker, pos, target);
+        boolean res = checkCardToAttack(client, activePlayer, opponentCards, response, attacker, pos, target);
+        if (res) {
+            res = checkTaunts(opponentCards, opponentPos);
+            if (!res) response.put("reason", "You must attack card with taunt");
+        }
+        if (res) response.put("status", "ok");
+        else response.put("status", "not_ok");
         response.put("opponent_pos", opponentPos);
+    }
+
+    private static boolean checkTaunts(HashMap<String, List<Card>> cards, int pos) {
+        return checkTaunts(cards).contains(pos);
+    }
+
+    public static List<Integer> checkTaunts(HashMap<String, List<Card>> cards) {
+        List<Integer> tauntCardPositions = new ArrayList<>();
+        for (Card card : cards.get("field")) {
+            if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) {
+                tauntCardPositions.add(cards.get("field").indexOf(card));
+            }
+        }
+        return tauntCardPositions;
     }
 
     public static void decreaseHpOnDirectAttack(Card attacker, Card attacked) {

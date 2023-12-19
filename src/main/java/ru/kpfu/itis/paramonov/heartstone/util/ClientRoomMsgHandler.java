@@ -72,7 +72,12 @@ public class ClientRoomMsgHandler {
                         case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
                     }
                 } else {
-                    BattlefieldController.getController().showMessage("Card cannot attack");
+                    try {
+                        String reason = json.getString("reason");
+                        BattlefieldController.getController().showMessage(reason);
+                    } catch (JSONException e) {
+                        BattlefieldController.getController().showMessage("Card cannot attack");
+                    }
                 }
             }
             case CARD_HERO_ATTACK -> {
