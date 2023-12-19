@@ -1,6 +1,5 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,8 @@ public class CardRepository {
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
         RUSH("Rush", "Can  attack immediately after played"),
-        DESTROY("Destroy", "Sets chosen enemy's hp to zero");
+        DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
+        GIANT("Giant", "Decreases cost when conditions are met");
 
         private String displayName;
 
@@ -125,9 +125,9 @@ public class CardRepository {
         Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
                 List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
         Phoenix(9, "Phoenix", 4, 4, 4, "Battlecry: deal 4 damage to chosen enemy", DEFAULT_PATH + "/phoenix.png",
-                List.of(), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.EPIC),
-        StoneGiant(10, "Stone giant", 6, 6, 6, "", DEFAULT_PATH + "/stone_giant.png",
-                List.of(), List.of(), Faction.STONE, Rarity.RARE),
+                List.of(), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE),
+        StoneGiant(10, "Stone giant", 6, 6, 10, "Giant: cost -1 for each played stone", DEFAULT_PATH + "/stone_giant.png",
+                List.of(), List.of(KeyWord.GIANT), Faction.STONE, Rarity.EPIC),
         FierceTiger(11, "Fierce tiger", 3, 3, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
                 Rarity.RARE),
         StoneAssassin(12, "Stone assassin", 2, 2, 5, "Battlecry: destroy chosen enemy", DEFAULT_PATH + "/stone_assassin.png",
@@ -143,10 +143,10 @@ public class CardRepository {
                 Faction.NO_FACTION, Rarity.COMMON),
         WiseTree(17, "Wise mysterious tree", 3, 2, 2, "Taunt", DEFAULT_PATH + "/wise_tree.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON),
-        WaterGiant(18, "Water giant", 7, 7, 7, "", DEFAULT_PATH + "/water_giant.png",
-                List.of(), List.of(), Faction.ELEMENTAL, Rarity.RARE),
-        STAN_3000(19, "STAN-3000", 6, 6, 6, "Taunt", DEFAULT_PATH + "/stan3000.png",
-                List.of(), List.of(KeyWord.TAUNT), Faction.ROBOT, Rarity.COMMON),
+        WaterGiant(18, "Water giant", 4, 5, 10, "Giant: cost -1 for each played elemental. Rush", DEFAULT_PATH + "/water_giant.png",
+                List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.GIANT, KeyWord.RUSH), Faction.ELEMENTAL, Rarity.EPIC),
+        STAN_3000(19, "STAN-3000", 7, 7, 12, "Giant: cost -1 for each played robot. Taunt", DEFAULT_PATH + "/stan3000.png",
+                List.of(), List.of(KeyWord.GIANT, KeyWord.TAUNT), Faction.ROBOT, Rarity.EPIC),
         A_50(20, "A-50", 3, 3, 3, "", DEFAULT_PATH + "/a50.png", List.of(), List.of(),
                 Faction.ROBOT, Rarity.COMMON),
         B_30(21, "B-30", 2, 3, 6, "Battlecry: deals 5 damage. Rush",DEFAULT_PATH + "/b30.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY, CardAction.RUSH_ON_PLAY),
@@ -154,7 +154,7 @@ public class CardRepository {
         TENS_100(22, "TENS-1000", 5, 4, 5, "Rush. Ignores taunt", DEFAULT_PATH + "/tens100.png",
                 List.of(CardAction.RUSH_ON_PLAY, CardAction.IGNORE_TAUNT), List.of(KeyWord.RUSH), Faction.ROBOT, Rarity.LEGENDARY),
         Ninja(23, "Ninja", 4, 4, 6, "Ignores taunt", DEFAULT_PATH + "/ninja.png", List.of(CardAction.IGNORE_TAUNT),
-                List.of(), Faction.NO_FACTION, Rarity.EPIC),
+                List.of(), Faction.NO_FACTION, Rarity.RARE),
         IceSorcerer(24, "Ice sorcerer", 4,4, 5, "Battlecry: freezes chosen enemy", DEFAULT_PATH + "/ice_sorcerer.png",
                 List.of(CardAction.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.RARE),
         Rat(25, "Rat", 2, 3, 2, "", DEFAULT_PATH + "/rat.png", List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON),
@@ -167,7 +167,6 @@ public class CardRepository {
 
         SlimeWarrior(29, "Slime warrior", 5, 4, 5, "Taunt", DEFAULT_PATH + "/warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON),
-
         SlimeCommander(30, "Slime commander", 5, 5, 7, "Punishment: deals 4 damage to opponent hero",
                 DEFAULT_PATH + "/slime_commander.png", List.of(CardAction.DAMAGE_HERO_ON_DMG), List.of(KeyWord.BATTLE_CRY),
                 Faction.NO_FACTION, Rarity.EPIC),
@@ -179,8 +178,18 @@ public class CardRepository {
                 List.of(CardAction.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON),
         SwampThing(34, "Swamp thing", 4, 6, 5, "Taunt", DEFAULT_PATH + "/swamp_thing.png", List.of(),
                 List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON),
-        Hydra(35, "Hydra", 4, 5, 7, "Battlecry: destroys an enemy. If there are still left, gains +3/3", DEFAULT_PATH + "/hydra.png", List.of(CardAction.DESTROY_ENEMY_ON_PLAY),
-                List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.ANIMAL, Rarity.EPIC);
+        Hydra(35, "Hydra", 4, 5, 7, "Battlecry: destroys an enemy", DEFAULT_PATH + "/hydra.png", List.of(CardAction.DESTROY_ENEMY_ON_PLAY),
+                List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.ANIMAL, Rarity.EPIC),
+        AnimalKing(36, "King of animals", 6, 6, 10, "Giant: cost -1 for each played animal", DEFAULT_PATH + "/animal_king.png",
+                List.of(), List.of(KeyWord.GIANT), Faction.ANIMAL, Rarity.EPIC),
+        Deity(37, "His deity", 8, 8, 20, "Giant: cost -6 for each played giant", DEFAULT_PATH + "/his_deity.png",
+                List.of(), List.of(KeyWord.GIANT), Faction.NO_FACTION, Rarity.LEGENDARY),
+        BuriedColossus(38, "Buried colossus", 7, 7, 5, "Taunt. Cannot attack", DEFAULT_PATH + "/buried_colossus.png",
+                List.of(), List.of(KeyWord.TAUNT), Faction.STONE, Rarity.RARE),
+        HeartStone(39, "HeartStone", 3, 3, 4, "Taunt. Cannot attack. Punishment: deals 1 damage to enemy hero",
+                DEFAULT_PATH + "/heart_stone.png", List.of(), List.of(KeyWord.TAUNT, KeyWord.PUNISHMENT), Faction.STONE, Rarity.RARE),
+        RushingHound(40, "Rushing hound", 2, 1, 2, "Rush", DEFAULT_PATH + "/hound.png", List.of(CardAction.RUSH_ON_PLAY),
+                List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON);
 
         private int id;
 

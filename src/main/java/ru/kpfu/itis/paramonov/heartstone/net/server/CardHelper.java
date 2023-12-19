@@ -492,5 +492,89 @@ public class CardHelper {
             }
             PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         }
+        if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId() && attacked.getHp() > 0) {
+            attackerHero.setHp(attackerHero.getHp() - 1);
+            if (attackerHero.getHp() <= 0) {
+                PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
+            }
+            PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+        }
+    }
+
+    public static void checkOnCardPlayed(GameServer.Client player, HashMap<String, List<Card>> allCards, Card playedCard,
+                                         GameServer server) {
+        if (playedCard.getCardInfo().getFaction().equals(CardRepository.Faction.STONE)) {
+            for (Card card : allCards.get("hand")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.StoneGiant.getId()) {
+                    decreaseCostAndSend(1, player, allCards, server, card);
+                }
+            }
+            for (Card card : allCards.get("deck")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.StoneGiant.getId()) {
+                    card.setCost(card.getCost() - 1);
+                }
+            }
+        }
+        if (playedCard.getCardInfo().getFaction().equals(CardRepository.Faction.ELEMENTAL)) {
+            for (Card card : allCards.get("hand")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.WaterGiant.getId()) {
+                    decreaseCostAndSend(1, player, allCards, server, card);
+                }
+            }
+            for (Card card : allCards.get("deck")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.WaterGiant.getId()) {
+                    card.setCost(card.getCost() - 1);
+                }
+            }
+        }
+        if (playedCard.getCardInfo().getFaction().equals(CardRepository.Faction.ANIMAL)) {
+            for (Card card : allCards.get("hand")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.AnimalKing.getId()) {
+                    decreaseCostAndSend(1, player, allCards, server, card);
+                }
+            }
+            for (Card card : allCards.get("deck")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.AnimalKing.getId()) {
+                    card.setCost(card.getCost() - 1);
+                }
+            }
+        }
+        if (playedCard.getCardInfo().getFaction().equals(CardRepository.Faction.ROBOT)) {
+            for (Card card : allCards.get("hand")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.STAN_3000.getId()) {
+                    decreaseCostAndSend(1, player, allCards, server, card);
+                }
+            }
+            for (Card card : allCards.get("deck")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.STAN_3000.getId()) {
+                    card.setCost(card.getCost() - 1);
+                }
+            }
+        }
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.AnimalKing.getId() ||
+                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.WaterGiant.getId() ||
+                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneGiant.getId() ||
+                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.STAN_3000.getId()) {
+            for (Card card : allCards.get("hand")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.Deity.getId()) {
+                    decreaseCostAndSend(6, player, allCards, server, card);
+                }
+            }
+            for (Card card : allCards.get("deck")) {
+                if (card.getCardInfo().getId() == CardRepository.CardTemplate.Deity.getId()) {
+                    card.setCost(card.getCost() - 6);
+                }
+            }
+        }
+
+    }
+
+    private static void decreaseCostAndSend(int decrease, GameServer.Client player, HashMap<String, List<Card>> allCards, GameServer server, Card card) {
+        card.setCost(card.getCost() - decrease);
+        JSONObject responsePlayer = new JSONObject();
+        responsePlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+        responsePlayer.put("hand_pos", allCards.get("hand").indexOf(card));
+        responsePlayer.put("cost", card.getCost());
+        server.sendResponse(responsePlayer.toString(), player);
     }
 }

@@ -138,6 +138,10 @@ public class GameRoom {
 
             case PLAY_CARD -> {
                 Card playedCard = CardHelper.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
+                if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.BuriedColossus.getId() ||
+                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
+                    playedCard.addStatus(CardRepository.Status.CANNOT_ATTACK);
+                }
                 if (client.equals(player1)) player1AllCards.get("played").add(playedCard);
                 else player2AllCards.get("played").add(playedCard);
                 Hero hero = getHero(client);
@@ -148,6 +152,8 @@ public class GameRoom {
                 CardHelper.putPlayedCardForOpponent(response, playedCard);
                 response.put("opponent_mana", newMana);
                 sendResponse(response.toString(), getOtherPlayer(client));
+
+                CardHelper.checkOnCardPlayed(client, getAllCards(client), playedCard, server);
 
                 if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) {
                     try {

@@ -251,6 +251,7 @@ public class BattlefieldController {
             }
             addOpponentCard(json);
             Card stolen = field.remove(pos);
+            onCardDeselected(stolen.getAssociatedImageView());
             hBoxFieldCards.getChildren().remove(stolen.getAssociatedImageView());
 
         } catch (JSONException e) {}
@@ -266,6 +267,7 @@ public class BattlefieldController {
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
             Card gotten = opponentField.remove(pos);
+            onCardSelected(gotten.getAssociatedImageView());
             hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
             hBoxFieldCards.getChildren().add(iv);
@@ -280,6 +282,11 @@ public class BattlefieldController {
             });
             setOnHoverListener(iv, "field");
         } catch (JSONException exception) {}
+        try {
+            int handPos = json.getInt("hand_pos");
+            Card card = hand.get(handPos);
+            card.setCost(json.getInt("cost"));
+        } catch (JSONException e) {}
     }
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
@@ -576,6 +583,7 @@ public class BattlefieldController {
     private void deselectCard(ImageView card) {
         Card deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
+        if(deselected == null) return;
         Image sprite = Card.spriteBuilder()
                 .addImage(deselected.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
