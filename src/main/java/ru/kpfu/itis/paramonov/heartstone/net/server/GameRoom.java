@@ -165,10 +165,12 @@ public class GameRoom {
                 HashMap<String, List<Card>> allCards = getAllCards(client);
                 String target = msg.getString("target");
                 int pos = Integer.parseInt(msg.getString("pos"));
+                if(client != activePlayer) return;
                 if (target.equals("hero")) {
                     boolean res = CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
-                    if (res && allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
+                    if (res && !allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
                         List<Integer> positions = CardHelper.checkTaunts(getAllCards(getOtherPlayer(client)));
+                        System.out.println(positions);
                         if (positions.size() > 0) {
                             response.put("status", "not_ok");
                             response.put("reason", "You must attack card with taunt");
@@ -218,13 +220,19 @@ public class GameRoom {
             }
 
             case CARD_CARD_ATTACK -> {
+                Hero attackerHero;
+                Hero attackedHero;
                 List<Card> attackerField;
                 List<Card> attackedField;
                 if (client.equals(player1)) {
+                    attackerHero = player1Hero;
+                    attackedHero = player2Hero;
                     attackerField = player1AllCards.get("field");
                     attackedField = player2AllCards.get("field");
                 }
                 else {
+                    attackerHero = player2Hero;
+                    attackedHero = player1Hero;
                     attackerField = player2AllCards.get("field");
                     attackedField = player1AllCards.get("field");
                 }
@@ -235,6 +243,10 @@ public class GameRoom {
                 CardHelper.decreaseHpOnDirectAttack(attacker, attacked);
 
                 JSONObject attackerResponse = new JSONObject();
+                JSONObject attackedResponse = new JSONObject();
+                CardHelper.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerHero, attackedHero,
+                        attackerResponse, attackedResponse, client, getOtherPlayer(client));
+
                 attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
                 attackerResponse.put("status", "ok");
                 attackerResponse.put("pos", Integer.parseInt(msg.getString("attacker_pos")));
@@ -244,7 +256,6 @@ public class GameRoom {
                 CardHelper.putOpponentChanges(attackerResponse, attackedField, List.of(Integer.parseInt(msg.getString("attacked_pos"))));
                 sendResponse(attackerResponse.toString(), client);
 
-                JSONObject attackedResponse = new JSONObject();
                 attackedResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
                 attackedResponse.put("status", "ok");
                 attackedResponse.put("opponent_pos", Integer.parseInt(msg.getString("attacker_pos")));

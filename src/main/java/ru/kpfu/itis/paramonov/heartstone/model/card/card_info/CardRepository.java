@@ -8,7 +8,7 @@ public class CardRepository {
 
     public enum CardAction {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
-        ON_END_TURN, COST_DOWN, IGNORE_TAUNT;
+        ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG;
 
         private int hpIncrease;
         private int atkIncrease;
@@ -151,7 +151,6 @@ public class CardRepository {
 
         KnightStone(2, "Stoneland knight", 4, 4, 4, "Taunt", DEFAULT_PATH + "/knight_stone.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.STONE, Rarity.RARE),
-
         FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 damage to chosen enemy",
                 DEFAULT_PATH + "/fire_elemental.png", List.of(CardAction.DAMAGE_ENEMY_ON_PLAY.setStats(2)), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON),
@@ -159,8 +158,8 @@ public class CardRepository {
                 DEFAULT_PATH + "/fire_pack.png", List.of(), List.of(), Faction.ELEMENTAL, Rarity.COMMON),
         IceElemental(5, "Ice elemental", 1, 2, 1, "Battlecry: freezes chosen enemy", DEFAULT_PATH + "/ice_elemental.png",
                 List.of(CardAction.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.COMMON),
-        TheRock(6, "The Rock", 4, 4, 5, "Punishment: attacks enemy hero and gains +1/1", DEFAULT_PATH + "/dwayne_rock.png",
-                List.of(), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
+        TheRock(6, "The Rock", 4, 4, 5, "Punishment: deals damage equal to its attack to enemy hero and then gains +1/1", DEFAULT_PATH + "/dwayne_rock.png",
+                List.of(CardAction.DAMAGE_HERO_ON_DMG), List.of(KeyWord.PUNISHMENT), Faction.NO_FACTION, Rarity.LEGENDARY),
         HypnoShroom(7, "Hypnoshroom", 4, 6, 6, "When turn ends, gains control of random opponent card",
                 DEFAULT_PATH + "/hypnoshroom.png", List.of(CardAction.ON_END_TURN), List.of(), Faction.NO_FACTION, Rarity.LEGENDARY),
         Whelp(8, "Dragon whelp", 4, 3, 4, "", DEFAULT_PATH + "/whelp.png",
@@ -196,8 +195,9 @@ public class CardRepository {
                 List.of(CardAction.RUSH_ON_PLAY, CardAction.IGNORE_TAUNT), List.of(KeyWord.RUSH), Faction.ROBOT, Rarity.LEGENDARY),
         Ninja(23, "Ninja", 4, 4, 6, "Ignores taunt", DEFAULT_PATH + "/ninja.png", List.of(CardAction.IGNORE_TAUNT),
                 List.of(), Faction.NO_FACTION, Rarity.EPIC),
-        IceSorcerer(23, "Ice sorcerer", 4,4, 5, "Battlecry: freezes chosen enemy and deals 2 damage", DEFAULT_PATH + "/ice_sorcerer.png",
-                List.of(CardAction.FREEZE_ENEMY_ON_PLAY, CardAction.DAMAGE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.RARE);
+        IceSorcerer(24, "Ice sorcerer", 4,4, 5, "Battlecry: freezes chosen enemy and deals 2 damage", DEFAULT_PATH + "/ice_sorcerer.png",
+                List.of(CardAction.FREEZE_ENEMY_ON_PLAY, CardAction.DAMAGE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), Faction.ELEMENTAL, Rarity.RARE),
+        Rat(25, "Rat", 3, 2, 2, "", DEFAULT_PATH + "/rat.png", List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON);
 
 
         private int id;

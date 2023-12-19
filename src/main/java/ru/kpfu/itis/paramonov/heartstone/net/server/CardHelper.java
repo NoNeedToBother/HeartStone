@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 
 import java.util.*;
 
@@ -94,6 +95,8 @@ public class CardHelper {
     }
 
     private static boolean checkTaunts(HashMap<String, List<Card>> cards, int pos) {
+        List<Integer> tauntCards = checkTaunts(cards);
+        if (tauntCards.size() == 0) return true;
         return checkTaunts(cards).contains(pos);
     }
 
@@ -409,5 +412,20 @@ public class CardHelper {
 
         }
         return List.of(removed, added);
+    }
+
+    public static void checkAttackSpecialEffects(Card attacker, Card attacked, List<Card> attackerField,
+                                                 List<Card> attackedField, Hero attackerHero, Hero attackedHero,
+                                                 JSONObject attackerResponse, JSONObject attackedResponse,
+                                                 GameServer.Client attackerPlayer, GameServer.Client attackedPlayer) {
+        if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
+            attackerHero.setHp(attackerHero.getHp() - attacked.getAtk());
+            attacked.setAtk(attacked.getAtk() + 1);
+            attacked.setHp(attacked.getHp() + 1);
+            if (attackerHero.getHp() <= 0) {
+                PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
+            }
+        }
+        PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
     }
 }
