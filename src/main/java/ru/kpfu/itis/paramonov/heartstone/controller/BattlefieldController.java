@@ -246,36 +246,16 @@ public class BattlefieldController {
         } catch (JSONException e) {}
         try {
             int pos = json.getInt("stolen_pos");
-            hBoxFieldCards.getChildren().remove(pos);
-            field.remove(pos);
+            if (field.get(pos).equals(selectedCard)) {
+                onCardDeselected(selectedCard.getAssociatedImageView());
+            }
+            addOpponentCard(json);
+            Card stolen = field.remove(pos);
+            hBoxFieldCards.getChildren().remove(stolen.getAssociatedImageView());
 
-            Card card = getCard(json);
-            Image sprite = Card.spriteBuilder()
-                    .addImage(card.getCardInfo().getPortraitUrl())
-                    .setStyle(Card.CardStyle.BASE.toString())
-                    .addRarity(card.getCardInfo().getRarity())
-                    .scale(2)
-                    .build();
-            ImageView iv = new ImageView(sprite);
-            card.associateImageView(iv);
-            opponentField.add(card);
-            iv.setOnMouseClicked(mouseEvent -> {
-                if (selectedCard != null) {
-                    Card imgCard = getHandCardByImageView(iv);
-                    if (imgCard == null) imgCard = getFieldCardByImageView(iv);
-                    if (imgCard == selectedCard) onCardDeselected(iv);
-                    else onCardSelected(iv);
-                }
-                else onCardSelected(iv);
-                mouseEvent.consume();
-            });
-            setOnHoverListener(iv, "opponent_field");
-            hBoxOpponentFieldCards.getChildren().add(iv);
-        } catch (JSONException e) {
+        } catch (JSONException e) {}
+        try {
             int pos = json.getInt("gotten_pos");
-            hBoxOpponentFieldCards.getChildren().remove(pos);
-            opponentField.remove(pos);
-
             Card card = getCard(json);
             Image sprite = Card.spriteBuilder()
                     .addImage(card.getCardInfo().getPortraitUrl())
@@ -285,21 +265,21 @@ public class BattlefieldController {
                     .build();
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
+            Card gotten = opponentField.remove(pos);
+            hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
+            hBoxFieldCards.getChildren().add(iv);
             iv.setOnMouseClicked(mouseEvent -> {
                 if (selectedCard != null) {
                     Card imgCard = getHandCardByImageView(iv);
                     if (imgCard == null) imgCard = getFieldCardByImageView(iv);
                     if (imgCard == selectedCard) onCardDeselected(iv);
                     else onCardSelected(iv);
-                }
-                else onCardSelected(iv);
+                } else onCardSelected(iv);
                 mouseEvent.consume();
             });
             setOnHoverListener(iv, "field");
-            hBoxFieldCards.getChildren().add(iv);
-
-        }
+        } catch (JSONException exception) {}
     }
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
@@ -464,12 +444,14 @@ public class BattlefieldController {
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
-            if (handCard != null && (handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
-                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
-                    handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
-                sendAttackingOnPlay(handCard, selected);
-                mouseEvent.consume();
-                return;
+            if (handCard != null) {
+                if ((handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                    sendAttackingOnPlay(handCard, selected);
+                    mouseEvent.consume();
+                    return;
+                }
             }
 
             if (handCard != null) {

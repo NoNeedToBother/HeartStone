@@ -38,9 +38,14 @@ public class CardHelper {
 
     private static final int MAX_FIELD_SIZE = 6;
 
-    public static void checkCardPlayed(JSONObject response, GameServer.Client client, GameServer.Client player1, int handPos,
+    public static void checkCardPlayed(JSONObject response, GameServer.Client client, GameServer.Client activePlayer, GameServer.Client player1, int handPos,
                                           HashMap<String, List<Card>> player1AllCards, HashMap<String, List<Card>> player2AllCards, int mana) {
         HashMap<String, List<Card>> allCards = getAllCards(client, player1, player1AllCards, player2AllCards);
+        if (!client.equals(activePlayer)) {
+            response.put("status", "not_ok");
+            response.put("reason", "Not your turn");
+            return;
+        }
         if (allCards.get("field").size() == MAX_FIELD_SIZE) {
             response.put("status", "not_ok");
             response.put("reason", "Full field");
@@ -52,15 +57,18 @@ public class CardHelper {
             return;
         }
 
+
         response.put("hand_pos", handPos);
         response.put("status", "ok");
     }
 
-    public static void checkCardToAttack(JSONObject response, Card attacker, int pos, String target) {
+    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, JSONObject response,
+                                         Card attacker, int pos, String target) {
         response.put("room_action", GameRoom.RoomAction.CHECK_CARD_TO_ATTACK);
         response.put("pos", pos);
         response.put("target", target);
         boolean canAttack = true;
+        if (!client.equals(activePlayer)) canAttack = false;
         for (CardRepository.Status status : attacker.getStatuses()) {
             if (CardRepository.Status.getCardAttackRestrictionStatuses().contains(status)) {
                 canAttack = false;
@@ -71,8 +79,9 @@ public class CardHelper {
         else response.put("status", "not_ok");
     }
 
-    public static void checkCardToAttack(JSONObject response, Card attacker, int pos, int opponentPos, String target) {
-        checkCardToAttack(response, attacker, pos, target);
+    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer,
+                                         JSONObject response, Card attacker, int pos, int opponentPos, String target) {
+        checkCardToAttack(client, activePlayer, response, attacker, pos, target);
         response.put("opponent_pos", opponentPos);
     }
 
@@ -149,7 +158,7 @@ public class CardHelper {
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
             if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
-                freezeEnemyOnPlay(player1AllCards, message, playedCard, responsePlayer2, responsePlayer1);
+                freezeEnemyOnPlay(player1AllCards, message, playedCard, responsePlayer1, responsePlayer2);
                 sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
             }
         }
@@ -302,7 +311,7 @@ public class CardHelper {
         response.put("opponent_stat_changes", changes);
     }
 
-    /*
+
     public static void checkEndTurnCards(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
                                          HashMap<String, List<Card>> player2AllCards, GameServer server) {
         checkForHypnoShroom(client, player1, player2, player1AllCards, player2AllCards, server);
@@ -314,12 +323,14 @@ public class CardHelper {
             List<Card> removed = new ArrayList<>();
             List<Card> added = new ArrayList<>();
             player1AllCards.get("field").stream()
-                    .filter(card -> card.getCardInfo().getActions().contains(CardRepository.CardAction.ON_END_TURN))
+                    .filter(card -> card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId())
                     .forEach(card -> {
                         JSONObject responsePlayer1 = new JSONObject();
                         JSONObject responsePlayer2 = new JSONObject();
-                        removed.addAll(checkEndTurnCard(card, player1AllCards, player2AllCards, responsePlayer1, responsePlayer2).get(0));
-                        added.addAll(checkEndTurnCard(card, player1AllCards, player2AllCards, responsePlayer1, responsePlayer2).get(1));
+                        List<List<Card>> res = checkHypnoshroom(card, player1AllCards, player2AllCards, responsePlayer1, responsePlayer2);
+                        if (res == null) return;
+                        removed.addAll(res.get(0));
+                        added.addAll(res.get(1));
 
                         server.sendResponse(responsePlayer1.toString(), player1);
                         server.sendResponse(responsePlayer2.toString(), player2);
@@ -331,12 +342,14 @@ public class CardHelper {
             List<Card> removed = new ArrayList<>();
             List<Card> added = new ArrayList<>();
             player2AllCards.get("field").stream()
-                    .filter(card -> card.getCardInfo().getActions().contains(CardRepository.CardAction.ON_END_TURN))
+                    .filter(card -> card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId())
                     .forEach(card -> {
                         JSONObject responsePlayer1 = new JSONObject();
                         JSONObject responsePlayer2 = new JSONObject();
-                        removed.addAll(checkEndTurnCard(card, player2AllCards, player1AllCards, responsePlayer2, responsePlayer1).get(0));
-                        added.addAll(checkEndTurnCard(card, player2AllCards, player1AllCards, responsePlayer2, responsePlayer1).get(1));
+                        List<List<Card>> res = checkHypnoshroom(card, player2AllCards, player1AllCards, responsePlayer2, responsePlayer1);
+                        if (res == null) return;
+                        removed.addAll(res.get(0));
+                        added.addAll(res.get(1));
                         server.sendResponse(responsePlayer1.toString(), player1);
                         server.sendResponse(responsePlayer2.toString(), player2);
                     });
@@ -345,14 +358,15 @@ public class CardHelper {
         }
     }
 
-    private static List<List<Card>> checkEndTurnCard(Card card, HashMap<String, List<Card>> playerCards, HashMap<String, List<Card>> otherPlayerCards,
-                                         JSONObject playerResponse, JSONObject otherPlayerResponse) {
+    private static List<List<Card>> checkHypnoshroom(Card card, HashMap<String, List<Card>> playerCards, HashMap<String, List<Card>> otherPlayerCards,
+                                                     JSONObject playerResponse, JSONObject otherPlayerResponse) {
         List<Card> removed = new ArrayList<>();
         List<Card> added = new ArrayList<>();
         if (card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId()) {
             playerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
             otherPlayerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
             Random random = new Random();
+            if (otherPlayerCards.get("field").size() <= 0 || playerCards.get("field").size() >= MAX_FIELD_SIZE) return null;
             int randPos = random.nextInt(otherPlayerCards.get("field").size());
             Card stolenCard = otherPlayerCards.get("field").get(randPos);
 
@@ -372,5 +386,5 @@ public class CardHelper {
 
         }
         return List.of(removed, added);
-    }*/
+    }
 }

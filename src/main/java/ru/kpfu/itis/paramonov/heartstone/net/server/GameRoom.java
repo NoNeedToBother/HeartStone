@@ -98,7 +98,7 @@ public class GameRoom {
                     activePlayer = player1;
                     CardHelper.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
                 }
-                //CardHelper.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server);
+                CardHelper.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server);
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -124,7 +124,7 @@ public class GameRoom {
                 response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
                 int mana = getHero(client).getMana();
 
-                CardHelper.checkCardPlayed(response, client, player1, Integer.parseInt(msg.getString("hand_pos")),
+                CardHelper.checkCardPlayed(response, client, activePlayer, player1, Integer.parseInt(msg.getString("hand_pos")),
                         player1AllCards, player2AllCards, mana);
                 try {
                     String action = msg.getString("card_action");
@@ -166,10 +166,10 @@ public class GameRoom {
                 String target = msg.getString("target");
                 int pos = Integer.parseInt(msg.getString("pos"));
                 if (target.equals("hero")) {
-                    CardHelper.checkCardToAttack(response, allCards.get("field").get(pos), pos, target);
+                    CardHelper.checkCardToAttack(client, activePlayer, response, allCards.get("field").get(pos), pos, target);
                 } else {
                     int opponentPos = Integer.parseInt(msg.getString("opponent_pos"));
-                    CardHelper.checkCardToAttack(response, allCards.get("field").get(pos), pos, opponentPos, target);
+                    CardHelper.checkCardToAttack(client, activePlayer, response, allCards.get("field").get(pos), pos, opponentPos, target);
                 }
                 sendResponse(response.toString(), client);
             }
