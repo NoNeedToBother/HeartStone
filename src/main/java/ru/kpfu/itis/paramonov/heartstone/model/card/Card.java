@@ -97,6 +97,7 @@ public class Card implements Sprite {
     }
 
     public void addStatus(CardRepository.Status status) {
+        statuses.remove(status);
         statuses.add(status);
     }
 
