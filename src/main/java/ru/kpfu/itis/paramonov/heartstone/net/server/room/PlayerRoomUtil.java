@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server;
+package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.User;
@@ -6,11 +6,13 @@ import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
+import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public class PlayerHelper {
+public class PlayerRoomUtil {
     private final static int INITIAL_HP = 25;
 
     public static int getInitialHp(List<Card> deck) {

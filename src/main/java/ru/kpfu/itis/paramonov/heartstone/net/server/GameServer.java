@@ -5,23 +5,20 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class GameServer {
     private ServerSocket serverSocket;
-    private ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<Client> clients = new ConcurrentLinkedDeque<>();
 
     private final ConcurrentLinkedDeque<Client> clientsToConnect = new ConcurrentLinkedDeque<>();
-
-    private List<GameRoom> rooms = new ArrayList<>();
 
     private final String host = "127.0.0.1";
 
@@ -79,7 +76,6 @@ public class GameServer {
         GameRoom room = new GameRoom(client1, client2, this);
         client1.setCurrentRoom(room);
         client2.setCurrentRoom(room);
-        this.rooms.add(room);
         room.onStart();
     }
 
@@ -88,11 +84,11 @@ public class GameServer {
         gameServer.start();
     }
 
-    static class Client implements Runnable {
+    public static class Client implements Runnable {
 
-        private BufferedReader input;
-        private BufferedWriter output;
-        private GameServer server;
+        private final BufferedReader input;
+        private final BufferedWriter output;
+        private final GameServer server;
 
         private GameRoom currentRoom = null;
 
@@ -192,11 +188,9 @@ public class GameServer {
                         handleDisconnection();
                         return null;
                     }
-                    case OPEN_1_PACK -> PackOpeningHelper.openOnePack(jsonServerMessage, response);
-                    case OPEN_5_PACKS -> PackOpeningHelper.openFivePacks(jsonServerMessage, response);
-                    case UPDATE_DECK -> {
-                        handleDeckUpdating(jsonServerMessage, response);
-                    }
+                    case OPEN_1_PACK -> PackOpeningUtil.openOnePack(jsonServerMessage, response);
+                    case OPEN_5_PACKS -> PackOpeningUtil.openFivePacks(jsonServerMessage, response);
+                    case UPDATE_DECK -> handleDeckUpdating(jsonServerMessage, response);
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -219,10 +213,10 @@ public class GameServer {
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
                 login = user.getLogin();
-                response.put("status", "OK");
+                response.put("status", "ok");
                 putUserInfo(user, response);
             } else {
-                response.put("status", "NOT_OK");
+                response.put("status", "not_ok");
             }
         }
 
@@ -231,11 +225,11 @@ public class GameServer {
             UserService service = new UserService();
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
-                response.put("status", "OK");
+                response.put("status", "ok");
                 login = user.getLogin();
                 putUserInfo(user, response);
             } catch (SQLException e) {
-                response.put("status", "NOT_OK");
+                response.put("status", "not_ok");
             }
         }
 
@@ -265,14 +259,6 @@ public class GameServer {
 
         public BufferedWriter getOutput() {
             return output;
-        }
-
-        public BufferedReader getInput() {
-            return input;
-        }
-
-        public GameRoom getCurrentRoom() {
-            return currentRoom;
         }
 
         public void setCurrentRoom(GameRoom currentRoom) {

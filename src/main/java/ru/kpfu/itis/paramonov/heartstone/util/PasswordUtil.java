@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.database.util;
+package ru.kpfu.itis.paramonov.heartstone.util;
 
 
 import jakarta.xml.bind.DatatypeConverter;

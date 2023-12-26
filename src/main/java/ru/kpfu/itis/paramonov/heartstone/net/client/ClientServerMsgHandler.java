@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.util;
+package ru.kpfu.itis.paramonov.heartstone.net.client;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,15 +44,15 @@ public class ClientServerMsgHandler {
                     JSONArray cardIds = null;
                     try {
                         cardId = json.getInt("card_id");
-                    } catch (JSONException e) {}
+                    } catch (JSONException ignored) {}
                     try {
                         cardIds = json.getJSONArray("card_ids");
-                    } catch (JSONException e) {}
+                    } catch (JSONException ignored) {}
                     PacksController.getController().playOpeningAnimation(cardId, cardIds);
                     PacksController.getController().updateUserInfo(json);
                     try {
                         MainMenuController.getController().setMoney(json.getInt("money"));
-                    } catch (NullPointerException e) {}
+                    } catch (NullPointerException ignored) {}
                 } else {
                     PacksController.getController().showMessage(json.getString("reason"), 1000);
                 }

@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class PackOpeningHelper {
-    private static Random random = new Random();
+public class PackOpeningUtil {
+    private final static Random random = new Random();
 
-    private static int ONE_PACK_COST = 100;
+    private final static int ONE_PACK_COST = 100;
 
-    private static int FIVE_PACK_COST = 5 * ONE_PACK_COST;
+    private final static int FIVE_PACK_COST = 5 * ONE_PACK_COST;
 
     private static User getUser(JSONObject msg) {
         String login = msg.getString("login");
@@ -29,20 +29,7 @@ public class PackOpeningHelper {
         response.put("server_action", ServerMessage.ServerAction.OPEN_1_PACK.toString());
         User user = getUser(msg);
 
-        if (user.getMoney() < ONE_PACK_COST) {
-            response.put("status", "not_ok");
-            response.put("reason", "Not enough gold");
-            return;
-        }
-
-        UserService userService = new UserService();
-        try {
-            userService.updateMoney(user.getLogin(), user.getMoney() - ONE_PACK_COST);
-        }  catch (SQLException e) {
-            response.put("status", "not_ok");
-            response.put("reason", "Failed to connect database, please try again later.");
-            return;
-        }
+        buyPack(response, user, ONE_PACK_COST);
         Integer cardId = getRandomCard();
         response.put("card_id", cardId);
         updateCards(response, user.getLogin(), List.of(cardId));
@@ -52,20 +39,7 @@ public class PackOpeningHelper {
         response.put("server_action", ServerMessage.ServerAction.OPEN_5_PACKS.toString());
         User user = getUser(msg);
 
-        if (user.getMoney() < FIVE_PACK_COST) {
-            response.put("status", "not_ok");
-            response.put("reason", "Not enough gold");
-            return;
-        }
-
-        UserService userService = new UserService();
-        try {
-            userService.updateMoney(user.getLogin(), user.getMoney() - FIVE_PACK_COST);
-        }  catch (SQLException e) {
-            response.put("status", "not_ok");
-            response.put("reason", "Failed to connect database, please try again later.");
-            return;
-        }
+        if (!buyPack(response, user, FIVE_PACK_COST)) return;
         JSONArray cardIds = new JSONArray();
         List<Integer> ids = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -76,6 +50,24 @@ public class PackOpeningHelper {
         response.put("card_ids", cardIds);
 
         updateCards(response, user.getLogin(), ids);
+    }
+
+    private static boolean buyPack(JSONObject response, User user, int packCost) {
+        if (user.getMoney() < packCost) {
+            response.put("status", "not_ok");
+            response.put("reason", "Not enough gold");
+            return false;
+        }
+
+        UserService userService = new UserService();
+        try {
+            userService.updateMoney(user.getLogin(), user.getMoney() - packCost);
+        }  catch (SQLException e) {
+            response.put("status", "not_ok");
+            response.put("reason", "Failed to connect database, please try again later.");
+            return false;
+        }
+        return true;
     }
 
     private static CardRepository.Rarity calculateRarity() {
@@ -156,10 +148,10 @@ public class PackOpeningHelper {
 
     }
 
-    private static int GOLD_COMMON = 20;
-    private static int GOLD_RARE = 40;
-    private static int GOLD_EPIC = 100;
-    private static int GOLD_LEGENDARY = 300;
+    private final static int GOLD_COMMON = 20;
+    private final static int GOLD_RARE = 40;
+    private final static int GOLD_EPIC = 100;
+    private final static int GOLD_LEGENDARY = 300;
 
     private static void addGoldForCopy(CardRepository.CardTemplate card, User user) {
         int userMoney = user.getMoney();

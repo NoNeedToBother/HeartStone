@@ -1,7 +1,7 @@
 package ru.kpfu.itis.paramonov.heartstone.net;
 
 import org.json.JSONObject;
-import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 import java.util.HashMap;
 import java.util.Map;

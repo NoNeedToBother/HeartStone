@@ -5,10 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
-import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.io.IOException;
@@ -22,14 +20,6 @@ public class GameApplication extends Application {
     private GameServer server = null;
 
     private GameClient client = null;
-
-    private GameRoom room = null;
-
-    private User user = null;
-
-    public GameRoom getRoom() {
-        return room;
-    }
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -81,14 +71,6 @@ public class GameApplication extends Application {
 
     public GameClient getClient() {
         return client;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public void loadScene(String resource) {

@@ -21,7 +21,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
-import ru.kpfu.itis.paramonov.heartstone.net.server.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 
@@ -52,8 +52,6 @@ public class BattlefieldController {
     private List<Card> opponentField = new ArrayList<>();
 
     private int deckSize;
-
-    private boolean active;
 
     @FXML
     private ImageView background;
@@ -267,7 +265,7 @@ public class BattlefieldController {
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
             Card gotten = opponentField.remove(pos);
-            onCardSelected(gotten.getAssociatedImageView());
+            //onCardDeselected(gotten.getAssociatedImageView());
             hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
             hBoxFieldCards.getChildren().add(iv);
@@ -491,25 +489,21 @@ public class BattlefieldController {
     }
 
     public void updateCards(JSONObject json) {
-        JSONArray thisChanges = json.getJSONArray("stat_changes");
+        JSONArray changes = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
 
+        updateCards(changes, field);
+        updateCards(opponentChanges, opponentField);
+    }
+
+    private void updateCards(JSONArray changes, List<Card> field) {
         List<Card> defeatedCards = new ArrayList<>();
-        for (int i = 0; i < thisChanges.length(); i++) {
-            JSONObject cardChange = thisChanges.getJSONObject(i);
+        for (int i = 0; i < changes.length(); i++) {
+            JSONObject cardChange = changes.getJSONObject(i);
             Card card = applyChanges(field, cardChange);
             if (card.getHp() <= 0) defeatedCards.add(card);
         }
         removeCardsFrom(defeatedCards, field);
-        defeatedCards.clear();
-
-
-        for (int i = 0; i < opponentChanges.length(); i++) {
-            JSONObject cardChange = opponentChanges.getJSONObject(i);
-            Card card = applyChanges(opponentField, cardChange);
-            if (card.getHp() <= 0) defeatedCards.add(card);
-        }
-        removeCardsFrom(defeatedCards, opponentField);
     }
 
     private void removeCardsFrom(List<Card> cards, List<Card> from) {
@@ -734,10 +728,6 @@ public class BattlefieldController {
         handBg.setImage(new Image(url));
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public void setMana(JSONObject json) {
         Integer mana = null;
         Integer maxMana = null;
@@ -760,7 +750,6 @@ public class BattlefieldController {
     }
 
     private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
-
         if (mana != null) player.setMana(mana);
         if (maxMana != null) player.setMaxMana(maxMana);
         if (opponentMana != null) opponent.setMana(opponentMana);

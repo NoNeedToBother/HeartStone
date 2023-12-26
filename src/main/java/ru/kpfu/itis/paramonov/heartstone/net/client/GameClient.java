@@ -3,8 +3,6 @@ package ru.kpfu.itis.paramonov.heartstone.net.client;
 import javafx.application.Platform;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
-import ru.kpfu.itis.paramonov.heartstone.util.ClientRoomMsgHandler;
-import ru.kpfu.itis.paramonov.heartstone.util.ClientServerMsgHandler;
 
 import java.io.*;
 import java.net.Socket;
@@ -46,7 +44,7 @@ public class GameClient {
             throw new RuntimeException(e);
         }
 
-        thread = new ClientThread(input, output, this);
+        thread = new ClientThread(input, output);
         (new Thread(thread)).start();
     }
 
@@ -58,12 +56,10 @@ public class GameClient {
 
         private BufferedReader input;
         private BufferedWriter output;
-        private GameClient gameClient;
 
-        public ClientThread(BufferedReader input, BufferedWriter output, GameClient gameClient) {
+        public ClientThread(BufferedReader input, BufferedWriter output) {
             this.input = input;
             this.output = output;
-            this.gameClient = gameClient;
         }
 
         @Override
@@ -71,7 +67,6 @@ public class GameClient {
             try {
                 while (true) {
                     String response = input.readLine();
-                    System.out.println(response);
                     Platform.runLater(() -> {
                         ClientServerMsgHandler serverMsgHandler = new ClientServerMsgHandler();
                         serverMsgHandler.handle(response);

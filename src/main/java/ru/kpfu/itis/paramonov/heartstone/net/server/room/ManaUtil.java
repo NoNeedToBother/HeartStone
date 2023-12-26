@@ -1,17 +1,19 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server;
+package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
+import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
-public class ManaHelper {
-
+public class ManaUtil {
+    private static int MAX_MANA = 10;
     public static Hero increaseMana(JSONObject response, GameServer.Client activePlayer, GameServer.Client player1,
                                     Hero player1Hero, Hero player2Hero) {
         Hero hero;
         if (activePlayer.equals(player1)) hero = player1Hero;
         else hero = player2Hero;
         int newMaxMana = hero.getMaxMana() + 1;
-        if (newMaxMana >= 10) newMaxMana = 10;
+        if (newMaxMana >= MAX_MANA) newMaxMana = MAX_MANA;
 
         hero.setMana(newMaxMana);
         hero.setMaxMana(newMaxMana);
