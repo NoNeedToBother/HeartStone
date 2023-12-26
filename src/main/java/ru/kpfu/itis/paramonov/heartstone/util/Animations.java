@@ -172,7 +172,9 @@ public class Animations {
             transition.get().setNode(attacker);
             transition.get().setDuration(Duration.millis(200));
             transition.get().setOnFinished(actionEvent1 -> {
-                BattlefieldController.getController().notifyAttackingAnimationStopped();
+                try {
+                    BattlefieldController.getController().notifyAttackingAnimationStopped();
+                } catch (NullPointerException e) {}
             });
             transition.get().play();
         });

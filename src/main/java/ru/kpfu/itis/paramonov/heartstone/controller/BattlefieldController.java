@@ -341,7 +341,6 @@ public class BattlefieldController {
 
         this.btnEndTurn.setOnMouseClicked(mouseEvent -> {
             if (this.btnEndTurn.isClickable()) {
-                active = false;
                 progressBar.setProgress(1.0);
 
                 String msg = ServerMessage.builder()
@@ -368,7 +367,7 @@ public class BattlefieldController {
     private void addCardPlacements() {
         cardPlacement.setImage(new Image(GameApplication.class.getResource("/assets/images/card_placement.png").toString()));
         cardPlacement.setOnMouseClicked(mouseEvent -> {
-            if (selectedCard != null && active) {
+            if (selectedCard != null) {
                 if (getHandCardByImageView(selectedCard.getAssociatedImageView()) == null) {
                     mouseEvent.consume();
                     return;
@@ -442,7 +441,7 @@ public class BattlefieldController {
         card.associateImageView(cardIv);
 
         cardIv.setOnMouseClicked(mouseEvent -> {
-            if (!active || selectedCard == null) {
+            if (selectedCard == null) {
                 mouseEvent.consume();
                 return;
             }

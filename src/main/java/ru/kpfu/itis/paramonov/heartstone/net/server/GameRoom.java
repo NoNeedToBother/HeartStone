@@ -122,6 +122,11 @@ public class GameRoom {
             case CHECK_CARD_PLAYED -> {
                 JSONObject response = new JSONObject();
                 response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
+                if (client != activePlayer) {
+                    response.put("status", "ok");
+                    response.put("reason", "Not your turn");
+                    sendResponse(response.toString(), client);
+                }
                 int mana = getHero(client).getMana();
 
                 CardHelper.checkCardPlayed(response, client, activePlayer, player1, Integer.parseInt(msg.getString("hand_pos")),
@@ -171,10 +176,18 @@ public class GameRoom {
                 HashMap<String, List<Card>> allCards = getAllCards(client);
                 String target = msg.getString("target");
                 int pos = Integer.parseInt(msg.getString("pos"));
-                if(client != activePlayer) return;
+                if(client != activePlayer) {
+                    response.put("status", "ok");
+                    response.put("reason", "Not your turn");
+                    sendResponse(response.toString(), client);
+                }
                 if (target.equals("hero")) {
                     boolean res = CardHelper.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
-                    if (res && !allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
+                    if (!res) {
+                        response.put("status", "not_ok");
+                        response.put("reason", "The card cannot attack right now");
+                    }
+                    else if (!allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
                         List<Integer> positions = CardHelper.checkTaunts(getAllCards(getOtherPlayer(client)));
                         if (positions.size() > 0) {
                             response.put("status", "not_ok");

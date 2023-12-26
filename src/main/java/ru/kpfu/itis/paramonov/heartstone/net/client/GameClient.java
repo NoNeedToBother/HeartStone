@@ -71,6 +71,7 @@ public class GameClient {
             try {
                 while (true) {
                     String response = input.readLine();
+                    System.out.println(response);
                     Platform.runLater(() -> {
                         ClientServerMsgHandler serverMsgHandler = new ClientServerMsgHandler();
                         serverMsgHandler.handle(response);

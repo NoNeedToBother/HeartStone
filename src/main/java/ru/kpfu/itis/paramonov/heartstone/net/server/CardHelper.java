@@ -484,6 +484,7 @@ public class CardHelper {
                 PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
             }
             PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+            PlayerHelper.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
         }
         if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() && attacked.getHp() > 0) {
             attackerHero.setHp(attackerHero.getHp() - 4);
@@ -491,6 +492,7 @@ public class CardHelper {
                 PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
             }
             PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+            PlayerHelper.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
         }
         if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId() && attacked.getHp() > 0) {
             attackerHero.setHp(attackerHero.getHp() - 1);
@@ -498,6 +500,7 @@ public class CardHelper {
                 PlayerHelper.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
             }
             PlayerHelper.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
+            PlayerHelper.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
         }
     }
 
