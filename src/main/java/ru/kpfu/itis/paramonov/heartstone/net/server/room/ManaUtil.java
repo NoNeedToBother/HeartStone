@@ -3,10 +3,9 @@ package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
-import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 public class ManaUtil {
-    private static int MAX_MANA = 10;
+    private static final int MAX_MANA = 10;
     public static Hero increaseMana(JSONObject response, GameServer.Client activePlayer, GameServer.Client player1,
                                     Hero player1Hero, Hero player2Hero) {
         Hero hero;

@@ -47,11 +47,9 @@ public class BattlefieldController {
     @FXML
     private HBox hBoxHandCards;
 
-    private List<Card> hand = new ArrayList<>();
-    private List<Card> field = new ArrayList<>();
-    private List<Card> opponentField = new ArrayList<>();
-
-    private int deckSize;
+    private final List<Card> hand = new ArrayList<>();
+    private final List<Card> field = new ArrayList<>();
+    private final List<Card> opponentField = new ArrayList<>();
 
     @FXML
     private ImageView background;
@@ -266,15 +264,7 @@ public class BattlefieldController {
             hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
             hBoxFieldCards.getChildren().add(iv);
-            iv.setOnMouseClicked(mouseEvent -> {
-                if (selectedCard != null) {
-                    Card imgCard = getHandCardByImageView(iv);
-                    if (imgCard == null) imgCard = getFieldCardByImageView(iv);
-                    if (imgCard == selectedCard) onCardDeselected(iv);
-                    else onCardSelected(iv);
-                } else onCardSelected(iv);
-                mouseEvent.consume();
-            });
+            setSelectionBehaviour(iv);
             setOnHoverListener(iv, "field");
         } catch (JSONException exception) {}
         try {
@@ -282,6 +272,18 @@ public class BattlefieldController {
             Card card = hand.get(handPos);
             card.setCost(json.getInt("cost"));
         } catch (JSONException e) {}
+    }
+
+    private void setSelectionBehaviour(ImageView iv) {
+        iv.setOnMouseClicked(mouseEvent -> {
+            if (selectedCard != null) {
+                Card imgCard = getHandCardByImageView(iv);
+                if (imgCard == null) imgCard = getFieldCardByImageView(iv);
+                if (imgCard == selectedCard) onCardDeselected(iv);
+                else onCardSelected(iv);
+            } else onCardSelected(iv);
+            mouseEvent.consume();
+        });
     }
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
@@ -605,7 +607,6 @@ public class BattlefieldController {
     }
 
     public void setDeckSize(int deckSize) {
-        this.deckSize = deckSize;
         Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 16);
         deckInfo.setFont(font);
         deckInfo.setText(deckSize + " cards");
@@ -630,16 +631,7 @@ public class BattlefieldController {
         setOnHoverListener(img, "hand");
         hand.add(card);
 
-        img.setOnMouseClicked(mouseEvent -> {
-            if (selectedCard != null) {
-                Card imgCard = getHandCardByImageView(img);
-                if (imgCard == null) imgCard = getFieldCardByImageView(img);
-                if (imgCard == selectedCard) onCardDeselected(img);
-                else onCardSelected(img);
-            }
-            else onCardSelected(img);
-            mouseEvent.consume();
-        });
+        setSelectionBehaviour(img);
         layoutCards.add(img);
     }
 
@@ -674,30 +666,7 @@ public class BattlefieldController {
             }
             if (card == null) return;
             if (isHovered) {
-                cardInfo.setText(card.getCardInfo().getName());
-                cardInfo.addTextLine(card.getCardInfo().getActionDesc());
-                cardInfo.addTextLine("ATK: ");
-                cardInfo.addText(String.valueOf(card.getAtk()));
-                cardInfo.addTextLine("HP: ");
-                cardInfo.addText(String.valueOf(card.getHp()));
-                cardInfo.addTextLine("Cost: ");
-                cardInfo.addText(String.valueOf(card.getCost()));
-                if (!card.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
-                    cardInfo.addTextLine("Faction: ");
-                    cardInfo.addText(String.valueOf(card.getCardInfo().getFaction()).toLowerCase());
-                }
-                for (CardRepository.Status status : card.getStatuses()) {
-                    if (!status.isUtility()) {
-                        cardInfo.addTextLine("Status: ");
-                        cardInfo.addText(status.getDisplayName());
-                    }
-                }
-                cardInfo.addTextLine("");
-                for (CardRepository.KeyWord keyWord : card.getCardInfo().getKeyWords()) {
-                    cardInfo.addTextLine(keyWord.getDisplayName() + ": ");
-                    cardInfo.addText(keyWord.getDescription());
-                }
-                cardInfo.commitChanges();
+                cardInfo.updateInfo(card);
                 cardInfo.setVisible(true);
             }
             else {

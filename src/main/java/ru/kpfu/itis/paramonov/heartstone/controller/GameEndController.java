@@ -2,7 +2,6 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;

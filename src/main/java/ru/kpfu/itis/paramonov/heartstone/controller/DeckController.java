@@ -120,24 +120,7 @@ public class DeckController {
             cardIv.hoverProperty().addListener(((observableValue, aBoolean, isHovered) -> {
                 if (isHovered) {
                     Card infoCard = getByImageView(cardIv);
-                    cardInfo.setText(infoCard.getCardInfo().getName());
-                    cardInfo.addTextLine(infoCard.getCardInfo().getActionDesc());
-                    cardInfo.addTextLine("ATK: ");
-                    cardInfo.addText(String.valueOf(infoCard.getAtk()));
-                    cardInfo.addTextLine("HP: ");
-                    cardInfo.addText(String.valueOf(infoCard.getHp()));
-                    cardInfo.addTextLine("Cost: ");
-                    cardInfo.addText(String.valueOf(infoCard.getCost()));
-                    if (!infoCard.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
-                        cardInfo.addTextLine("Faction: ");
-                        cardInfo.addText(String.valueOf(infoCard.getCardInfo().getFaction()).toLowerCase());
-                    }
-                    cardInfo.addTextLine("");
-                    for (CardRepository.KeyWord keyWord : infoCard.getCardInfo().getKeyWords()) {
-                        cardInfo.addTextLine(keyWord.getDisplayName() + ": ");
-                        cardInfo.addText(keyWord.getDescription());
-                    }
-                    cardInfo.commitChanges();
+                    cardInfo.updateInfo(infoCard);
                     cardInfo.setVisible(true);
                 } else {
                     cardInfo.setVisible(false);

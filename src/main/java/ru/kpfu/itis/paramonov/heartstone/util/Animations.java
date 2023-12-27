@@ -14,7 +14,6 @@ import javafx.util.Duration;
 import org.json.JSONArray;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
-import ru.kpfu.itis.paramonov.heartstone.controller.GameEndController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 
 import javax.imageio.ImageIO;
