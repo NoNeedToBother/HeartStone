@@ -60,7 +60,7 @@ public class Hero implements Sprite {
 
     public static class HeroSpriteBuilder implements SpriteBuilder<Image> {
 
-        private BufferedImage img = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+        private BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
 
         private final String DEFAULT_PATH = "/assets/images/heroes";
 
@@ -85,7 +85,7 @@ public class Hero implements Sprite {
         }
 
         @Override
-        public SpriteBuilder<Image> scale(int scale) {
+        public SpriteBuilder<Image> scale(double scale) {
             img = BufferedImageUtil.scale(img, scale);
             return this;
         }

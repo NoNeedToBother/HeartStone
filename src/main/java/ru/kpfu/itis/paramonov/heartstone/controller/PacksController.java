@@ -140,7 +140,7 @@ public class PacksController {
         Image cardCover = Card.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
                 .setStyle(Card.CardStyle.BASE.toString())
-                .scale(3)
+                .scale(1.5)
                 .build();
 
         cardCoverIv.setImage(cardCover);
@@ -165,7 +165,7 @@ public class PacksController {
                 .addImage(cardTemplate.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardTemplate.getRarity())
-                .scale(3)
+                .scale(1.5)
                 .build();
         cardIv.setImage(card);
     }

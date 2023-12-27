@@ -1,16 +1,10 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
@@ -20,11 +14,8 @@ import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class DeckController {
     @FXML
@@ -38,9 +29,9 @@ public class DeckController {
     @FXML
     private VBox vBoxDeckCards;
 
-    private List<Card> deckCards = new ArrayList<>();
+    private final List<Card> deckCards = new ArrayList<>();
 
-    private List<Card> cards = new ArrayList<>();
+    private final List<Card> cards = new ArrayList<>();
     @FXML
     private VBox deck;
 
@@ -203,7 +194,7 @@ public class DeckController {
                 .addImage(card.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getRarity())
-                .scale(3)
+                .scale(1.5)
                 .build();
     }
 }

@@ -121,7 +121,6 @@ public class BattlefieldController {
         Image deckCover = Card.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
                 .setStyle(Card.CardStyle.BASE.toString())
-                .scale(2)
                 .build();
         deckCoverIv.setImage(deckCover);
 
@@ -137,7 +136,6 @@ public class BattlefieldController {
         Image portrait = Hero.spriteBuilder()
                 .addImage("/standard_hero.png")
                 .setStyle(Hero.HeroStyle.BASE.toString())
-                .scale(2)
                 .build();
         playerHeroInfo.setPortrait(portrait);
         opponentHeroInfo.setPortrait(portrait);
@@ -260,7 +258,6 @@ public class BattlefieldController {
                     .addImage(card.getCardInfo().getPortraitUrl())
                     .setStyle(Card.CardStyle.BASE.toString())
                     .addRarity(card.getCardInfo().getRarity())
-                    .scale(2)
                     .build();
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
@@ -427,7 +424,6 @@ public class BattlefieldController {
                 .addImage(card.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getCardInfo().getRarity())
-                .scale(2)
                 .build();
 
         ImageView cardIv = new ImageView();
@@ -567,7 +563,6 @@ public class BattlefieldController {
                 .addImage(selectedCard.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.SELECTED.toString())
                 .addRarity(selectedCard.getCardInfo().getRarity())
-                .scale(2)
                 .build();
 
         card.setImage(sprite);
@@ -581,7 +576,6 @@ public class BattlefieldController {
                 .addImage(deselected.getCardInfo().getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(deselected.getCardInfo().getRarity())
-                .scale(2)
                 .build();
 
         card.setImage(sprite);
@@ -623,7 +617,6 @@ public class BattlefieldController {
                 .addImage(cardInfo.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardInfo.getRarity())
-                .scale(2)
                 .build();
 
         ImageView img = new ImageView();

@@ -476,10 +476,7 @@ public class CardUtil {
             case ANIMAL -> decreaseCost(CardRepository.CardTemplate.AnimalKing.getId(), 1, allCards, player, server);
             case ROBOT -> decreaseCost(CardRepository.CardTemplate.STAN_3000.getId(), 1, allCards, player, server);
         }
-        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.AnimalKing.getId() ||
-                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.WaterGiant.getId() ||
-                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneGiant.getId() ||
-                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.STAN_3000.getId()) {
+        if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.GIANT)) {
             decreaseCost(CardRepository.CardTemplate.Deity.getId(), 6, allCards, player, server);
         }
     }

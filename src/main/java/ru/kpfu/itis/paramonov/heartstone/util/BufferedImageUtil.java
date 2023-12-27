@@ -23,9 +23,9 @@ public class BufferedImageUtil {
         }
     }
 
-    public static BufferedImage scale(BufferedImage target, int scale) {
-        int width = target.getWidth() * scale;
-        int height = target.getHeight() * scale;
+    public static BufferedImage scale(BufferedImage target, double scale) {
+        int width = (int) (target.getWidth() * scale);
+        int height = (int) (target.getHeight() * scale);
         BufferedImage after = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
         AffineTransformOp scaleOp
