@@ -6,6 +6,7 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 public class GameEndController {
 
@@ -26,14 +27,14 @@ public class GameEndController {
         GameButton btnPlay = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GREEN)
                 .setText(GameButton.GameButtonText.PLAY)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnPlay = btnPlay;
 
         GameButton btnMainMenu = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.MAIN_MENU)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnMainMenu = btnMainMenu;
         buttons.getChildren().addAll(btnPlay, btnMainMenu);

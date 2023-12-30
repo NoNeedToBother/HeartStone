@@ -32,8 +32,8 @@ public class HeroInfo extends HBox {
         healthSp.getChildren().addAll(health, text);
     }
 
-    public void changeHealth(int health) {
-        text.setText(String.valueOf(health));
+    public void changeHealth(Integer health) {
+        if (health != null) text.setText(String.valueOf(health));
     }
 
     public void setPortrait(Image portrait) {

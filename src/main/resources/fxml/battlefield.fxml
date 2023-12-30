@@ -15,29 +15,29 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController"
-            prefHeight="720.0" prefWidth="1280.0">
+            prefHeight="900.0" prefWidth="1600.0">
 
     <ImageView fx:id="background"/>
 
-    <VBox AnchorPane.rightAnchor="10" fx:id="vBoxBtnEndTurn">
-        <VBox prefHeight="300" VBox.vgrow="ALWAYS"/>
-        <ProgressBar fx:id="progressBar" progress="1.0" prefWidth="140"/>
+    <VBox AnchorPane.rightAnchor="12.5" fx:id="vBoxBtnEndTurn">
+        <VBox prefHeight="375" VBox.vgrow="ALWAYS"/>
+        <ProgressBar fx:id="progressBar" progress="1.0" prefWidth="175"/>
     </VBox>
 
-    <VBox AnchorPane.leftAnchor="10" AnchorPane.topAnchor="10" fx:id="vBoxCardInfo" prefWidth="260">
+    <VBox AnchorPane.leftAnchor="12.5" AnchorPane.topAnchor="12.5" fx:id="vBoxCardInfo" prefWidth="325">
         <BattleCardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 
-    <ImageView fx:id="cardPlacement" AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180"/>
-    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="180" fx:id="hBoxFieldCards" spacing="10">
+    <ImageView fx:id="cardPlacement" AnchorPane.leftAnchor="345" AnchorPane.bottomAnchor="225"/>
+    <HBox AnchorPane.leftAnchor="345" AnchorPane.bottomAnchor="225" fx:id="hBoxFieldCards" spacing="10">
         <HBox prefWidth="30"/>
     </HBox>
 
-    <HBox AnchorPane.leftAnchor="275" AnchorPane.bottomAnchor="420" fx:id="hBoxOpponentFieldCards" spacing="10">
+    <HBox AnchorPane.leftAnchor="345" AnchorPane.bottomAnchor="525" fx:id="hBoxOpponentFieldCards" spacing="10">
         <HBox prefWidth="30"/>
     </HBox>
 
-    <ImageView fx:id="handBg" AnchorPane.leftAnchor="10" AnchorPane.bottomAnchor="0"/>
+    <ImageView fx:id="handBg" AnchorPane.leftAnchor="12.5" AnchorPane.bottomAnchor="0"/>
 
     <ImageView fx:id="deckCoverIv" AnchorPane.leftAnchor="75" AnchorPane.bottomAnchor="180"/>
     <StackPane AnchorPane.leftAnchor="190" AnchorPane.bottomAnchor="240">
@@ -45,14 +45,14 @@
         <Text fx:id="deckInfo"/>
     </StackPane>
 
-    <HBox AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="60" fx:id="hBoxHandCards" spacing="30">
+    <HBox AnchorPane.bottomAnchor="12.5" AnchorPane.leftAnchor="75" fx:id="hBoxHandCards" spacing="30">
     </HBox>
 
-    <ManaBar fx:id="manaBar" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="10"/>
+    <ManaBar fx:id="manaBar" AnchorPane.bottomAnchor="12.5" AnchorPane.rightAnchor="12.5"/>
 
-    <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10"/>
+    <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="12.5" AnchorPane.rightAnchor="12.5"/>
 
-    <HeroInfo fx:id="playerHeroInfo" AnchorPane.bottomAnchor="10" AnchorPane.rightAnchor="100"/>
+    <HeroInfo fx:id="playerHeroInfo" AnchorPane.bottomAnchor="12.5" AnchorPane.rightAnchor="125"/>
 
-    <HeroInfo fx:id="opponentHeroInfo" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="500"/>
+    <HeroInfo fx:id="opponentHeroInfo" AnchorPane.topAnchor="12.5" AnchorPane.rightAnchor="625"/>
 </AnchorPane>

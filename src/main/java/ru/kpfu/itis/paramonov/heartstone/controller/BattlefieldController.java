@@ -24,6 +24,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -167,7 +168,7 @@ public class BattlefieldController {
     }
 
     public void showMessage(String reason) {
-        GameMessage.make(reason).show(root, 800, 500, 300);
+        GameMessage.make(reason).show(root, 800, 625, 375);
     }
 
     public void attack(Integer pos, Integer opponentPos, String target) {
@@ -203,7 +204,7 @@ public class BattlefieldController {
                 Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView());
             else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView());
             return;
-        } catch (JSONException e) {}
+        } catch (JSONException ignored) {}
         try {
             int pos = json.getInt("field_pos");
             card = field.get(pos).getAssociatedImageView();
@@ -218,39 +219,32 @@ public class BattlefieldController {
         attacking = false;
     }
     public void updateHp(JSONObject json) {
-        try {
-            int hp = json.getInt("hp");
-            playerHeroInfo.changeHealth(hp);
-        } catch (JSONException e) {}
-        try {
-            int hp = json.getInt("opponent_hp");
-            opponentHeroInfo.changeHealth(hp);
-        } catch (JSONException e) {}
-
+        Integer hp = getIntParam(json, "hp");
+        playerHeroInfo.changeHealth(hp);
+        Integer opponentHp = json.getInt("opponent_hp");
+        opponentHeroInfo.changeHealth(opponentHp);
     }
 
     public void applyChange(JSONObject json) {
+        Integer pos = getIntParam(json, "pos");
+        if (pos != null) applyChanges(json, pos, field);
+
+        pos = getIntParam(json, "opponent_pos");
+        if (pos != null) applyChanges(json, pos, opponentField);
+
         try {
-            int pos = json.getInt("pos");
-            applyChanges(json, pos, field);
-        } catch (JSONException e) {}
-        try {
-            int pos = json.getInt("opponent_pos");
-            applyChanges(json, pos, opponentField);
-        } catch (JSONException e) {}
-        try {
-            int pos = json.getInt("stolen_pos");
-            if (field.get(pos).equals(selectedCard)) {
+            int stolenPos = json.getInt("stolen_pos");
+            if (field.get(stolenPos).equals(selectedCard)) {
                 onCardDeselected(selectedCard.getAssociatedImageView());
             }
             addOpponentCard(json);
-            Card stolen = field.remove(pos);
+            Card stolen = field.remove(stolenPos);
             onCardDeselected(stolen.getAssociatedImageView());
             hBoxFieldCards.getChildren().remove(stolen.getAssociatedImageView());
+        } catch (JSONException ignored) {}
 
-        } catch (JSONException e) {}
         try {
-            int pos = json.getInt("gotten_pos");
+            int gottenPos = json.getInt("gotten_pos");
             Card card = getCard(json);
             Image sprite = Card.spriteBuilder()
                     .addImage(card.getCardInfo().getPortraitUrl())
@@ -259,19 +253,19 @@ public class BattlefieldController {
                     .build();
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
-            Card gotten = opponentField.remove(pos);
-            //onCardDeselected(gotten.getAssociatedImageView());
+            Card gotten = opponentField.remove(gottenPos);
             hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
             hBoxFieldCards.getChildren().add(iv);
             setSelectionBehaviour(iv);
             setOnHoverListener(iv, "field");
-        } catch (JSONException exception) {}
-        try {
-            int handPos = json.getInt("hand_pos");
+        } catch (JSONException ignored) {}
+
+        Integer handPos = getIntParam(json, "hand_pos");
+        if (handPos != null) {
             Card card = hand.get(handPos);
             card.setCost(json.getInt("cost"));
-        } catch (JSONException e) {}
+        }
     }
 
     private void setSelectionBehaviour(ImageView iv) {
@@ -288,18 +282,12 @@ public class BattlefieldController {
 
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
         Card targeted = field.get(pos);
-        Integer hp = null;
-        try {
-            hp = json.getInt("hp");
-        } catch (JSONException e) {}
-        Integer atk = null;
-        try {
-            atk = json.getInt("atk");
-        } catch (JSONException e) {}
+        Integer hp = getIntParam(json, "hp");
+        Integer atk = getIntParam(json, "atk");
         String status = null;
         try {
             status = json.getString("status");
-        } catch (JSONException e) {}
+        } catch (JSONException ignored) {}
         applyChange(field, targeted, pos, hp, atk, status);
     }
 
@@ -330,7 +318,7 @@ public class BattlefieldController {
         GameButton btnEndTurn = GameButton.builder()
                 .setStyle(style)
                 .setText(GameButton.GameButtonText.END_TURN)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnEndTurn = btnEndTurn;
 
@@ -397,7 +385,7 @@ public class BattlefieldController {
                 case "deal_dmg" -> builder.setParameter("opponent_pos",
                         String.valueOf(json.getInt("opponent_pos")));
             }
-        } catch (JSONException e) {}
+        } catch (JSONException ignored) {}
 
         GameApplication.getApplication().getClient().sendMessage(builder.build());
 
@@ -514,20 +502,17 @@ public class BattlefieldController {
     private Card applyChanges(List<Card> field, JSONObject cardChange) {
         int pos = cardChange.getInt("pos");
         Card cardToChange = field.get(pos);
-        try {
-            int hp = cardChange.getInt("hp");
-            cardToChange.setHp(hp);
-        } catch (JSONException e) {}
-        try {
-            int atk = cardChange.getInt("atk");
-            cardToChange.setAtk(atk);
-        } catch (JSONException e) {}
+        Integer hp = getIntParam(cardChange, "hp");
+        if (hp != null) cardToChange.setHp(hp);
+        Integer atk = getIntParam(cardChange, "atk");
+        if (atk != null) cardToChange.setAtk(atk);
+
         try {
             String status = cardChange.getString("status");
             if (status.equals(CardRepository.Status.FROZEN.toString())) {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
             }
-        } catch (JSONException e) {}
+        } catch (JSONException ignored) {}
         return cardToChange;
     }
 
@@ -691,24 +676,20 @@ public class BattlefieldController {
     }
 
     public void setMana(JSONObject json) {
-        Integer mana = null;
-        Integer maxMana = null;
-        Integer opponentMana = null;
-        Integer maxOpponentMana = null;
-        try {
-            mana = json.getInt("mana");
-        } catch (JSONException e) {}
-        try {
-            maxMana = json.getInt("maxMana");
-        } catch (JSONException e) {}
-        try {
-            opponentMana = json.getInt("opponentMana");
-        } catch (JSONException e) {}
-        try {
-            maxOpponentMana = json.getInt("maxOpponentMana");
-        } catch (JSONException e) {}
+        Integer mana = getIntParam(json, "mana");
+        Integer maxMana = getIntParam(json, "maxMana");
+        Integer opponentMana = getIntParam(json, "opponentMana");
+        Integer maxOpponentMana = getIntParam(json, "maxOpponentMana");
         setMana(mana, maxMana, opponentMana, maxOpponentMana);
         updateMana();
+    }
+
+    private Integer getIntParam(JSONObject json, String param) {
+        Integer res = null;
+        try {
+            res = json.getInt(param);
+        } catch (JSONException ignored) {}
+        return res;
     }
 
     private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
