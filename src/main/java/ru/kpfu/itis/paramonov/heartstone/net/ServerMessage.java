@@ -24,7 +24,7 @@ public class ServerMessage {
 
     private GameRoom.RoomAction roomAction = null;
 
-    private Map<String, String> params = new HashMap<>();
+    private final Map<String, String> params = new HashMap<>();
 
     public static class ServerMessageBuilder {
         ServerMessage message = new ServerMessage();
@@ -68,11 +68,6 @@ public class ServerMessage {
             return json.toString();
         }
     }
-
-    /**
-     * Builds a message to the server (or server room) and returns it in JSON format. <p>
-     * User must firstly set entity to connect and then use only methods appropriate for the specified entity.
-     */
 
     public static ServerMessageBuilder builder() {
         return new ServerMessageBuilder();

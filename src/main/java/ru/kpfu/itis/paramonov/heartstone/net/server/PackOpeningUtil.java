@@ -29,7 +29,7 @@ public class PackOpeningUtil {
         response.put("server_action", ServerMessage.ServerAction.OPEN_1_PACK.toString());
         User user = getUser(msg);
 
-        buyPack(response, user, ONE_PACK_COST);
+        if (!buyPack(response, user, ONE_PACK_COST)) return;
         Integer cardId = getRandomCard();
         response.put("card_id", cardId);
         updateCards(response, user.getLogin(), List.of(cardId));

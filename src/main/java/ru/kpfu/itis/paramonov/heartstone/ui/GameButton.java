@@ -123,7 +123,7 @@ public class GameButton extends Button {
             }
         }
 
-        public ButtonBuilder scale(int scale) {
+        public ButtonBuilder scale(double scale) {
             img = BufferedImageUtil.scale(img, scale);
             imgWidth *= scale;
             imgHeight *= scale;

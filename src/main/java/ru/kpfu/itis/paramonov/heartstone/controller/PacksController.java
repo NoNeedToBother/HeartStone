@@ -18,8 +18,8 @@ import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PacksController {
@@ -78,31 +78,33 @@ public class PacksController {
     }
 
     public void showMessage(String reason, int duration) {
-        GameMessage.make(reason).show(root, duration, 500, 300);
+        GameMessage.make(reason).show(root, duration, 625, 375);
     }
 
     private void addButtons() {
         GameButton btn100g = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GOLD_100)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btn100g = btn100g;
 
         GameButton btn500g = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GOLD_500)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btn500g = btn500g;
 
-        btn100g.setLayoutX(300);
-        btn100g.setLayoutY(550);
-        btn500g.setLayoutY(550);
-        btn500g.setLayoutX(820);
+        double SCALE_FACTOR = 1.25;
+
+        btn100g.setLayoutX(300 * SCALE_FACTOR);
+        btn100g.setLayoutY(550 * SCALE_FACTOR);
+        btn500g.setLayoutY(550 * SCALE_FACTOR);
+        btn500g.setLayoutX(820 * SCALE_FACTOR);
         root.getChildren().addAll(btn100g, btn500g);
 
         GameButton btnBack = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BACK)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnBack = btnBack;
         vBoxBtnBack.getChildren().add(btnBack);
@@ -131,16 +133,16 @@ public class PacksController {
 
         btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_5_PACKS));
 
-        btnBack.setOnMouseClicked(mouseEvent -> {
-            GameApplication.getApplication().loadScene("/main_menu.fxml");
-        });
+        btnBack.setOnMouseClicked(mouseEvent ->
+                GameApplication.getApplication().loadScene("/main_menu.fxml")
+        );
     }
 
     private void setCardCoverImageView() {
         Image cardCover = Card.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
                 .setStyle(Card.CardStyle.BASE.toString())
-                .scale(3)
+                .scale(ScaleFactor.DEFAULT_CARD)
                 .build();
 
         cardCoverIv.setImage(cardCover);
@@ -165,7 +167,7 @@ public class PacksController {
                 .addImage(cardTemplate.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(cardTemplate.getRarity())
-                .scale(3)
+                .scale(ScaleFactor.DEFAULT_CARD)
                 .build();
         cardIv.setImage(card);
     }

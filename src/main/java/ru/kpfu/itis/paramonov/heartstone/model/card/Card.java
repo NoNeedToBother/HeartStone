@@ -106,7 +106,7 @@ public class Card implements Sprite {
     }
 
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
-        private BufferedImage img = new BufferedImage(48, 64, BufferedImage.TYPE_INT_ARGB);
+        private BufferedImage img = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
 
         private final String DEFAULT_PATH = "/assets/images/cards";
 
@@ -148,14 +148,12 @@ public class Card implements Sprite {
                 case LEGENDARY -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_legendary.png");
                 }
-                default -> {
-                    throw new RuntimeException("No such rarity");
-                }
+                default -> throw new RuntimeException("No such rarity");
             }
         }
 
         @Override
-        public SpriteBuilder<Image> scale(int scale) {
+        public SpriteBuilder<Image> scale(double scale) {
             img = BufferedImageUtil.scale(img, scale);
             return this;
         }

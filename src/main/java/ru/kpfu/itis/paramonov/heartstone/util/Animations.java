@@ -14,7 +14,6 @@ import javafx.util.Duration;
 import org.json.JSONArray;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
-import ru.kpfu.itis.paramonov.heartstone.controller.GameEndController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 
 import javax.imageio.ImageIO;
@@ -75,10 +74,10 @@ public class Animations {
                     try {
                         AnchorPane pane = loader.load();
                         Text title = new Text();
-                        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 64);
+                        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 80);
                         title.setFont(font);
-                        title.setX(540);
-                        title.setY(100);
+                        title.setX(675);
+                        title.setY(125);
                         if (win) title.setText("You won!");
                         else title.setText("You lost!");
                         pane.getChildren().add(title);

@@ -9,11 +9,11 @@ import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 public class HeroInfo extends HBox {
-    private ImageView portrait = new ImageView();
+    private final ImageView portrait = new ImageView();
 
-    private StackPane healthSp = new StackPane();
+    private final StackPane healthSp = new StackPane();
 
-    private Text text = new Text();
+    private final Text text = new Text();
 
     public HeroInfo() {
         init();
@@ -32,8 +32,8 @@ public class HeroInfo extends HBox {
         healthSp.getChildren().addAll(health, text);
     }
 
-    public void changeHealth(int health) {
-        text.setText(String.valueOf(health));
+    public void changeHealth(Integer health) {
+        if (health != null) text.setText(String.valueOf(health));
     }
 
     public void setPortrait(Image portrait) {

@@ -308,5 +308,9 @@ public class CardRepository {
         public Integer getDamage() {
             return statChanges.get(StatChange.DMG);
         }
+
+        public Integer getDrawnCards() {
+            return statChanges.get(StatChange.CARD_DRAWN);
+        }
     }
 }

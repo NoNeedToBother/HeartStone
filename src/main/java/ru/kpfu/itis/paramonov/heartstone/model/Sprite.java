@@ -14,7 +14,7 @@ public interface Sprite {
             throw new RuntimeException("Stub!");
         }
 
-        SpriteBuilder<T> scale(int scale);
+        SpriteBuilder<T> scale(double scale);
 
         T build();
     }

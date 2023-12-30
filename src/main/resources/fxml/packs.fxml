@@ -11,17 +11,17 @@
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.PacksController"
-            prefHeight="720.0" prefWidth="1280.0" fx:id="root">
+            prefHeight="900.0" prefWidth="1600.0" fx:id="root">
 
-    <ImageView fx:id="cardCoverIv" layoutX="570" layoutY="450"/>
+    <ImageView fx:id="cardCoverIv" layoutX="712.5" layoutY="562.5"/>
 
-    <ImageView fx:id="card1" layoutX="570" layoutY="100"/>
-    <ImageView fx:id="card2" layoutX="370" layoutY="100"/>
-    <ImageView fx:id="card3" layoutX="770" layoutY="100"/>
-    <ImageView fx:id="card4" layoutX="170" layoutY="100"/>
-    <ImageView fx:id="card5" layoutX="970" layoutY="100"/>
+    <ImageView fx:id="card1" layoutX="712.5" layoutY="125"/>
+    <ImageView fx:id="card2" layoutX="462.5" layoutY="125"/>
+    <ImageView fx:id="card3" layoutX="962.5" layoutY="125"/>
+    <ImageView fx:id="card4" layoutX="212.5" layoutY="125"/>
+    <ImageView fx:id="card5" layoutX="1212.5" layoutY="125"/>
 
-    <MoneyInfo fx:id="moneyInfo" layoutX="560" layoutY="650"/>
+    <MoneyInfo fx:id="moneyInfo" layoutX="700" layoutY="812.5"/>
 
-    <VBox AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" fx:id="vBoxBtnBack"/>
+    <VBox AnchorPane.topAnchor="25" AnchorPane.leftAnchor="25" fx:id="vBoxBtnBack"/>
 </AnchorPane>

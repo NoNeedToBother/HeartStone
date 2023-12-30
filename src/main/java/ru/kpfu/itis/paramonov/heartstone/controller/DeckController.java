@@ -1,16 +1,10 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
@@ -19,12 +13,10 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class DeckController {
     @FXML
@@ -38,9 +30,9 @@ public class DeckController {
     @FXML
     private VBox vBoxDeckCards;
 
-    private List<Card> deckCards = new ArrayList<>();
+    private final List<Card> deckCards = new ArrayList<>();
 
-    private List<Card> cards = new ArrayList<>();
+    private final List<Card> cards = new ArrayList<>();
     @FXML
     private VBox deck;
 
@@ -49,13 +41,13 @@ public class DeckController {
         setCards();
         setDeck();
         setButtons();
-        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty());
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty().add(-90));
     }
 
     private void setButtons() {
         GameButton btnBack = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BACK)
-                .scale(5)
+                .scale(ScaleFactor.HUGE_MENU_BTN)
                 .build();
 
         btnBack.setOnMouseClicked(mouseEvent -> {
@@ -66,7 +58,7 @@ public class DeckController {
         GameButton btnSave = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GREEN)
                 .setText(GameButton.GameButtonText.SAVE)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
 
         btnSave.setOnMouseClicked(mouseEvent -> {
@@ -95,8 +87,8 @@ public class DeckController {
     private final int MAX_DECK_CARDS_AMOUNT = 20;
 
     private void setCards() {
-        fpCards.setHgap(10);
-        fpCards.setVgap(10);
+        fpCards.setHgap(12.5);
+        fpCards.setVgap(12.5);
         List<CardRepository.CardTemplate> cards = User.getInstance().getCards();
         for (CardRepository.CardTemplate card : cards) {
             Image img = getImage(card);
@@ -129,24 +121,7 @@ public class DeckController {
             cardIv.hoverProperty().addListener(((observableValue, aBoolean, isHovered) -> {
                 if (isHovered) {
                     Card infoCard = getByImageView(cardIv);
-                    cardInfo.setText(infoCard.getCardInfo().getName());
-                    cardInfo.addTextLine(infoCard.getCardInfo().getActionDesc());
-                    cardInfo.addTextLine("ATK: ");
-                    cardInfo.addText(String.valueOf(infoCard.getAtk()));
-                    cardInfo.addTextLine("HP: ");
-                    cardInfo.addText(String.valueOf(infoCard.getHp()));
-                    cardInfo.addTextLine("Cost: ");
-                    cardInfo.addText(String.valueOf(infoCard.getCost()));
-                    if (!infoCard.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
-                        cardInfo.addTextLine("Faction: ");
-                        cardInfo.addText(String.valueOf(infoCard.getCardInfo().getFaction()).toLowerCase());
-                    }
-                    cardInfo.addTextLine("");
-                    for (CardRepository.KeyWord keyWord : infoCard.getCardInfo().getKeyWords()) {
-                        cardInfo.addTextLine(keyWord.getDisplayName() + ": ");
-                        cardInfo.addText(keyWord.getDescription());
-                    }
-                    cardInfo.commitChanges();
+                    cardInfo.updateInfo(infoCard);
                     cardInfo.setVisible(true);
                 } else {
                     cardInfo.setVisible(false);
@@ -203,7 +178,7 @@ public class DeckController {
                 .addImage(card.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getRarity())
-                .scale(3)
+                .scale(ScaleFactor.DEFAULT_CARD)
                 .build();
     }
 }
