@@ -12,6 +12,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 public class RegisterController {
     @FXML
@@ -54,14 +55,14 @@ public class RegisterController {
         GameButton btnRegister = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.REGISTER)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnRegister = btnRegister;
 
         GameButton btnGoToLogin = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.GO_LOGIN)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnGoToLogin = btnGoToLogin;
 
@@ -90,7 +91,7 @@ public class RegisterController {
     }
 
     public void showMessage(String reason, int duration) {
-        GameMessage.make(reason).show(root, duration, 500, 550);
+        GameMessage.make(reason).show(root, duration, 625, 680);
     }
 
     public static RegisterController getController() {

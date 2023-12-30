@@ -21,7 +21,7 @@ public class BattleCardInfo extends Pane {
     private void init() {
         setBg();
         setTextProperties();
-        this.getChildren().add(bg);
+        this.getChildren().addAll(bg, text);
     }
 
     private void setBg() {
@@ -30,10 +30,10 @@ public class BattleCardInfo extends Pane {
     }
 
     private void setTextProperties() {
-        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/m3x6.ttf").toString(), 24);
+        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/m3x6.ttf").toString(), 30);
         text.setFont(font);
-        text.setY(30);
-        text.setX(20);
+        text.setY(37.5);
+        text.setX(25);
     }
 
     private void addText(String text) {
@@ -42,11 +42,6 @@ public class BattleCardInfo extends Pane {
 
     private void addTextLine(String text) {
         this.text.setText(this.text.getText() + "\n" + text);
-    }
-
-    private void commitChanges() {
-        getChildren().remove(text);
-        getChildren().add(text);
     }
 
     public void setText(String text) {
@@ -59,7 +54,6 @@ public class BattleCardInfo extends Pane {
 
     public void clear() {
         text.setText("");
-        getChildren().remove(text);
     }
 
     public void updateInfo(Card card) {
@@ -86,6 +80,5 @@ public class BattleCardInfo extends Pane {
             addTextLine(keyWord.getDisplayName() + ": ");
             addText(keyWord.getDescription());
         }
-        commitChanges();
     }
 }

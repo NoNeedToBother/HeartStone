@@ -8,6 +8,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 public class MainMenuController {
 
@@ -54,28 +55,28 @@ public class MainMenuController {
         GameButton btnPlay = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GREEN)
                 .setText(GameButton.GameButtonText.PLAY)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnPlay = btnPlay;
 
         GameButton btnDeck = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.DECK)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnDeck = btnDeck;
 
         GameButton btnPacks = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.OPEN_PACKS)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnPacks = btnPacks;
 
         GameButton btnQuit = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.RED)
                 .setText(GameButton.GameButtonText.QUIT)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
         this.btnQuit = btnQuit;
 

@@ -13,6 +13,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +41,13 @@ public class DeckController {
         setCards();
         setDeck();
         setButtons();
-        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty());
+        cardInfo.getText().wrappingWidthProperty().bind(vBoxCardInfo.widthProperty().add(-90));
     }
 
     private void setButtons() {
         GameButton btnBack = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BACK)
-                .scale(5)
+                .scale(ScaleFactor.HUGE_MENU_BTN)
                 .build();
 
         btnBack.setOnMouseClicked(mouseEvent -> {
@@ -57,7 +58,7 @@ public class DeckController {
         GameButton btnSave = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.GREEN)
                 .setText(GameButton.GameButtonText.SAVE)
-                .scale(4)
+                .scale(ScaleFactor.BIG_MENU_BTN)
                 .build();
 
         btnSave.setOnMouseClicked(mouseEvent -> {
@@ -86,8 +87,8 @@ public class DeckController {
     private final int MAX_DECK_CARDS_AMOUNT = 20;
 
     private void setCards() {
-        fpCards.setHgap(10);
-        fpCards.setVgap(10);
+        fpCards.setHgap(12.5);
+        fpCards.setVgap(12.5);
         List<CardRepository.CardTemplate> cards = User.getInstance().getCards();
         for (CardRepository.CardTemplate card : cards) {
             Image img = getImage(card);
@@ -177,7 +178,7 @@ public class DeckController {
                 .addImage(card.getPortraitUrl())
                 .setStyle(Card.CardStyle.BASE.toString())
                 .addRarity(card.getRarity())
-                .scale(1.5)
+                .scale(ScaleFactor.DEFAULT_CARD)
                 .build();
     }
 }

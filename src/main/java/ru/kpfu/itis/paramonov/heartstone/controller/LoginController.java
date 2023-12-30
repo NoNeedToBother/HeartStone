@@ -11,6 +11,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
+import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 public class LoginController {
     @FXML
@@ -50,14 +51,14 @@ public class LoginController {
         GameButton btnLogin = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.LOGIN)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnLogin = btnLogin;
 
         GameButton btnGoToRegister = GameButton.builder()
                 .setStyle(GameButton.GameButtonStyle.BASE)
                 .setText(GameButton.GameButtonText.GO_REGISTER)
-                .scale(3)
+                .scale(ScaleFactor.MEDIUM_MENU_BTN)
                 .build();
         this.btnGoToRegister = btnGoToRegister;
 

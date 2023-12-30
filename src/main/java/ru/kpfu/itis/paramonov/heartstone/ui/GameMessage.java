@@ -13,15 +13,15 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 public class GameMessage extends StackPane {
 
-    private ImageView background = new ImageView();
-    private Text text = new Text();
+    private final ImageView background = new ImageView();
+    private final Text text = new Text();
 
     private GameMessage(String message) {
         init(message);
     }
 
     private void init(String message) {
-        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/m3x6.ttf").toString(), 36);
+        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/m3x6.ttf").toString(), 40);
         StackPane.setAlignment(text, Pos.CENTER);
         text.wrappingWidthProperty().bind(background.fitWidthProperty().divide(2));
         text.setFont(font);
