@@ -152,8 +152,8 @@ public class BattlefieldController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
-                    .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
-                    .setParameter("target", "hero")
+                    .addPosition("pos", field.indexOf(selectedCard))
+                    .addParameter("target", "hero")
                     .build();
 
             GameApplication.getApplication().getClient().sendMessage(msg);
@@ -178,14 +178,14 @@ public class BattlefieldController {
                 msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
-                        .setParameter("pos", String.valueOf(pos))
+                        .addPosition("pos", pos)
                         .build();
             case "card" -> {
                 msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
-                        .setParameter("attacked_pos", String.valueOf(opponentPos))
-                        .setParameter("attacker_pos", String.valueOf(pos))
+                        .addPosition("attacked_pos", opponentPos)
+                        .addPosition("attacker_pos", pos)
                         .build();
 
                 onCardDeselected(selectedCard.getAssociatedImageView());
@@ -286,7 +286,7 @@ public class BattlefieldController {
         Integer atk = getIntParam(json, "atk");
         String status = null;
         try {
-            status = json.getString("status");
+            status = json.getString("card_status");
         } catch (JSONException ignored) {}
         applyChange(field, targeted, pos, hp, atk, status);
     }
@@ -300,12 +300,8 @@ public class BattlefieldController {
             if (hp != null) field.get(pos).setHp(hp);
             if (atk != null) field.get(pos).setAtk(atk);
             if (status != null) {
-                if (status.equals("no_frozen")) {
-                    field.get(pos).removeStatus(CardRepository.Status.FROZEN);
-                }
-                else {
-                    field.get(pos).addStatus(CardRepository.Status.valueOf(status));
-                }
+                if (status.equals("no_frozen")) field.get(pos).removeStatus(CardRepository.Status.FROZEN);
+                else field.get(pos).addStatus(CardRepository.Status.valueOf(status));
             }
         }
     }
@@ -361,8 +357,8 @@ public class BattlefieldController {
                 ServerMessage.ServerMessageBuilder msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                        .setParameter("hand_pos", String.valueOf(hand.indexOf(selectedCard)));
-                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.setParameter("card_action", "action");
+                        .addPosition("hand_pos", hand.indexOf(selectedCard));
+                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
@@ -376,13 +372,13 @@ public class BattlefieldController {
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                .setParameter("pos", String.valueOf(handPos));
+                .addPosition("pos", handPos);
 
         try {
             String cardAction = json.getString("card_action");
-            builder.setParameter("card_action", cardAction);
+            builder.addParameter("card_action", cardAction);
             switch (cardAction) {
-                case "deal_dmg" -> builder.setParameter("opponent_pos",
+                case "deal_dmg" -> builder.addParameter("opponent_pos",
                         String.valueOf(json.getInt("opponent_pos")));
             }
         } catch (JSONException ignored) {}
@@ -452,9 +448,9 @@ public class BattlefieldController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
-                    .setParameter("pos", String.valueOf(field.indexOf(selectedCard)))
-                    .setParameter("opponent_pos", String.valueOf(opponentField.indexOf(selected)))
-                    .setParameter("target", "card")
+                    .addPosition("pos", field.indexOf(selectedCard))
+                    .addPosition("opponent_pos", opponentField.indexOf(selected))
+                    .addParameter("target", "card")
                     .build();
 
             GameApplication.getApplication().getClient().sendMessage(msg);
@@ -467,9 +463,9 @@ public class BattlefieldController {
         String msg = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                .setParameter("hand_pos", String.valueOf(hand.indexOf(handCard)))
-                .setParameter("opponent_pos", String.valueOf(opponentField.indexOf(opponentCard)))
-                .setParameter("card_action", "deal_dmg")
+                .addPosition("hand_pos", hand.indexOf(handCard))
+                .addPosition("opponent_pos", opponentField.indexOf(opponentCard))
+                .addParameter("card_action", "deal_dmg")
                 .build();
         GameApplication.getApplication().getClient().sendMessage(msg);
     }
@@ -508,7 +504,7 @@ public class BattlefieldController {
         if (atk != null) cardToChange.setAtk(atk);
 
         try {
-            String status = cardChange.getString("status");
+            String status = cardChange.getString("card_status");
             if (status.equals(CardRepository.Status.FROZEN.toString())) {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
             }

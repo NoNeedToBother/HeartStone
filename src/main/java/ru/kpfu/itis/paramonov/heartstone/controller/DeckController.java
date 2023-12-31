@@ -70,7 +70,7 @@ public class DeckController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.SERVER)
                     .setServerAction(ServerMessage.ServerAction.UPDATE_DECK)
-                    .setParameter("deck", stringDeck)
+                    .addParameter("deck", stringDeck)
                     .build();
             GameApplication.getApplication().getClient().sendMessage(msg);
 

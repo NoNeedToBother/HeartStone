@@ -89,4 +89,10 @@ public class CardAttackUtil {
         PlayerRoomUtil.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         PlayerRoomUtil.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
     }
+
+    private static void putCardCardAttackInfo(JSONObject response, int attackerPos, int attackedPos, boolean isAttacker) {
+        response.put("room_action", GameRoom.RoomAction.CARD_CARD_ATTACK.toString());
+        response.put("status", "ok");
+
+    }
 }
