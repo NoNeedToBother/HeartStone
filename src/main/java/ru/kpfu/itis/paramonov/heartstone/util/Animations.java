@@ -28,19 +28,16 @@ public class Animations {
     public static void playCardCrackingAnimation(ImageView iv, BattlefieldController controller) {
         final int FRAME_AMOUNT = 5;
 
-        Runnable crackingCardAnim = new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    drawCardCrackingFrame(i, iv);
+        Runnable crackingCardAnim = () -> {
+            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                Platform.runLater(() -> controller.deleteCard(iv));
+                drawCardCrackingFrame(i, iv);
             }
+            Platform.runLater(() -> controller.deleteCard(iv));
         };
 
         Thread thread = new Thread(crackingCardAnim);
@@ -56,38 +53,34 @@ public class Animations {
     public static void playHeroCrackingAnimation(ImageView iv, boolean win) {
         final int FRAME_AMOUNT = 3;
 
-        Runnable crackingCardAnim = new Runnable() {
-            @Override
-            public void run() {
-
-                for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    drawHeroCrackingFrame(i, iv);
+        Runnable crackingCardAnim = () -> {
+            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                Platform.runLater(() -> {
-                    BattlefieldController.resetController();
-                    FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
-                    try {
-                        AnchorPane pane = loader.load();
-                        Text title = new Text();
-                        Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 80);
-                        title.setFont(font);
-                        title.setX(675);
-                        title.setY(125);
-                        if (win) title.setText("You won!");
-                        else title.setText("You lost!");
-                        pane.getChildren().add(title);
-                        Scene scene = new Scene(pane);
-                        GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                drawHeroCrackingFrame(i, iv);
             }
+            Platform.runLater(() -> {
+                BattlefieldController.resetController();
+                FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
+                try {
+                    AnchorPane pane = loader.load();
+                    Text title = new Text();
+                    Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 80);
+                    title.setFont(font);
+                    title.setX(675);
+                    title.setY(125);
+                    if (win) title.setText("You won!");
+                    else title.setText("You lost!");
+                    pane.getChildren().add(title);
+                    Scene scene = new Scene(pane);
+                    GameApplication.getApplication().getPrimaryStage().setScene(scene);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         };
 
         Thread thread = new Thread(crackingCardAnim);
@@ -112,35 +105,16 @@ public class Animations {
 
     public static void playPackShakingAnimation(ImageView pack, Integer cardId, JSONArray cardIds) {
         PacksController.getController().clearCardImageViews();
-        AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
-        transition.get().setNode(pack);
-        transition.get().setByX(25);
-        transition.get().setDuration(Duration.millis(150));
-        transition.get().play();
+        AtomicReference<TranslateTransition> transition = new AtomicReference<>();
+        playTransition(transition, pack, 25, 0, 150);
         transition.get().setOnFinished(actionEvent -> {
-            transition.set(new TranslateTransition());
-            transition.get().setNode(pack);
-            transition.get().setByX(-50);
-            transition.get().setDuration(Duration.millis(150));
-            transition.get().play();
+            playTransition(transition, pack, -50, 0, 150);
             transition.get().setOnFinished(actionEvent1 -> {
-                transition.set(new TranslateTransition());
-                transition.get().setNode(pack);
-                transition.get().setByX(75);
-                transition.get().setDuration(Duration.millis(100));
-                transition.get().play();
+                playTransition(transition, pack, 75, 0, 100);
                 transition.get().setOnFinished(actionEvent2 -> {
-                    transition.set(new TranslateTransition());
-                    transition.get().setNode(pack);
-                    transition.get().setByX(-100);
-                    transition.get().setDuration(Duration.millis(100));
-                    transition.get().play();
+                    playTransition(transition, pack, -100, 0, 100);
                     transition.get().setOnFinished(actionEvent3 -> {
-                        transition.set(new TranslateTransition());
-                        transition.get().setNode(pack);
-                        transition.get().setByX(50);
-                        transition.get().setDuration(Duration.millis(75));
-                        transition.get().play();
+                        playTransition(transition, pack, 50, 0, 75);
                         transition.get().setOnFinished(actionEvent4 -> {
                             PacksController.getController().notifyAnimationEnded();
                             if (cardId != null) PacksController.getController().showCard(cardId);
@@ -152,6 +126,16 @@ public class Animations {
         });
     }
 
+    private static void playTransition(AtomicReference<TranslateTransition> transition, ImageView iv,
+                                       double deltaX, double deltaY, long millis) {
+        transition.set(new TranslateTransition());
+        transition.get().setNode(iv);
+        transition.get().setByX(deltaX);
+        transition.get().setByY(deltaY);
+        transition.get().setDuration(Duration.millis(millis));
+        transition.get().play();
+    }
+
     public static void playCardAttacking(ImageView attacker, ImageView attacked) {
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
@@ -160,23 +144,14 @@ public class Animations {
         double attackedY = attacked.localToScene(attacked.getBoundsInLocal()).getCenterY();
         double deltaX = attackedX - attackerX;
         double deltaY = attackedY - attackerY;
-        transition.get().setByX(deltaX);
-        transition.get().setByY(deltaY);
-        transition.get().setNode(attacker);
-        transition.get().setDuration(Duration.millis(400));
+        playTransition(transition, attacker, deltaX, deltaY, 400);
         transition.get().setOnFinished(actionEvent -> {
-            transition.set(new TranslateTransition());
-            transition.get().setByX(-deltaX);
-            transition.get().setByY(-deltaY);
-            transition.get().setNode(attacker);
-            transition.get().setDuration(Duration.millis(200));
+            playTransition(transition, attacker, -deltaX, -deltaY, 200);
             transition.get().setOnFinished(actionEvent1 -> {
                 try {
                     BattlefieldController.getController().notifyAttackingAnimationStopped();
-                } catch (NullPointerException e) {}
+                } catch (NullPointerException ignored) {}
             });
-            transition.get().play();
         });
-        transition.get().play();
     }
 }

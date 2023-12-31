@@ -7,6 +7,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CardUtil {
 
@@ -47,7 +48,7 @@ public class CardUtil {
                 responsePlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
                 responseOtherPlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
                 putFrozenCardInfo(field.indexOf(card), responsePlayer, responseOtherPlayer, true);
-                sendResponses(responsePlayer, responseOtherPlayer, player, otherPlayer, server);
+                sendGetChangeResponses(responsePlayer, responseOtherPlayer, player, otherPlayer, server);
             }
             card.removeStatus(CardRepository.Status.ATTACKED);
         }
@@ -56,7 +57,7 @@ public class CardUtil {
     public static void makeCardsUnableToAttackOnStart(List<Card> deck) {
         for (Card card : deck) {
             CardRepository.CardTemplate cardInfo = card.getCardInfo();
-            if (!cardInfo.getActions().contains(CardRepository.CardAction.RUSH_ON_PLAY)) {
+            if (!cardInfo.getActions().contains(CardRepository.Action.RUSH_ON_PLAY)) {
                 card.addStatus(CardRepository.Status.ATTACKED);
             }
         }
@@ -83,14 +84,14 @@ public class CardUtil {
         }
     }
 
-    public static void sendResponses(JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer.Client player1,
-                                     GameServer.Client player2, GameServer server) {
+    public static void sendGetChangeResponses(JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer.Client player1,
+                                              GameServer.Client player2, GameServer server) {
         server.sendResponse(responsePlayer1.toString(), player1);
         server.sendResponse(responsePlayer2.toString(), player2);
-        clearResponses(responsePlayer1, responsePlayer2);
+        clearGetChangeResponses(responsePlayer1, responsePlayer2);
     }
 
-    private static void clearResponses(JSONObject responsePlayer1, JSONObject responsePlayer2) {
+    private static void clearGetChangeResponses(JSONObject responsePlayer1, JSONObject responsePlayer2) {
         responsePlayer1 = new JSONObject();
         responsePlayer2 = new JSONObject();
         responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
@@ -185,45 +186,41 @@ public class CardUtil {
             GameServer.Client otherPlayer, GameServer server) {
         List<Card> removed = new ArrayList<>();
         List<Card> added = new ArrayList<>();
+        AtomicInteger stolenAmount = new AtomicInteger();
         playerAllCards.get("field").stream()
                 .filter(card -> card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId())
                 .forEach(card -> {
                     JSONObject responseOtherPlayer = new JSONObject();
                     JSONObject responsePlayer = new JSONObject();
-                    List<List<Card>> res = checkHypnoshroom(card, playerAllCards, otherPlayerAllCards, responsePlayer, responseOtherPlayer);
-                    if (res == null) return;
-                    removed.addAll(res.get(0));
-                    added.addAll(res.get(1));
-                    server.sendResponse(responseOtherPlayer.toString(), otherPlayer);
-                    server.sendResponse(responsePlayer.toString(), player);
+                    Card res = checkHypnoshroom(playerAllCards, otherPlayerAllCards, responsePlayer, responseOtherPlayer, stolenAmount.get());
+                    if (res != null) {
+                        stolenAmount.getAndIncrement();
+                        removed.add(res);
+                        added.add(res);
+                        server.sendResponse(responseOtherPlayer.toString(), otherPlayer);
+                        server.sendResponse(responsePlayer.toString(), player);
+                    }
                 });
         otherPlayerAllCards.get("field").removeAll(removed);
         playerAllCards.get("field").addAll(added);
     }
 
-    private static List<List<Card>> checkHypnoshroom(Card card, HashMap<String, List<Card>> playerCards, HashMap<String, List<Card>> otherPlayerCards,
-                                                     JSONObject playerResponse, JSONObject otherPlayerResponse) {
-        List<Card> removed = new ArrayList<>();
-        List<Card> added = new ArrayList<>();
-        if (card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId()) {
-            playerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
-            otherPlayerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
-            Random random = new Random();
-            if (otherPlayerCards.get("field").size() == 0 || playerCards.get("field").size() >= MAX_FIELD_SIZE) return null;
-            int randPos = random.nextInt(otherPlayerCards.get("field").size());
-            Card stolenCard = otherPlayerCards.get("field").get(randPos);
+    private static Card checkHypnoshroom(HashMap<String, List<Card>> playerCards, HashMap<String, List<Card>> otherPlayerCards,
+                                                     JSONObject playerResponse, JSONObject otherPlayerResponse, int stolenAmount) {
+        playerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
+        otherPlayerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
+        Random random = new Random();
+        int currentOpponentCardAmount = otherPlayerCards.get("field").size() - stolenAmount;
+        if (currentOpponentCardAmount <= 0 || playerCards.get("field").size() + stolenAmount >= MAX_FIELD_SIZE) return null;
+        int randPos = random.nextInt(currentOpponentCardAmount);
+        Card stolenCard = otherPlayerCards.get("field").get(randPos);
 
-            added.add(stolenCard);
-            removed.add(stolenCard);
+        playerResponse.put("gotten_pos", randPos);
+        putCardStatsAndId(stolenCard, playerResponse);
 
-            playerResponse.put("gotten_pos", randPos);
-            putCardStatsAndId(stolenCard, playerResponse);
-
-            otherPlayerResponse.put("stolen_pos", randPos);
-            putCardStatsAndId(stolenCard, otherPlayerResponse);
-
-        }
-        return List.of(removed, added);
+        otherPlayerResponse.put("stolen_pos", randPos);
+        putCardStatsAndId(stolenCard, otherPlayerResponse);
+        return stolenCard;
     }
 
     public static void decreaseCost(CardRepository.CardTemplate cardToDecrease, HashMap<String, List<Card>> allCards,

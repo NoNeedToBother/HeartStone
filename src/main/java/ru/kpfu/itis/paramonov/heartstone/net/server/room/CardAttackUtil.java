@@ -31,7 +31,7 @@ public class CardAttackUtil {
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
         boolean res = checkCardToAttack(client, activePlayer, opponentCards, response, attacker, pos, target);
         if (res) {
-            if (!attacker.getCardInfo().getActions().contains(CardRepository.CardAction.IGNORE_TAUNT)) {
+            if (!attacker.getCardInfo().getActions().contains(CardRepository.Action.IGNORE_TAUNT)) {
                 res = checkTaunts(opponentCards, opponentPos);
                 if (!res) response.put("reason", "You must attack card with taunt");
             }

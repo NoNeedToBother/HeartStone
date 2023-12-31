@@ -7,7 +7,6 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
-import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -49,11 +48,11 @@ public class PlayerRoomUtil {
         UserService service = new UserService();
         User winnerUser = service.get(winner.getUserLogin());
         User defeatedUser = service.get(defeated.getUserLogin());
-        int winnerMoney = winnerUser.getMoney() + GOLD_FOR_WIN;
-        int defeatedMoney = defeatedUser.getMoney() + GOLD_FOR_DEFEAT;
+        int winnerMoney = winnerUser.money() + GOLD_FOR_WIN;
+        int defeatedMoney = defeatedUser.money() + GOLD_FOR_DEFEAT;
         try {
-            service.updateMoney(winnerUser.getLogin(), winnerMoney);
-            service.updateMoney(defeatedUser.getLogin(), defeatedMoney);
+            service.updateMoney(winnerUser.login(), winnerMoney);
+            service.updateMoney(defeatedUser.login(), defeatedMoney);
         } catch (SQLException e) {
             responseWinner.put("status", "not_ok");
             responseDefeated.put("status", "not_ok");
@@ -69,10 +68,10 @@ public class PlayerRoomUtil {
         UserService service = new UserService();
         User winnerUser = service.get(winner.getUserLogin());
         User defeatedUser = service.get(defeated.getUserLogin());
-        int winnerMoney = winnerUser.getMoney() + GOLD_FOR_WIN;
-        int defeatedMoney = defeatedUser.getMoney() + GOLD_FOR_DEFEAT;
-        service.updateMoney(winnerUser.getLogin(), winnerMoney);
-        service.updateMoney(defeatedUser.getLogin(), defeatedMoney);
+        int winnerMoney = winnerUser.money() + GOLD_FOR_WIN;
+        int defeatedMoney = defeatedUser.money() + GOLD_FOR_DEFEAT;
+        service.updateMoney(winnerUser.login(), winnerMoney);
+        service.updateMoney(defeatedUser.login(), defeatedMoney);
         response.put("money", winnerMoney);
     }
     public static void dealDamageOnNoCard(GameServer.Client client, GameServer.Client player1, int player1Dmg, int player2Dmg,

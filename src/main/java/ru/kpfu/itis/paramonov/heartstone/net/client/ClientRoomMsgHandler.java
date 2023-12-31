@@ -17,12 +17,9 @@ public class ClientRoomMsgHandler {
         }
         loadBattlefieldIfNecessary();
         switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
-            case GET_BACKGROUND -> {
-                loadBattlefieldIfNecessary();
+            case GET_INITIAL_INFO -> {
                 String bg = json.getString("background");
                 BattlefieldController.getController().setBackground(bg);
-            }
-            case GET_INITIAL_INFO -> {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
                 BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 BattlefieldController.getController().setHeroes(json);

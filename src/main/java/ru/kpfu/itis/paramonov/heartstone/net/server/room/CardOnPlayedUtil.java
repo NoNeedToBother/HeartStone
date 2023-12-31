@@ -54,7 +54,7 @@ public class CardOnPlayedUtil {
         else {
             checkTargetedCardsOnBattleCry(player2, player1, player1AllCards, playedCard, message, responsePlayer2, responsePlayer1, server);
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DRAW_CARD_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DRAW_CARD_ON_PLAY)) {
             for (int i = 0; i < playedCard.getCardInfo().getDrawnCards(); i++) {
                 room.drawCard(client);
                 if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Illusionist.getId()) {
@@ -62,9 +62,9 @@ public class CardOnPlayedUtil {
                 }
             }
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ON_PLAY)) {
             checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
-            CardUtil.sendResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+            CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
         CardUtil.removeDefeatedCards(player1AllCards.get("field"));
         CardUtil.removeDefeatedCards(player2AllCards.get("field"));
@@ -73,21 +73,22 @@ public class CardOnPlayedUtil {
     public static void checkTargetedCardsOnBattleCry(GameServer.Client player, GameServer.Client targetedPlayer, HashMap<String, List<Card>> allTargetedCards,
                                                      Card playedCard, JSONObject message, JSONObject response,
                                                      JSONObject responseTargeted, GameServer server) {
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
             freezeEnemyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
-            CardUtil.sendResponses(response, responseTargeted, player, targetedPlayer, server);
+            CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY)) {
             checkEnemyDamageOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
-            CardUtil.sendResponses(response, responseTargeted, player, targetedPlayer, server);
+            CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) {
             checkDestroyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
-            CardUtil.sendResponses(response, responseTargeted, player, targetedPlayer, server);
+            CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
     }
 
-    public static void freezeEnemyOnPlay(HashMap<String, List<Card>> allTargetedCards, JSONObject message, Card playedCard, JSONObject responseTargeted, JSONObject responseOther) {
+    public static void freezeEnemyOnPlay(HashMap<String, List<Card>> allTargetedCards, JSONObject message, Card playedCard,
+                                         JSONObject responseTargeted, JSONObject responseOther) {
         Card frozenCard = allTargetedCards.get("field").get(Integer.parseInt(message.getString("opponent_pos")));
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.IceElemental.getId()) {
             frozenCard.addStatus(CardRepository.Status.FROZEN_1);
@@ -118,10 +119,8 @@ public class CardOnPlayedUtil {
             damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, true);
             int defeatedAmount = CardUtil.getDefeatedCardAmount(player1AllCards.get("field")) +
                     CardUtil.getDefeatedCardAmount(player2AllCards.get("field"));
-            if (defeatedAmount != 0) {
-                playedCard.setAtk(playedCard.getAtk() + playedCard.getCardInfo().getAtkIncrease() * defeatedAmount);
-                playedCard.setHp(playedCard.getHp() + playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
-            }
+            playedCard.setAtk(playedCard.getAtk() + playedCard.getCardInfo().getAtkIncrease() * defeatedAmount);
+            playedCard.setHp(playedCard.getHp() + playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
         }
         CardUtil.putFieldChanges(player1Response, player1AllCards.get("field"), player1Indexes);
         CardUtil.putOpponentChanges(player1Response, player2AllCards.get("field"), player2Indexes);
@@ -133,18 +132,8 @@ public class CardOnPlayedUtil {
     private static void damageAllCardsExceptPlayedAndAdd(List<Card> field, Card playedCard, List<Integer> playerIndexes, boolean addCard) {
         for (Card card : field) {
             if (!card.equals(playedCard)) {
-                for (CardRepository.CardAction action : playedCard.getCardInfo().getActions()) {
-                    if (action.toString().equals(CardRepository.CardAction.DAMAGE_ON_PLAY.toString())) {
-                        if (card.getCardInfo().getId() == CardRepository.CardTemplate.CrazyPyromaniac.getId()) {
-                            card.setHp(card.getHp() - card.getCardInfo().getAllCardsDamage());
-                            playerIndexes.add(field.indexOf(card));
-                        }
-                        if (card.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId()) {
-                            card.setHp(card.getHp() - card.getCardInfo().getAllCardsDamage());
-                            playerIndexes.add(field.indexOf(card));
-                        }
-                    }
-                }
+                card.setHp(card.getHp() - playedCard.getCardInfo().getAllCardsDamage());
+                playerIndexes.add(field.indexOf(card));
             } else {
                 if (addCard) playerIndexes.add(field.indexOf(card));
             }

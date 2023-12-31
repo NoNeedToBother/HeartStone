@@ -5,7 +5,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.*;
-import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
@@ -19,12 +18,6 @@ public class ClientServerMsgHandler {
             return;
         }
         switch (ServerMessage.ServerAction.valueOf(json.getString("server_action"))) {
-            case CONNECT -> {
-                if (checkStatus(json))
-                    if (BattlefieldController.getController() == null) {
-                        GameApplication.getApplication().loadScene("/battlefield.fxml");
-                    }
-            }
             case LOGIN, REGISTER -> {
                 if (checkStatus(json)) {
                     setGameUser(json);

@@ -221,7 +221,7 @@ public class BattlefieldController {
     public void updateHp(JSONObject json) {
         Integer hp = getIntParam(json, "hp");
         playerHeroInfo.changeHealth(hp);
-        Integer opponentHp = json.getInt("opponent_hp");
+        Integer opponentHp = getIntParam(json, "opponent_hp");
         opponentHeroInfo.changeHealth(opponentHp);
     }
 
@@ -435,9 +435,9 @@ public class BattlefieldController {
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
             if (handCard != null) {
-                if ((handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DAMAGE_ENEMY_ON_PLAY) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.DESTROY_ENEMY_ON_PLAY)) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.CardAction.FREEZE_ENEMY_ON_PLAY)) {
+                if ((handCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) ||
+                        handCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
                     sendAttackingOnPlay(handCard, selected);
                     mouseEvent.consume();
                     return;

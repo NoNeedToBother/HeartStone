@@ -212,7 +212,7 @@ public class GameServer {
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
-                login = user.getLogin();
+                login = user.login();
                 response.put("status", "ok");
                 putUserInfo(user, response);
             } else {
@@ -226,7 +226,7 @@ public class GameServer {
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
                 response.put("status", "ok");
-                login = user.getLogin();
+                login = user.login();
                 putUserInfo(user, response);
             } catch (SQLException e) {
                 response.put("status", "not_ok");
@@ -234,10 +234,10 @@ public class GameServer {
         }
 
         private void putUserInfo(User user, JSONObject response) {
-            response.put("login", user.getLogin());
-            response.put("deck", user.getDeck());
-            response.put("cards", user.getCards());
-            response.put("money", user.getMoney());
+            response.put("login", user.login());
+            response.put("deck", user.deck());
+            response.put("cards", user.cards());
+            response.put("money", user.money());
         }
 
         private void handleDeckUpdating(JSONObject json, JSONObject response) {
