@@ -70,7 +70,7 @@ public class DeckController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.SERVER)
                     .setServerAction(ServerMessage.ServerAction.UPDATE_DECK)
-                    .setParameter("deck", stringDeck)
+                    .addParameter("deck", stringDeck)
                     .build();
             GameApplication.getApplication().getClient().sendMessage(msg);
 
@@ -84,7 +84,7 @@ public class DeckController {
         deck.getChildren().add(1, btnSave);
     }
 
-    private final int MAX_DECK_CARDS_AMOUNT = 20;
+    private final int MAX_DECK_CARDS_AMOUNT = 25;
 
     private void setCards() {
         fpCards.setHgap(12.5);

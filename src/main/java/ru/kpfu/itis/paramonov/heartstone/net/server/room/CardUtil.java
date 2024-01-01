@@ -67,7 +67,8 @@ public class CardUtil {
         for (Card card : field) {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
                 card.setAtk(card.getAtk() + card.getCardInfo().getAtkIncrease());
-                card.setHp(card.getHp() + card.getCardInfo().getHpIncrease());
+                card.increaseMaxHp(card.getCardInfo().getHpIncrease());
+                card.increaseHp(card.getCardInfo().getHpIncrease());
                 JSONObject response = new JSONObject();
                 JSONObject otherResponse = new JSONObject();
                 response.put("room_action", GameRoom.RoomAction.GET_CHANGE);
@@ -106,31 +107,38 @@ public class CardUtil {
         return res;
     }
 
-    public static void putDamagedCardInfo(Card damagedCard, int pos, JSONObject responseDamaged, JSONObject responseOther) {
+    public static void putDamagedCardInfo(Card damagedCard, CardRepository.Status status, int pos, JSONObject responseDamaged, JSONObject responseOther) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
         responseDamaged.put("hp", damagedCard.getHp());
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
+        if (status != null) {
+            responseDamaged.put("card_status", status.toString());
+            responseOther.put("card_status", status.toString());
+        }
     }
 
     public static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
         if (unfrozen) {
-            responseDamaged.put("status", "no_frozen");
-            responseOther.put("status", "no_frozen");
+            responseDamaged.put("card_status", "no_frozen");
+            responseOther.put("card_status", "no_frozen");
         }
         else {
-            responseDamaged.put("status", CardRepository.Status.FROZEN.toString());
-            responseOther.put("status", CardRepository.Status.FROZEN.toString());
+            responseDamaged.put("card_status", CardRepository.Status.FROZEN.toString());
+            responseOther.put("card_status", CardRepository.Status.FROZEN.toString());
         }
     }
 
-    public static void putFieldChanges(JSONObject response, List<Card> field, List<Integer> positions) {
+    public static void putFieldChanges(JSONObject response, List<Card> field, List<Card> opponentField,
+                                       List<Integer> positions, List<Integer> opponentPositions) {
         JSONArray changes = getFieldChanges(field, positions);
         response.put("stat_changes", changes);
+        JSONArray opponentChanges = getFieldChanges(opponentField, opponentPositions);
+        response.put("opponent_stat_changes", opponentChanges);
     }
 
     public static JSONArray getFieldChanges(List<Card> field, List<Integer> positions) {
@@ -146,12 +154,6 @@ public class CardUtil {
         }
         return changes;
     }
-
-    public static void putOpponentChanges(JSONObject response, List<Card> field, List<Integer> positions) {
-        JSONArray changes = getFieldChanges(field, positions);
-        response.put("opponent_stat_changes", changes);
-    }
-
 
     public static void checkEndTurnCards(GameServer.Client client, GameServer.Client player1, GameServer.Client player2, HashMap<String, List<Card>> player1AllCards,
                                          HashMap<String, List<Card>> player2AllCards, GameServer server, GameRoom room) {

@@ -81,8 +81,8 @@ public class RegisterController {
                 String msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.SERVER)
                         .setServerAction(ServerMessage.ServerAction.REGISTER)
-                        .setParameter("login", login.getText())
-                        .setParameter("password", PasswordUtil.encrypt(password.getText()))
+                        .addParameter("login", login.getText())
+                        .addParameter("password", PasswordUtil.encrypt(password.getText()))
                         .build();
                 client.sendMessage(msg);
             }

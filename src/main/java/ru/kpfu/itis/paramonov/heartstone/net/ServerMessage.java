@@ -26,6 +26,8 @@ public class ServerMessage {
 
     private final Map<String, String> params = new HashMap<>();
 
+    private final Map<String, Integer> positions = new HashMap<>();
+
     public static class ServerMessageBuilder {
         ServerMessage message = new ServerMessage();
 
@@ -52,8 +54,13 @@ public class ServerMessage {
             }
         }
 
-        public ServerMessageBuilder setParameter(String parameter, String value) {
+        public ServerMessageBuilder addParameter(String parameter, String value) {
             message.params.put(parameter, value);
+            return this;
+        }
+
+        public ServerMessageBuilder addPosition(String key, Integer pos) {
+            message.positions.put(key, pos);
             return this;
         }
 
@@ -64,6 +71,9 @@ public class ServerMessage {
             if (message.entityToConnect.equals(Entity.ROOM)) json.put("room_action", message.roomAction.toString());
             for (String key : message.params.keySet()) {
                 json.put(key, message.params.get(key));
+            }
+            for (String key : message.positions.keySet()) {
+                json.put(key, message.positions.get(key));
             }
             return json.toString();
         }

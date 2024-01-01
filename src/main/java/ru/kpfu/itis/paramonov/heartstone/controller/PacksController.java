@@ -120,7 +120,7 @@ public class PacksController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.SERVER)
                     .setServerAction(action)
-                    .setParameter("login", User.getInstance().getLogin())
+                    .addParameter("login", User.getInstance().getLogin())
                     .build();
 
             GameApplication.getApplication().getClient().sendMessage(msg);
