@@ -14,6 +14,8 @@ public class Card implements Sprite {
 
     private int hp;
 
+    private int maxHp;
+
     private int atk;
 
     private int cost;
@@ -30,18 +32,16 @@ public class Card implements Sprite {
 
     public Card(CardRepository.CardTemplate cardInfo) {
         this.cardInfo = cardInfo;
-
         this.hp = cardInfo.getHp();
-
+        this.maxHp = hp;
         this.atk = cardInfo.getAtk();
-
         this.cost = cardInfo.getCost();
-
         this.statuses = new ArrayList<>();
     }
 
     public Card(int id, int hp, int atk, int cost) {
         this.hp = hp;
+        this.maxHp = hp;
         this.atk = atk;
         this.cost = cost;
         this.cardInfo = CardRepository.getCardTemplate(id);
@@ -72,6 +72,14 @@ public class Card implements Sprite {
         this.cost = cost;
     }
 
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(int maxHp) {
+        this.maxHp = maxHp;
+    }
+
     public CardRepository.CardTemplate getCardInfo() {
         return cardInfo;
     }
@@ -89,6 +97,11 @@ public class Card implements Sprite {
     }
 
     public void increaseHp(int hp) {
+        this.hp += hp;
+        if (hp > maxHp) this.hp = maxHp;
+    }
+
+    public void increaseMaxHp(int hp) {
         this.hp += hp;
     }
 

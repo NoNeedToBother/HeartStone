@@ -249,7 +249,7 @@ public class GameRoom {
                 attackerResponse.put("status", "ok");
                 attackerResponse.put("pos", attackerPos);
                 attackerResponse.put("opponent_pos", attackedPos);
-                attackerResponse.put("anim", "attacker");
+                attackerResponse.put("role", "attacker");
                 CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, List.of(attackerPos), List.of(attackedPos));
                 sendResponse(attackerResponse.toString(), client);
 
@@ -257,7 +257,7 @@ public class GameRoom {
                 attackedResponse.put("status", "ok");
                 attackedResponse.put("opponent_pos", attackerPos);
                 attackedResponse.put("pos", attackedPos);
-                attackedResponse.put("anim", "attacked");
+                attackedResponse.put("role", "attacked");
                 CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, List.of(attackedPos), List.of(attackerPos));
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 

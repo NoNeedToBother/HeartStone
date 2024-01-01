@@ -200,7 +200,7 @@ public class BattlefieldController {
         try {
             int pos = json.getInt("pos");
             int opponentPos = json.getInt("opponent_pos");
-            if (json.getString("anim").equals("attacker"))
+            if (json.getString("role").equals("attacker"))
                 Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView());
             else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView());
             return;
@@ -284,10 +284,7 @@ public class BattlefieldController {
         Card targeted = field.get(pos);
         Integer hp = getIntParam(json, "hp");
         Integer atk = getIntParam(json, "atk");
-        String status = null;
-        try {
-            status = json.getString("card_status");
-        } catch (JSONException ignored) {}
+        String status = getStringParam(json, "card_status");
         applyChange(field, targeted, pos, hp, atk, status);
     }
 
@@ -473,9 +470,15 @@ public class BattlefieldController {
     public void updateCards(JSONObject json) {
         JSONArray changes = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
-
         updateCards(changes, field);
         updateCards(opponentChanges, opponentField);
+
+        String cardStatus = getStringParam(json, "card_status");
+        if (cardStatus != null) {
+            if (json.getString("role").equals("attacker"))
+                applyChange(opponentField, null, json.getInt("opponent_pos"), null, null, cardStatus);
+            else applyChange(field, null, json.getInt("pos"), null, null, cardStatus);
+        }
     }
 
     private void updateCards(JSONArray changes, List<Card> field) {
@@ -502,13 +505,11 @@ public class BattlefieldController {
         if (hp != null) cardToChange.setHp(hp);
         Integer atk = getIntParam(cardChange, "atk");
         if (atk != null) cardToChange.setAtk(atk);
-
-        try {
-            String status = cardChange.getString("card_status");
-            if (status.equals(CardRepository.Status.FROZEN.toString())) {
+        String status = getStringParam(cardChange, "card_status");
+        if (status != null) {
+            if (status.equals(CardRepository.Status.FROZEN.toString()))
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
-            }
-        } catch (JSONException ignored) {}
+        }
         return cardToChange;
     }
 
@@ -684,6 +685,14 @@ public class BattlefieldController {
         Integer res = null;
         try {
             res = json.getInt(param);
+        } catch (JSONException ignored) {}
+        return res;
+    }
+
+    private String getStringParam(JSONObject json, String param) {
+        String res = null;
+        try {
+            res = json.getString(param);
         } catch (JSONException ignored) {}
         return res;
     }
