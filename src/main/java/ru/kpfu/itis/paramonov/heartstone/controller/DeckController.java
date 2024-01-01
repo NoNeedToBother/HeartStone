@@ -84,7 +84,7 @@ public class DeckController {
         deck.getChildren().add(1, btnSave);
     }
 
-    private final int MAX_DECK_CARDS_AMOUNT = 20;
+    private final int MAX_DECK_CARDS_AMOUNT = 25;
 
     private void setCards() {
         fpCards.setHgap(12.5);

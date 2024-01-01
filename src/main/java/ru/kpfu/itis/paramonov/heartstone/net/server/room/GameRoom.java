@@ -406,7 +406,7 @@ public class GameRoom {
 
     private final int INITIAL_HAND_SIZE = 4;
 
-    private final int HAND_SIZE = 6;
+    private final int HAND_SIZE = 7;
 
     private void putInitialInfo(JSONObject response, List<Card> deck, GameServer.Client client, int background) {
         response.put("room_action", RoomAction.GET_INITIAL_INFO.toString());
