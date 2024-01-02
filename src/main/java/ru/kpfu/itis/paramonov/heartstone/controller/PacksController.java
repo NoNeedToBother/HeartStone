@@ -18,6 +18,8 @@ import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.List;
@@ -161,15 +163,8 @@ public class PacksController {
     }
 
     private void showCard(ImageView cardIv, int cardId) {
-        CardRepository.CardTemplate cardTemplate = CardRepository.getCardTemplate(cardId);
-
-        Image card = Card.spriteBuilder()
-                .addImage(cardTemplate.getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(cardTemplate.getRarity())
-                .scale(ScaleFactor.DEFAULT_CARD)
-                .build();
-        cardIv.setImage(card);
+        Image card = CardImages.getPortrait(cardId);
+        cardIv.setImage(ImageUtil.scale(card, ScaleFactor.DEFAULT_CARD));
     }
 
     public void showCards(JSONArray jsonIds) {

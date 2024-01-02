@@ -24,6 +24,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
@@ -246,11 +247,7 @@ public class BattlefieldController {
         try {
             int gottenPos = json.getInt("gotten_pos");
             Card card = getCard(json);
-            Image sprite = Card.spriteBuilder()
-                    .addImage(card.getCardInfo().getPortraitUrl())
-                    .setStyle(Card.CardStyle.BASE.toString())
-                    .addRarity(card.getCardInfo().getRarity())
-                    .build();
+            Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
             Card gotten = opponentField.remove(gottenPos);
@@ -297,8 +294,19 @@ public class BattlefieldController {
             if (hp != null) field.get(pos).setHp(hp);
             if (atk != null) field.get(pos).setAtk(atk);
             if (status != null) {
-                if (status.equals("no_frozen")) field.get(pos).removeStatus(CardRepository.Status.FROZEN);
-                else field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                switch (status) {
+                    case "no_frozen" -> {
+                        Animations.playUnfreezingAnimation(field.get(pos));
+                        field.get(pos).removeStatus(CardRepository.Status.FROZEN);
+                    }
+                    case "FROZEN" -> {
+                        if (!field.get(pos).hasStatus(CardRepository.Status.FROZEN)) {
+                            field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                            Animations.playFreezingAnimation(field.get(pos).getAssociatedImageView());
+                        }
+                    }
+                    default -> field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                }
             }
         }
     }
@@ -403,11 +411,7 @@ public class BattlefieldController {
 
     public void addOpponentCard(JSONObject json) {
         Card card = getCard(json);
-        Image sprite = Card.spriteBuilder()
-                .addImage(card.getCardInfo().getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(card.getCardInfo().getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
 
         ImageView cardIv = new ImageView();
         cardIv.setImage(sprite);
@@ -507,8 +511,10 @@ public class BattlefieldController {
         if (atk != null) cardToChange.setAtk(atk);
         String status = getStringParam(cardChange, "card_status");
         if (status != null) {
-            if (status.equals(CardRepository.Status.FROZEN.toString()))
+            if (status.equals(CardRepository.Status.FROZEN.toString())) {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
+                Animations.playFreezingAnimation(cardToChange.getAssociatedImageView());
+            }
         }
         return cardToChange;
     }
@@ -556,11 +562,7 @@ public class BattlefieldController {
         Card deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
         if(deselected == null) return;
-        Image sprite = Card.spriteBuilder()
-                .addImage(deselected.getCardInfo().getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(deselected.getCardInfo().getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(deselected.getCardInfo().getId());
 
         card.setImage(sprite);
     }
@@ -596,11 +598,7 @@ public class BattlefieldController {
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
-        Image sprite = Card.spriteBuilder()
-                .addImage(cardInfo.getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(cardInfo.getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(cardInfo.getId());
 
         ImageView img = new ImageView();
         img.setImage(sprite);

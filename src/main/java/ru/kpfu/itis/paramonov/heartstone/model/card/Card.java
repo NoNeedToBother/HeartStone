@@ -4,11 +4,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class Card implements Sprite {
 
@@ -116,6 +117,13 @@ public class Card implements Sprite {
         } else statuses.add(status);
     }
 
+    public boolean hasStatus(CardRepository.Status status) {
+        for (CardRepository.Status cardStatus : statuses) {
+            if (cardStatus.equals(status)) return true;
+        }
+        return false;
+    }
+
     private void onAlignmentStatusApplied(CardRepository.Status alignment) {
         CardRepository.Status currentAlignment = getCurrentAlignment();
         if (currentAlignment == null) {
@@ -206,7 +214,7 @@ public class Card implements Sprite {
         private final String DEFAULT_PATH = "/assets/images/cards";
 
         private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
-            img = BufferedImageUtil.addImage(img, imgUrl);
+            img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
@@ -249,13 +257,13 @@ public class Card implements Sprite {
 
         @Override
         public SpriteBuilder<Image> scale(double scale) {
-            img = BufferedImageUtil.scale(img, scale);
+            img = ImageUtil.scale(img, scale);
             return this;
         }
 
         @Override
         public Image build() {
-            return BufferedImageUtil.toImage(img);
+            return ImageUtil.toImage(img);
         }
     }
 
