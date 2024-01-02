@@ -102,6 +102,7 @@ public class Card implements Sprite {
     }
 
     public void increaseMaxHp(int hp) {
+        this.maxHp += hp;
         this.hp += hp;
     }
 
@@ -109,87 +110,126 @@ public class Card implements Sprite {
         return statuses;
     }
 
-    public void addStatus(CardRepository.Status status) {
+    public CardRepository.Status addStatus(CardRepository.Status status) {
         statuses.remove(status);
         if (status.isAlignmentStatus()) {
-            onAlignmentStatusApplied(status);
+            return onAlignmentStatusApplied(status);
         } else statuses.add(status);
+        return status;
     }
 
-    private void onAlignmentStatusApplied(CardRepository.Status alignment) {
-        CardRepository.Status currentAlignment = getCurrentAlignment();
+    private CardRepository.Status onAlignmentStatusApplied(CardRepository.Status alignment) {
+        CardRepository.Status currentAlignment = getCurrentAlignedStatus();
         if (currentAlignment == null) {
             statuses.add(alignment);
-            return;
+            return alignment;
         }
-        if (currentAlignment.equals(alignment)) return;
+        if (currentAlignment.equals(alignment)) return alignment;
         if (currentAlignment.equals(CardRepository.Status.VOID)) removeStatus(CardRepository.Status.VOID);
         if (alignment.equals(CardRepository.Status.VOID)) removeStatus(currentAlignment);
         switch (currentAlignment) {
             case STRENGTH -> {
                 switch (alignment) {
-                    case ENERGY -> changeStatsAndAlignment(null, null, 1,
-                            CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
-                    case CHAOS, INTELLIGENCE -> changeAlignment(currentAlignment, alignment);
-                    case LIFE -> changeAlignment(currentAlignment, null);
+                    case ENERGY -> {
+                        return changeStatsAndAlignment(null, null, null, 1,
+                                CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
+                    }
+                    case CHAOS, INTELLIGENCE -> {
+                        return changeAlignment(currentAlignment, alignment);
+                    }
+                    case LIFE -> {
+                        return changeAlignment(currentAlignment, null);
+                    }
                 }
             }
             case ENERGY -> {
                 switch (alignment) {
-                    case STRENGTH -> changeStatsAndAlignment(null, null, 1,
-                            CardRepository.Status.ENERGY, alignment);
-                    case LIFE -> changeStatsAndAlignment(null, null, 1,
-                            CardRepository.Status.ENERGY, null);
-                    case CHAOS -> changeStatsAndAlignment(null, null, 2,
-                            CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
-                    case INTELLIGENCE -> changeAlignment(currentAlignment, alignment);
+                    case STRENGTH -> {
+                        return changeStatsAndAlignment(null, null, null, 1,
+                                CardRepository.Status.ENERGY, alignment);
+                    }
+                    case LIFE -> {
+                        return changeStatsAndAlignment(null, null, null, 1,
+                                CardRepository.Status.ENERGY, null);
+                    }
+                    case CHAOS -> {
+                        return changeStatsAndAlignment(null, null, null, 2,
+                                CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
+                    }
+                    case INTELLIGENCE -> {
+                        return changeAlignment(currentAlignment, alignment);
+                    }
                 }
             }
             case CHAOS -> {
                 switch (alignment) {
-                    case ENERGY -> changeStatsAndAlignment(null, null, 2,
-                            CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
-                    case INTELLIGENCE -> changeAlignment(CardRepository.Status.CHAOS, CardRepository.Status.INTELLIGENCE);
-                    case LIFE -> changeAlignment(CardRepository.Status.CHAOS, null);
-                    case STRENGTH -> changeAlignment(currentAlignment, alignment);
+                    case ENERGY -> {
+                        return changeStatsAndAlignment(null, null, null, 2,
+                                CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
+                    }
+                    case INTELLIGENCE -> {
+                        return changeAlignment(CardRepository.Status.CHAOS, CardRepository.Status.INTELLIGENCE);
+                    }
+                    case LIFE -> {
+                        return changeAlignment(CardRepository.Status.CHAOS, null);
+                    }
+                    case STRENGTH -> {
+                        return changeAlignment(currentAlignment, alignment);
+                    }
                 }
             }
             case INTELLIGENCE -> {
                 switch (alignment) {
-                    case CHAOS -> changeStatsAndAlignment(null, null, 1,
-                            CardRepository.Status.INTELLIGENCE, null);
-                    case STRENGTH -> changeAlignment(CardRepository.Status.INTELLIGENCE, null);
-                    case LIFE -> changeAlignment(currentAlignment, alignment);
+                    case CHAOS -> {
+                        return changeStatsAndAlignment(null, null, null, 1,
+                                CardRepository.Status.INTELLIGENCE, null);
+                    }
+                    case STRENGTH -> {
+                        return changeAlignment(CardRepository.Status.INTELLIGENCE, null);
+                    }
+                    case LIFE -> {
+                        return changeAlignment(currentAlignment, alignment);
+                    }
+                    case ENERGY -> {
+                        return CardRepository.Status.INTELLIGENCE;
+                    }
                 }
             }
             case LIFE -> {
                 switch (alignment) {
-                    case STRENGTH -> changeAlignment(CardRepository.Status.LIFE, null);
-                    case ENERGY -> changeStatsAndAlignment(null, null, 1,
-                            CardRepository.Status.LIFE, null);
-                    case INTELLIGENCE, CHAOS -> changeAlignment(currentAlignment, alignment);
+                    case STRENGTH -> {
+                        return changeAlignment(CardRepository.Status.LIFE, null);
+                    }
+                    case ENERGY -> {
+                        return changeStatsAndAlignment(null, null, null, 1,
+                                CardRepository.Status.LIFE, null);
+                    }
+                    case INTELLIGENCE, CHAOS -> {
+                        return changeAlignment(currentAlignment, alignment);
+                    }
                 }
             }
         }
+        return null;
     }
 
-    public void changeStatsAndAlignment(Integer atkIncrease, Integer hpIncrease, Integer hpDecrease,
-                                        CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
+    public CardRepository.Status changeStatsAndAlignment(Integer atkIncrease, Integer hpHeal, Integer maxHpIncrease, Integer hpDecrease,
+                                                         CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
         if (atkIncrease != null) atk += atkIncrease;
-        if (hpIncrease != null) {
-            increaseMaxHp(hpIncrease);
-            increaseHp(hpIncrease);
-        }
+        if (hpHeal != null) increaseHp(hpHeal);
+        if (maxHpIncrease != null) increaseMaxHp(maxHpIncrease);
         if (hpDecrease != null) hp -= hpDecrease;
         changeAlignment(alignedStatusToRemove, newAlignedStatus);
+        return newAlignedStatus;
     }
 
-    public void changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
+    public CardRepository.Status changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
         if (alignedStatusToRemove != null) statuses.remove(newAlignedStatus);
         if (newAlignedStatus != null) statuses.add(newAlignedStatus);
+        return newAlignedStatus;
     }
 
-    private CardRepository.Status getCurrentAlignment() {
+    public CardRepository.Status getCurrentAlignedStatus() {
         for (CardRepository.Status status : statuses) {
             if (status.isAlignmentStatus()) return status;
         }

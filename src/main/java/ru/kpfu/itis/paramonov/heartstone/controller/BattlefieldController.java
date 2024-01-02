@@ -294,11 +294,13 @@ public class BattlefieldController {
             Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
         }
         else {
-            if (hp != null) field.get(pos).setHp(hp);
-            if (atk != null) field.get(pos).setAtk(atk);
+            Card card = field.get(pos);
+            if (hp != null) card.setHp(hp);
+            if (atk != null) card.setAtk(atk);
             if (status != null) {
-                if (status.equals("no_frozen")) field.get(pos).removeStatus(CardRepository.Status.FROZEN);
-                else field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                if (status.equals("no_frozen")) card.removeStatus(CardRepository.Status.FROZEN);
+                else if (status.equals("no_aligned")) card.removeStatus(card.getCurrentAlignedStatus());
+                else card.addStatus(CardRepository.Status.valueOf(status));
             }
         }
     }

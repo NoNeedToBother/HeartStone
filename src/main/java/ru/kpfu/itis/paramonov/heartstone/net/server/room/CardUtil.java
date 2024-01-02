@@ -68,7 +68,6 @@ public class CardUtil {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
                 card.setAtk(card.getAtk() + card.getCardInfo().getAtkIncrease());
                 card.increaseMaxHp(card.getCardInfo().getHpIncrease());
-                card.increaseHp(card.getCardInfo().getHpIncrease());
                 JSONObject response = new JSONObject();
                 JSONObject otherResponse = new JSONObject();
                 response.put("room_action", GameRoom.RoomAction.GET_CHANGE);
@@ -77,7 +76,7 @@ public class CardUtil {
                 putCardStatsAndId(card, response);
 
                 otherResponse.put("opponent_pos", field.indexOf(card));
-                putCardStatsAndId(card, response);
+                putCardStatsAndId(card, otherResponse);
 
                 server.sendResponse(response.toString(), player);
                 server.sendResponse(otherResponse.toString(), other);
@@ -114,23 +113,19 @@ public class CardUtil {
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
-        if (status != null) {
-            responseDamaged.put("card_status", status.toString());
-            responseOther.put("card_status", status.toString());
-        }
+        if (status != null) putCardStatus(responseDamaged, responseOther, status.toString());
     }
 
     public static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
-        if (unfrozen) {
-            responseDamaged.put("card_status", "no_frozen");
-            responseOther.put("card_status", "no_frozen");
-        }
-        else {
-            responseDamaged.put("card_status", CardRepository.Status.FROZEN.toString());
-            responseOther.put("card_status", CardRepository.Status.FROZEN.toString());
-        }
+        if (unfrozen) putCardStatus(responseDamaged, responseOther, "no_frozen");
+        else putCardStatus(responseDamaged, responseOther, CardRepository.Status.FROZEN.toString());
+    }
+
+    public static void putCardStatus(JSONObject responsePlayer1, JSONObject responsePlayer2, String cardStatus) {
+        responsePlayer1.put("card_status", cardStatus);
+        responsePlayer2.put("card_status", cardStatus);
     }
 
     public static void putFieldChanges(JSONObject response, List<Card> field, List<Card> opponentField,

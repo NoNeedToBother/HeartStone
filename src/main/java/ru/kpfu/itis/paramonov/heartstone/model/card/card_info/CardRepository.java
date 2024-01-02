@@ -7,7 +7,7 @@ import java.util.Map;
 public class CardRepository {
 
     public enum Action {
-        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
+        RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ALL_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
         ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
         DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG
     }
@@ -140,7 +140,7 @@ public class CardRepository {
         Whelp(8, "Dragon whelp", 3, 5, 4, "", DEFAULT_PATH + "/whelp.png",
                 List.of(), List.of(), Faction.ANIMAL, Rarity.COMMON, Map.of()),
         Phoenix(9, "Phoenix", 4, 4, 4, "Battlecry: deal 2 energy damage to chosen enemy", DEFAULT_PATH + "/phoenix.png",
-                List.of(Action.DAMAGE_ON_PLAY, Action.DEAL_ENERGY_DMG), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE, Map.of(StatChange.DMG, 2)),
+                List.of(Action.DAMAGE_ENEMY_ON_PLAY, Action.DEAL_ENERGY_DMG), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE, Map.of(StatChange.DMG, 2)),
         StoneGiant(10, "Stone giant", 6, 6, 10, "Giant: cost -1 for each played stone. Alignment: life", DEFAULT_PATH + "/stone_giant.png",
                 List.of(Action.DEAL_LIFE_DMG), List.of(KeyWord.GIANT, KeyWord.ALIGNMENT), Faction.STONE, Rarity.EPIC, Map.of(StatChange.COST, -1)),
         FierceTiger(11, "Fierce tiger", 3, 3, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(Action.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
@@ -148,9 +148,9 @@ public class CardRepository {
         StoneAssassin(12, "Stone assassin", 2, 2, 5, "Battlecry: destroy chosen enemy. Alignment: void", DEFAULT_PATH + "/stone_assassin.png",
                 List.of(Action.DESTROY_ENEMY_ON_PLAY, Action.DEAL_VOID_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY, KeyWord.ALIGNMENT), Faction.STONE, Rarity.EPIC, Map.of()),
         CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to all other cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
-                List.of(Action.DAMAGE_ON_PLAY), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE, Map.of(StatChange.ALL_DMG, 2)),
+                List.of(Action.DAMAGE_ALL_ON_PLAY), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE, Map.of(StatChange.ALL_DMG, 2)),
         Trantos(14, "Tran'tos", 3, 3, 6, "Battlecry: deals 3 damage to all other cards. For each defeated card +2/1",
-                DEFAULT_PATH + "/trantos.png", List.of(Action.DAMAGE_ON_PLAY, Action.HP_UP, Action.ATK_UP),
+                DEFAULT_PATH + "/trantos.png", List.of(Action.DAMAGE_ALL_ON_PLAY, Action.HP_UP, Action.ATK_UP),
                 List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY,
                 Map.of(StatChange.ALL_DMG, 3, StatChange.ATK, 2, StatChange.HP, 1)),
         TheGreatestApex(15, "The greatest apex", 7, 7, 8, "Charge", DEFAULT_PATH + "/greatest_apex.png",
@@ -185,7 +185,7 @@ public class CardRepository {
         SlimeWarrior(29, "Slime warrior", 4, 5, 5, "Taunt", DEFAULT_PATH + "/warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON, Map.of()),
         SlimeCommander(30, "Slime commander", 4, 5, 6, "Punishment: deals 4 damage to opponent hero. Alignment: strength",
-                DEFAULT_PATH + "/slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY),
+                DEFAULT_PATH + "/slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
                 Faction.NO_FACTION, Rarity.EPIC, Map.of(StatChange.HERO_DMG, 4)),
         Postman(31, "Postman", 3, 3, 4, "At the end of turn draws a card", DEFAULT_PATH + "/postman.png",
                 List.of(), List.of(), Faction.NO_FACTION, Rarity.RARE, Map.of(StatChange.CARD_DRAWN, 1)),

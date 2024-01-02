@@ -72,7 +72,6 @@ public class CardAttackUtil {
                         attackerPlayer, attackedPlayer);
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
-                attacked.increaseHp(attacked.getCardInfo().getHpIncrease());
 
             }
             if (attacked.getHp() > 0 && (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
@@ -83,9 +82,9 @@ public class CardAttackUtil {
         }
         if (attacker.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.ALIGNMENT)) {
             CardRepository.Status alignment = getAlignment(attacker);
-            attacked.addStatus(alignment);
-            attackerResponse.put("card_status", alignment.toString());
-            attackedResponse.put("card_status", alignment.toString());
+            CardRepository.Status newAlignment = attacked.addStatus(alignment);
+            if (newAlignment == null) CardUtil.putCardStatus(attackerResponse, attackedResponse, "no_aligned");
+            else CardUtil.putCardStatus(attackerResponse, attackedResponse, newAlignment.toString());
         }
     }
 
@@ -104,15 +103,11 @@ public class CardAttackUtil {
                                                    GameServer.Client attackerPlayer, GameServer.Client attackedPlayer) {
         attackerHero.setHp(attackerHero.getHp() - punishmentDamage);
         if (attackerHero.getHp() <= 0) {
-            PlayerRoomUtil.onHeroDefeated(attackedResponse, attackerResponse, attackedPlayer, attackerPlayer);
+            JSONObject responseWinner = new JSONObject();
+            JSONObject responseDefeated = new JSONObject();
+            PlayerRoomUtil.onHeroDefeated(responseWinner, responseDefeated, attackedPlayer, attackerPlayer);
         }
         PlayerRoomUtil.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         PlayerRoomUtil.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
-    }
-
-    private static void putCardCardAttackInfo(JSONObject response, int attackerPos, int attackedPos, boolean isAttacker) {
-        response.put("room_action", GameRoom.RoomAction.CARD_CARD_ATTACK.toString());
-        response.put("status", "ok");
-
     }
 }

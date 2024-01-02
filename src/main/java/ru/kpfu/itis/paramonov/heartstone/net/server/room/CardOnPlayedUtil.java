@@ -60,7 +60,7 @@ public class CardOnPlayedUtil {
                 }
             }
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ALL_ON_PLAY)) {
             checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
             CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
@@ -121,7 +121,6 @@ public class CardOnPlayedUtil {
                     CardUtil.getDefeatedCardAmount(player2AllCards.get("field"));
             playedCard.setAtk(playedCard.getAtk() + playedCard.getCardInfo().getAtkIncrease() * defeatedAmount);
             playedCard.increaseMaxHp(playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
-            playedCard.increaseHp(playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
         }
         CardUtil.putFieldChanges(player1Response, player1AllCards.get("field"), player2AllCards.get("field"),
                 player1Indexes, player2Indexes);

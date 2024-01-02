@@ -15,6 +15,7 @@ public class ClientRoomMsgHandler {
         } catch (JSONException e) {
             return;
         }
+        System.out.println(response);
         loadBattlefieldIfNecessary();
         switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
             case GET_INITIAL_INFO -> {
