@@ -4,15 +4,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class Card implements Sprite {
 
     private int hp;
+
+    private int maxHp;
 
     private int atk;
 
@@ -30,18 +33,16 @@ public class Card implements Sprite {
 
     public Card(CardRepository.CardTemplate cardInfo) {
         this.cardInfo = cardInfo;
-
         this.hp = cardInfo.getHp();
-
+        this.maxHp = hp;
         this.atk = cardInfo.getAtk();
-
         this.cost = cardInfo.getCost();
-
         this.statuses = new ArrayList<>();
     }
 
     public Card(int id, int hp, int atk, int cost) {
         this.hp = hp;
+        this.maxHp = hp;
         this.atk = atk;
         this.cost = cost;
         this.cardInfo = CardRepository.getCardTemplate(id);
@@ -72,6 +73,14 @@ public class Card implements Sprite {
         this.cost = cost;
     }
 
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(int maxHp) {
+        this.maxHp = maxHp;
+    }
+
     public CardRepository.CardTemplate getCardInfo() {
         return cardInfo;
     }
@@ -90,6 +99,11 @@ public class Card implements Sprite {
 
     public void increaseHp(int hp) {
         this.hp += hp;
+        if (hp > maxHp) this.hp = maxHp;
+    }
+
+    public void increaseMaxHp(int hp) {
+        this.hp += hp;
     }
 
     public List<CardRepository.Status> getStatuses() {
@@ -98,7 +112,96 @@ public class Card implements Sprite {
 
     public void addStatus(CardRepository.Status status) {
         statuses.remove(status);
-        statuses.add(status);
+        if (status.isAlignmentStatus()) {
+            onAlignmentStatusApplied(status);
+        } else statuses.add(status);
+    }
+
+    public boolean hasStatus(CardRepository.Status status) {
+        for (CardRepository.Status cardStatus : statuses) {
+            if (cardStatus.equals(status)) return true;
+        }
+        return false;
+    }
+
+    private void onAlignmentStatusApplied(CardRepository.Status alignment) {
+        CardRepository.Status currentAlignment = getCurrentAlignment();
+        if (currentAlignment == null) {
+            statuses.add(alignment);
+            return;
+        }
+        if (currentAlignment.equals(alignment)) return;
+        if (currentAlignment.equals(CardRepository.Status.VOID)) removeStatus(CardRepository.Status.VOID);
+        if (alignment.equals(CardRepository.Status.VOID)) removeStatus(currentAlignment);
+        switch (currentAlignment) {
+            case STRENGTH -> {
+                switch (alignment) {
+                    case ENERGY -> changeStatsAndAlignment(null, null, 1,
+                            CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
+                    case CHAOS, INTELLIGENCE -> changeAlignment(currentAlignment, alignment);
+                    case LIFE -> changeAlignment(currentAlignment, null);
+                }
+            }
+            case ENERGY -> {
+                switch (alignment) {
+                    case STRENGTH -> changeStatsAndAlignment(null, null, 1,
+                            CardRepository.Status.ENERGY, alignment);
+                    case LIFE -> changeStatsAndAlignment(null, null, 1,
+                            CardRepository.Status.ENERGY, null);
+                    case CHAOS -> changeStatsAndAlignment(null, null, 2,
+                            CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
+                    case INTELLIGENCE -> changeAlignment(currentAlignment, alignment);
+                }
+            }
+            case CHAOS -> {
+                switch (alignment) {
+                    case ENERGY -> changeStatsAndAlignment(null, null, 2,
+                            CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
+                    case INTELLIGENCE -> changeAlignment(CardRepository.Status.CHAOS, CardRepository.Status.INTELLIGENCE);
+                    case LIFE -> changeAlignment(CardRepository.Status.CHAOS, null);
+                    case STRENGTH -> changeAlignment(currentAlignment, alignment);
+                }
+            }
+            case INTELLIGENCE -> {
+                switch (alignment) {
+                    case CHAOS -> changeStatsAndAlignment(null, null, 1,
+                            CardRepository.Status.INTELLIGENCE, null);
+                    case STRENGTH -> changeAlignment(CardRepository.Status.INTELLIGENCE, null);
+                    case LIFE -> changeAlignment(currentAlignment, alignment);
+                }
+            }
+            case LIFE -> {
+                switch (alignment) {
+                    case STRENGTH -> changeAlignment(CardRepository.Status.LIFE, null);
+                    case ENERGY -> changeStatsAndAlignment(null, null, 1,
+                            CardRepository.Status.LIFE, null);
+                    case INTELLIGENCE, CHAOS -> changeAlignment(currentAlignment, alignment);
+                }
+            }
+        }
+    }
+
+    public void changeStatsAndAlignment(Integer atkIncrease, Integer hpIncrease, Integer hpDecrease,
+                                        CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
+        if (atkIncrease != null) atk += atkIncrease;
+        if (hpIncrease != null) {
+            increaseMaxHp(hpIncrease);
+            increaseHp(hpIncrease);
+        }
+        if (hpDecrease != null) hp -= hpDecrease;
+        changeAlignment(alignedStatusToRemove, newAlignedStatus);
+    }
+
+    public void changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
+        if (alignedStatusToRemove != null) statuses.remove(newAlignedStatus);
+        if (newAlignedStatus != null) statuses.add(newAlignedStatus);
+    }
+
+    private CardRepository.Status getCurrentAlignment() {
+        for (CardRepository.Status status : statuses) {
+            if (status.isAlignmentStatus()) return status;
+        }
+        return null;
     }
 
     public void removeStatus(CardRepository.Status status) {
@@ -111,7 +214,7 @@ public class Card implements Sprite {
         private final String DEFAULT_PATH = "/assets/images/cards";
 
         private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
-            img = BufferedImageUtil.addImage(img, imgUrl);
+            img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
@@ -154,13 +257,13 @@ public class Card implements Sprite {
 
         @Override
         public SpriteBuilder<Image> scale(double scale) {
-            img = BufferedImageUtil.scale(img, scale);
+            img = ImageUtil.scale(img, scale);
             return this;
         }
 
         @Override
         public Image build() {
-            return BufferedImageUtil.toImage(img);
+            return ImageUtil.toImage(img);
         }
     }
 

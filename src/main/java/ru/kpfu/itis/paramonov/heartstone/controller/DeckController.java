@@ -13,6 +13,8 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
@@ -84,7 +86,7 @@ public class DeckController {
         deck.getChildren().add(1, btnSave);
     }
 
-    private final int MAX_DECK_CARDS_AMOUNT = 20;
+    private final int MAX_DECK_CARDS_AMOUNT = 25;
 
     private void setCards() {
         fpCards.setHgap(12.5);
@@ -174,11 +176,7 @@ public class DeckController {
     }
 
     private Image getImage(CardRepository.CardTemplate card) {
-        return Card.spriteBuilder()
-                .addImage(card.getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(card.getRarity())
-                .scale(ScaleFactor.DEFAULT_CARD)
-                .build();
+        Image sprite = CardImages.getPortrait(card.getId());
+        return ImageUtil.scale(sprite, ScaleFactor.DEFAULT_CARD);
     }
 }

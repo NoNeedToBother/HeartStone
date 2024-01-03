@@ -4,7 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -48,7 +48,7 @@ public class GameButton extends Button {
         }
 
         private ButtonBuilder addImageToBufferedImage(String imgUrl) {
-            img = BufferedImageUtil.addImage(img, imgUrl);
+            img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
@@ -124,7 +124,7 @@ public class GameButton extends Button {
         }
 
         public ButtonBuilder scale(double scale) {
-            img = BufferedImageUtil.scale(img, scale);
+            img = ImageUtil.scale(img, scale);
             imgWidth *= scale;
             imgHeight *= scale;
             return this;

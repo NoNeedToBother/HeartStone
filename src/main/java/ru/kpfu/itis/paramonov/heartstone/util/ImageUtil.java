@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.util;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
@@ -10,17 +11,26 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public class BufferedImageUtil {
+public class ImageUtil {
     public static BufferedImage addImage(BufferedImage target, String src) {
         try {
             BufferedImage bufferedImage = ImageIO.read(GameApplication.class.getResource(src));
-            Graphics g = target.getGraphics();
-            g.drawImage(bufferedImage, 0, 0, null);
-            g.dispose();
-            return target;
+            return addImage(target, bufferedImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static BufferedImage addImage(BufferedImage target, Image img) {
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
+        return addImage(target, bufferedImage);
+    }
+
+    private static BufferedImage addImage(BufferedImage target, BufferedImage image) {
+        Graphics g = target.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return target;
     }
 
     public static BufferedImage scale(BufferedImage target, double scale) {
@@ -36,6 +46,10 @@ public class BufferedImageUtil {
         g2.dispose();
         target = after;
         return target;
+    }
+
+    public static Image scale(Image img, double scale) {
+        return toImage(scale(SwingFXUtils.fromFXImage(img, null), scale));
     }
 
     public static Image toImage(BufferedImage target) {

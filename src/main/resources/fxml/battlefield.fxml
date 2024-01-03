@@ -37,6 +37,8 @@
         <HBox prefWidth="30"/>
     </HBox>
 
+    <ImageView fx:id="fieldEffects" AnchorPane.leftAnchor="320" AnchorPane.bottomAnchor="225"/>
+
     <ImageView fx:id="handBg" AnchorPane.leftAnchor="12.5" AnchorPane.bottomAnchor="0"/>
 
     <ImageView fx:id="deckCoverIv" AnchorPane.leftAnchor="75" AnchorPane.bottomAnchor="180"/>

@@ -249,7 +249,7 @@ public class GameRoom {
                 attackerResponse.put("status", "ok");
                 attackerResponse.put("pos", attackerPos);
                 attackerResponse.put("opponent_pos", attackedPos);
-                attackerResponse.put("anim", "attacker");
+                attackerResponse.put("role", "attacker");
                 CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, List.of(attackerPos), List.of(attackedPos));
                 sendResponse(attackerResponse.toString(), client);
 
@@ -257,7 +257,7 @@ public class GameRoom {
                 attackedResponse.put("status", "ok");
                 attackedResponse.put("opponent_pos", attackerPos);
                 attackedResponse.put("pos", attackedPos);
-                attackedResponse.put("anim", "attacked");
+                attackedResponse.put("role", "attacked");
                 CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, List.of(attackedPos), List.of(attackerPos));
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 
@@ -406,7 +406,7 @@ public class GameRoom {
 
     private final int INITIAL_HAND_SIZE = 4;
 
-    private final int HAND_SIZE = 6;
+    private final int HAND_SIZE = 7;
 
     private void putInitialInfo(JSONObject response, List<Card> deck, GameServer.Client client, int background) {
         response.put("room_action", RoomAction.GET_INITIAL_INFO.toString());
@@ -475,5 +475,4 @@ public class GameRoom {
         } catch (NullPointerException ignored) {}
         activePlayer = null;
     }
-
 }

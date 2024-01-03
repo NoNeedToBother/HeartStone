@@ -67,7 +67,8 @@ public class CardUtil {
         for (Card card : field) {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
                 card.setAtk(card.getAtk() + card.getCardInfo().getAtkIncrease());
-                card.setHp(card.getHp() + card.getCardInfo().getHpIncrease());
+                card.increaseMaxHp(card.getCardInfo().getHpIncrease());
+                card.increaseHp(card.getCardInfo().getHpIncrease());
                 JSONObject response = new JSONObject();
                 JSONObject otherResponse = new JSONObject();
                 response.put("room_action", GameRoom.RoomAction.GET_CHANGE);
@@ -106,13 +107,17 @@ public class CardUtil {
         return res;
     }
 
-    public static void putDamagedCardInfo(Card damagedCard, int pos, JSONObject responseDamaged, JSONObject responseOther) {
+    public static void putDamagedCardInfo(Card damagedCard, CardRepository.Status status, int pos, JSONObject responseDamaged, JSONObject responseOther) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
         responseDamaged.put("hp", damagedCard.getHp());
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
+        if (status != null) {
+            responseDamaged.put("card_status", status.toString());
+            responseOther.put("card_status", status.toString());
+        }
     }
 
     public static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
