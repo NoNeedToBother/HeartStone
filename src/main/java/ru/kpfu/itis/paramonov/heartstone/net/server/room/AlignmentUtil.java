@@ -18,7 +18,7 @@ public class AlignmentUtil {
                     attacked.decreaseHp(2);
                     int attackedIndex = attackedField.indexOf(attacked);
                     CardAttackUtil.decreaseHpFromNeighbourCard(1, attackedIndex - 1, attackedField, attackedIndexes);
-                    CardAttackUtil.decreaseHpFromNeighbourCard(1, attackedIndex - 1, attackedField, attackedIndexes);
+                    CardAttackUtil.decreaseHpFromNeighbourCard(1, attackedIndex + 1, attackedField, attackedIndexes);
                 }
             }
         }

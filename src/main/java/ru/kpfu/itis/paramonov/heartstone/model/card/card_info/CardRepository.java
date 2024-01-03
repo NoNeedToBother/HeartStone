@@ -184,7 +184,7 @@ public class CardRepository {
 
         SlimeWarrior(29, "Slime warrior", 4, 5, 5, "Taunt", DEFAULT_PATH + "/warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON, Map.of()),
-        SlimeCommander(30, "Slime commander", 4, 5, 1, "Punishment: deals 4 damage to opponent hero. Alignment: strength",
+        SlimeCommander(30, "Slime commander", 4, 5, 6, "Punishment: deals 4 damage to opponent hero. Alignment: strength",
                 DEFAULT_PATH + "/slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
                 Faction.NO_FACTION, Rarity.EPIC, Map.of(StatChange.HERO_DMG, 4)),
         Postman(31, "Postman", 3, 3, 4, "At the end of turn draws a card", DEFAULT_PATH + "/postman.png",

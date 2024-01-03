@@ -86,9 +86,7 @@ public class CardAttackUtil {
             CardRepository.Status alignment = AlignmentUtil.getAlignment(attacker);
             if (previous != null)
                 AlignmentUtil.onAlignedStatusApply(attacker, attacked, attackedField, attackedIndexes, previous, alignment, attackerPlayer, room);
-            CardRepository.Status newAlignment = attacked.addStatus(alignment);
-            if (newAlignment == null) CardUtil.putCardStatus(attackerResponse, attackedResponse, "no_aligned");
-            else CardUtil.putCardStatus(attackerResponse, attackedResponse, newAlignment.toString());
+            attacked.addStatus(alignment);
         }
     }
     public static void decreaseHpFromNeighbourCard(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {

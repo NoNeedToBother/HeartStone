@@ -472,12 +472,6 @@ public class BattlefieldController {
     public void updateCards(JSONObject json) {
         JSONArray changes = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
-        String cardStatus = getStringParam(json, "card_status");
-        if (cardStatus != null) {
-            if (json.getString("role").equals("attacker"))
-                applyChange(opponentField, null, json.getInt("opponent_pos"), null, null, cardStatus);
-            else applyChange(field, null, json.getInt("pos"), null, null, cardStatus);
-        }
 
         updateCards(changes, field);
         updateCards(opponentChanges, opponentField);
@@ -513,7 +507,10 @@ public class BattlefieldController {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
         }
         String alignedStatus = getStringParam(cardChange, "aligned_status");
-        if (alignedStatus != null) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
+        if (alignedStatus != null) {
+            if (!alignedStatus.equals("no_aligned")) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
+            else cardToChange.removeStatus(cardToChange.getCurrentAlignedStatus());
+        }
         return cardToChange;
     }
 

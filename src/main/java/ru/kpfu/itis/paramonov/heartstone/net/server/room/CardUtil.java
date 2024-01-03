@@ -145,6 +145,7 @@ public class CardUtil {
             changedCard.put("hp", card.getHp());
             changedCard.put("atk", card.getAtk());
             if (card.getCurrentAlignedStatus() != null) changedCard.put("aligned_status", card.getCurrentAlignedStatus().toString());
+            else changedCard.put("aligned_status", "no_aligned");
 
             changes.put(changedCard);
         }

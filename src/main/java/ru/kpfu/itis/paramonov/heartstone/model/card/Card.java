@@ -257,7 +257,7 @@ public class Card implements Sprite {
     }
 
     public CardRepository.Status changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
-        if (alignedStatusToRemove != null) statuses.remove(newAlignedStatus);
+        if (alignedStatusToRemove != null) statuses.remove(alignedStatusToRemove);
         if (newAlignedStatus != null) statuses.add(newAlignedStatus);
         return newAlignedStatus;
     }
