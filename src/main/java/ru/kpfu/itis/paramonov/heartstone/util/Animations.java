@@ -31,7 +31,7 @@ public class Animations {
         final int FRAME_AMOUNT = 5;
 
         Runnable crackingCardAnim = () -> {
-            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -49,7 +49,7 @@ public class Animations {
     private static int FREEZING_FRAME_AMOUNT = 4;
     public static void playFreezingAnimation(ImageView iv) {
         Runnable freezingCardAnim = () -> {
-            for (int i = 1; i < FREEZING_FRAME_AMOUNT + 1; i++) {
+            for (int i = 1; i <= FREEZING_FRAME_AMOUNT; i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -101,7 +101,7 @@ public class Animations {
         final int FRAME_AMOUNT = 3;
 
         Runnable crackingCardAnim = () -> {
-            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -200,5 +200,27 @@ public class Animations {
                 } catch (NullPointerException ignored) {}
             });
         });
+    }
+
+    public static void playFieldFireAnimation(ImageView iv) {
+        final int FRAME_AMOUNT = 5;
+        Image base = iv.getImage();
+
+        Runnable fieldFireAnim = () -> {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
+                BufferedImage img = SwingFXUtils.fromFXImage(base, null);
+                try {
+                    Thread.sleep(75);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                ImageUtil.addImage(img, new Image(GameApplication.class.getResource(DEFAULT_PATH + "fire_effect/field_fire_effect_" + i + ".png").toString()));
+                iv.setImage(ImageUtil.toImage(img));
+            }
+            iv.setImage(base);
+        };
+
+        Thread thread = new Thread(fieldFireAnim);
+        thread.start();
     }
 }

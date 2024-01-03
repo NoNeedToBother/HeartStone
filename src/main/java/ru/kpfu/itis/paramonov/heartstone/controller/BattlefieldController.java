@@ -91,6 +91,9 @@ public class BattlefieldController {
     @FXML
     private ProgressBar progressBar;
 
+    @FXML
+    private ImageView fieldEffects;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -115,6 +118,8 @@ public class BattlefieldController {
         makeCardInfoWrapText();
         manaBar.setMana(0, 0);
         opponentManaBar.setMana(0, 0);
+        fieldEffects.setImage(new Image(
+                GameApplication.class.getResource("/assets/animations/empty_field_effects.png").toString()));
     }
 
     private void setDeckInfo() {
@@ -193,6 +198,10 @@ public class BattlefieldController {
             }
         }
         GameApplication.getApplication().getClient().sendMessage(msg);
+    }
+
+    public void playFieldFireAnimation() {
+        Animations.playFieldFireAnimation(fieldEffects);
     }
 
     public void playAttackingAnimation(JSONObject json) {

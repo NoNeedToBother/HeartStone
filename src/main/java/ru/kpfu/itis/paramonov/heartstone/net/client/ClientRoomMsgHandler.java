@@ -93,6 +93,12 @@ public class ClientRoomMsgHandler {
                 } catch (JSONException e) {
                     BattlefieldController.getController().applyChange(json);
                 }
+                try {
+                    String anim = json.getString("anim");
+                    switch (anim) {
+                        case "field_fire" -> BattlefieldController.getController().playFieldFireAnimation();
+                    }
+                } catch (JSONException ignored) {}
             }
             case TIMER_UPDATE -> BattlefieldController.getController().handleTimer(json);
         }
