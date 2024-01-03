@@ -24,6 +24,7 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
@@ -90,6 +91,9 @@ public class BattlefieldController {
     @FXML
     private ProgressBar progressBar;
 
+    @FXML
+    private ImageView fieldEffects;
+
     private Card selectedCard = null;
 
     private static BattlefieldController controller = null;
@@ -114,6 +118,8 @@ public class BattlefieldController {
         makeCardInfoWrapText();
         manaBar.setMana(0, 0);
         opponentManaBar.setMana(0, 0);
+        fieldEffects.setImage(new Image(
+                GameApplication.class.getResource("/assets/animations/empty_field_effects.png").toString()));
     }
 
     private void setDeckInfo() {
@@ -194,6 +200,10 @@ public class BattlefieldController {
         GameApplication.getApplication().getClient().sendMessage(msg);
     }
 
+    public void playFieldFireAnimation() {
+        Animations.playFieldFireAnimation(fieldEffects);
+    }
+
     public void playAttackingAnimation(JSONObject json) {
         attacking = true;
         ImageView card;
@@ -246,11 +256,7 @@ public class BattlefieldController {
         try {
             int gottenPos = json.getInt("gotten_pos");
             Card card = getCard(json);
-            Image sprite = Card.spriteBuilder()
-                    .addImage(card.getCardInfo().getPortraitUrl())
-                    .setStyle(Card.CardStyle.BASE.toString())
-                    .addRarity(card.getCardInfo().getRarity())
-                    .build();
+            Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
             Card gotten = opponentField.remove(gottenPos);
@@ -280,11 +286,22 @@ public class BattlefieldController {
         });
     }
 
+    private void checkShieldStatus(JSONObject json, Card card) {
+        String shieldStatus = getStringParam(json, "shield_status");
+        if (shieldStatus != null) {
+            if (shieldStatus.equals("removed")) {
+                card.removeStatus(CardRepository.Status.SHIELDED);
+                Animations.removeShield(card);
+            }
+        }
+    }
+
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
         Card targeted = field.get(pos);
         Integer hp = getIntParam(json, "hp");
         Integer atk = getIntParam(json, "atk");
         String status = getStringParam(json, "card_status");
+        checkShieldStatus(json, field.get(pos));
         applyChange(field, targeted, pos, hp, atk, status);
     }
 
@@ -294,11 +311,24 @@ public class BattlefieldController {
             Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
         }
         else {
-            if (hp != null) field.get(pos).setHp(hp);
-            if (atk != null) field.get(pos).setAtk(atk);
+            Card card = field.get(pos);
+            if (hp != null) card.setHp(hp);
+            if (atk != null) card.setAtk(atk);
             if (status != null) {
-                if (status.equals("no_frozen")) field.get(pos).removeStatus(CardRepository.Status.FROZEN);
-                else field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                switch (status) {
+                    case "no_frozen" -> {
+                        Animations.playUnfreezingAnimation(field.get(pos));
+                        field.get(pos).removeStatus(CardRepository.Status.FROZEN);
+                    }
+                    case "FROZEN" -> {
+                        if (!field.get(pos).hasStatus(CardRepository.Status.FROZEN)) {
+                            field.get(pos).addStatus(CardRepository.Status.valueOf(status));
+                            Animations.playFreezingAnimation(field.get(pos).getAssociatedImageView());
+                        }
+                    }
+                    case "no_aligned" -> card.removeStatus(card.getCurrentAlignedStatus());
+                    default -> card.addJustStatus(CardRepository.Status.valueOf(status));
+                }
             }
         }
     }
@@ -365,6 +395,7 @@ public class BattlefieldController {
     public void placeCard(JSONObject json) {
         int handPos = json.getInt("hand_pos");
         Card card = hand.get(handPos);
+        addStatuses(card, json);
 
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -392,6 +423,7 @@ public class BattlefieldController {
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
     }
@@ -403,11 +435,7 @@ public class BattlefieldController {
 
     public void addOpponentCard(JSONObject json) {
         Card card = getCard(json);
-        Image sprite = Card.spriteBuilder()
-                .addImage(card.getCardInfo().getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(card.getCardInfo().getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
 
         ImageView cardIv = new ImageView();
         cardIv.setImage(sprite);
@@ -452,7 +480,7 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
@@ -470,15 +498,9 @@ public class BattlefieldController {
     public void updateCards(JSONObject json) {
         JSONArray changes = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
+
         updateCards(changes, field);
         updateCards(opponentChanges, opponentField);
-
-        String cardStatus = getStringParam(json, "card_status");
-        if (cardStatus != null) {
-            if (json.getString("role").equals("attacker"))
-                applyChange(opponentField, null, json.getInt("opponent_pos"), null, null, cardStatus);
-            else applyChange(field, null, json.getInt("pos"), null, null, cardStatus);
-        }
     }
 
     private void updateCards(JSONArray changes, List<Card> field) {
@@ -507,9 +529,17 @@ public class BattlefieldController {
         if (atk != null) cardToChange.setAtk(atk);
         String status = getStringParam(cardChange, "card_status");
         if (status != null) {
-            if (status.equals(CardRepository.Status.FROZEN.toString()))
+            if (status.equals(CardRepository.Status.FROZEN.toString())) {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
+                Animations.playFreezingAnimation(cardToChange.getAssociatedImageView());
+            }
         }
+        String alignedStatus = getStringParam(cardChange, "aligned_status");
+        if (alignedStatus != null) {
+            if (!alignedStatus.equals("no_aligned")) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
+            else cardToChange.removeStatus(cardToChange.getCurrentAlignedStatus());
+        }
+        checkShieldStatus(cardChange, cardToChange);
         return cardToChange;
     }
 
@@ -519,12 +549,24 @@ public class BattlefieldController {
     }
 
     private Card getCard(JSONObject json) {
-        return new Card(
+        Card card = new Card(
                 json.getInt("id"),
                 json.getInt("hp"),
                 json.getInt("atk"),
                 json.getInt("cost")
         );
+        addStatuses(card, json);
+        return card;
+    }
+
+    private void addStatuses(Card card, JSONObject json) {
+        try {
+            JSONArray statuses = json.getJSONArray("statuses");
+            for (int i = 0; i < statuses.length(); i++) {
+                CardRepository.Status status = CardRepository.Status.valueOf(statuses.getString(i));
+                if (!status.isUtility()) card.addStatus(status);
+            }
+        } catch (JSONException ignored) {}
     }
 
     private void onCardSelected(ImageView card) {
@@ -556,11 +598,7 @@ public class BattlefieldController {
         Card deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
         if(deselected == null) return;
-        Image sprite = Card.spriteBuilder()
-                .addImage(deselected.getCardInfo().getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(deselected.getCardInfo().getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(deselected.getCardInfo().getId());
 
         card.setImage(sprite);
     }
@@ -596,11 +634,7 @@ public class BattlefieldController {
     }
 
     private void setHandCard(int atk, int hp, int cost, CardRepository.CardTemplate cardInfo, ObservableList<Node> layoutCards) {
-        Image sprite = Card.spriteBuilder()
-                .addImage(cardInfo.getPortraitUrl())
-                .setStyle(Card.CardStyle.BASE.toString())
-                .addRarity(cardInfo.getRarity())
-                .build();
+        Image sprite = CardImages.getPortrait(cardInfo.getId());
 
         ImageView img = new ImageView();
         img.setImage(sprite);

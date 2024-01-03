@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.client.GameClient;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 
 import java.io.IOException;
 
@@ -24,6 +25,7 @@ public class GameApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         application = this;
+        CardImages.initDefaultCardImages();
         primaryStage = stage;
 
         server = GameServer.getInstance();

@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
+import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -25,17 +27,18 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Animations {
+    private static final String DEFAULT_PATH = "/assets/animations/";
     public static void playCardCrackingAnimation(ImageView iv, BattlefieldController controller) {
         final int FRAME_AMOUNT = 5;
 
         Runnable crackingCardAnim = () -> {
-            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                drawCardCrackingFrame(i, iv);
+                drawFrame(i, "card_cracking/card_cracking_", iv);
             }
             Platform.runLater(() -> controller.deleteCard(iv));
         };
@@ -44,9 +47,76 @@ public class Animations {
         thread.start();
     }
 
-    private static void drawCardCrackingFrame(int pos, ImageView iv) {
+    private static int FREEZING_FRAME_AMOUNT = 4;
+    public static void playFreezingAnimation(ImageView iv) {
+        Runnable freezingCardAnim = () -> {
+            for (int i = 1; i <= FREEZING_FRAME_AMOUNT; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                drawFrame(i, "freezing/freezing_", iv);
+            }
+        };
+
+        Thread thread = new Thread(freezingCardAnim);
+        thread.start();
+    }
+
+    public static void playUnfreezingAnimation(Card card) {
+        Runnable unfreezingCardAnim = () -> {
+            for (int i = FREEZING_FRAME_AMOUNT - 1; i >= 1; i--) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                Image base = CardImages.getPortrait(card.getCardInfo().getId());
+                if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
+                ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
+                card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
+            }
+            Image base = CardImages.getPortrait(card.getCardInfo().getId());
+            if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+            card.getAssociatedImageView().setImage(base);
+        };
+
+        Thread thread = new Thread(unfreezingCardAnim);
+        thread.start();
+    }
+
+    public static void addShield(ImageView iv) {
+        iv.setImage(addShield(iv.getImage()));
+    }
+    private static Image addShield(Image img) {
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
+        ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_shield.png");
+        return ImageUtil.toImage(bufferedImage);
+    }
+
+    public static void removeShield(Card card) {
+        Image base = CardImages.getPortrait(card.getCardInfo().getId());
+        if (card.hasStatus(CardRepository.Status.FROZEN)) {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
+            ImageUtil.addImage(bufferedImage, getFreezingFrame(FREEZING_FRAME_AMOUNT));
+            base = ImageUtil.toImage(bufferedImage);
+        }
+        card.getAssociatedImageView().setImage(base);
+    }
+
+    private static Image getFreezingFrame(int frameUntil) {
+        BufferedImage bufferedImage = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
+        for(int i = 1; i <= frameUntil; i++) {
+            ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "freezing/freezing_" + i + ".png");
+        }
+        return ImageUtil.toImage(bufferedImage);
+    }
+
+    private static void drawFrame(int pos, String src, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
-        img = BufferedImageUtil.addImage(img, "/assets/animations/card_cracking/card_cracking_" + pos + ".png");
+        img = ImageUtil.addImage(img, DEFAULT_PATH + src + pos + ".png");
         draw(img, iv);
     }
 
@@ -54,7 +124,7 @@ public class Animations {
         final int FRAME_AMOUNT = 3;
 
         Runnable crackingCardAnim = () -> {
-            for (int i = 1; i < FRAME_AMOUNT + 1; i++) {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -89,7 +159,7 @@ public class Animations {
 
     private static void drawHeroCrackingFrame(int pos, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
-        img = BufferedImageUtil.addImage(img, "/assets/animations/hero_cracking/hero_cracking_" + pos + ".png");
+        img = ImageUtil.addImage(img, "/assets/animations/hero_cracking/hero_cracking_" + pos + ".png");
         draw(img, iv);
     }
 
@@ -153,5 +223,27 @@ public class Animations {
                 } catch (NullPointerException ignored) {}
             });
         });
+    }
+
+    public static void playFieldFireAnimation(ImageView iv) {
+        final int FRAME_AMOUNT = 5;
+        Image base = iv.getImage();
+
+        Runnable fieldFireAnim = () -> {
+            for (int i = 1; i <= FRAME_AMOUNT; i++) {
+                BufferedImage img = SwingFXUtils.fromFXImage(base, null);
+                try {
+                    Thread.sleep(75);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                ImageUtil.addImage(img, new Image(GameApplication.class.getResource(DEFAULT_PATH + "fire_effect/field_fire_effect_" + i + ".png").toString()));
+                iv.setImage(ImageUtil.toImage(img));
+            }
+            iv.setImage(base);
+        };
+
+        Thread thread = new Thread(fieldFireAnim);
+        thread.start();
     }
 }
