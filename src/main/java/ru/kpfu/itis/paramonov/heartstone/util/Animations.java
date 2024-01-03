@@ -16,6 +16,7 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
+import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -72,15 +73,37 @@ public class Animations {
                     throw new RuntimeException(e);
                 }
                 Image base = CardImages.getPortrait(card.getCardInfo().getId());
+                if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
                 BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
                 ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
                 card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
             }
-            card.getAssociatedImageView().setImage(CardImages.getPortrait(card.getCardInfo().getId()));
+            Image base = CardImages.getPortrait(card.getCardInfo().getId());
+            if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+            card.getAssociatedImageView().setImage(base);
         };
 
         Thread thread = new Thread(unfreezingCardAnim);
         thread.start();
+    }
+
+    public static void addShield(ImageView iv) {
+        iv.setImage(addShield(iv.getImage()));
+    }
+    private static Image addShield(Image img) {
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
+        ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_shield.png");
+        return ImageUtil.toImage(bufferedImage);
+    }
+
+    public static void removeShield(Card card) {
+        Image base = CardImages.getPortrait(card.getCardInfo().getId());
+        if (card.hasStatus(CardRepository.Status.FROZEN)) {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
+            ImageUtil.addImage(bufferedImage, getFreezingFrame(FREEZING_FRAME_AMOUNT));
+            base = ImageUtil.toImage(bufferedImage);
+        }
+        card.getAssociatedImageView().setImage(base);
     }
 
     private static Image getFreezingFrame(int frameUntil) {
