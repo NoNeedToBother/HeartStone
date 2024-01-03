@@ -49,9 +49,9 @@ public class CardOnPlayedUtil {
         responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
         if (client.equals(player1))
-            checkTargetedCardsOnBattleCry(player1, player2, player2AllCards, playedCard, message, responsePlayer1, responsePlayer2, server);
+            checkTargetedCardsOnBattleCry(player1, player2, player1AllCards, player2AllCards, playedCard, message, responsePlayer1, responsePlayer2, server, room);
         else
-            checkTargetedCardsOnBattleCry(player2, player1, player1AllCards, playedCard, message, responsePlayer2, responsePlayer1, server);
+            checkTargetedCardsOnBattleCry(player2, player1, player2AllCards, player1AllCards, playedCard, message, responsePlayer2, responsePlayer1, server, room);
         if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DRAW_CARD_ON_PLAY)) {
             for (int i = 0; i < playedCard.getCardInfo().getDrawnCards(); i++) {
                 room.drawCard(client);
@@ -60,7 +60,7 @@ public class CardOnPlayedUtil {
                 }
             }
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ON_PLAY)) {
+        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ALL_ON_PLAY)) {
             checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
             CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
@@ -68,15 +68,16 @@ public class CardOnPlayedUtil {
         CardUtil.removeDefeatedCards(player2AllCards.get("field"));
     }
 
-    public static void checkTargetedCardsOnBattleCry(GameServer.Client player, GameServer.Client targetedPlayer, HashMap<String, List<Card>> allTargetedCards,
-                                                     Card playedCard, JSONObject message, JSONObject response,
-                                                     JSONObject responseTargeted, GameServer server) {
+    public static void checkTargetedCardsOnBattleCry(GameServer.Client player, GameServer.Client targetedPlayer, HashMap<String, List<Card>> allPlayerCards,
+                                                     HashMap<String, List<Card>> allTargetedCards, Card playedCard,
+                                                     JSONObject message, JSONObject response, JSONObject responseTargeted,
+                                                     GameServer server, GameRoom room) {
         if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
             freezeEnemyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
         if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY)) {
-            checkEnemyDamageOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
+            checkEnemyDamageOnPlay(allPlayerCards, allTargetedCards, message, playedCard, responseTargeted, response, room, player);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
         if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) {
@@ -94,15 +95,26 @@ public class CardOnPlayedUtil {
         }
     }
 
-    public static void checkEnemyDamageOnPlay(HashMap<String, List<Card>> allTargetedCards, JSONObject message, Card playedCard,
-                                              JSONObject responseDamaged, JSONObject responseOther) {
+    public static void checkEnemyDamageOnPlay(HashMap<String, List<Card>> allPlayerCards, HashMap<String, List<Card>> allTargetedCards,
+                                              JSONObject message, Card playedCard, JSONObject responseDamaged, JSONObject responseOther,
+                                              GameRoom room, GameServer.Client attackerPlayer) {
         Card damagedCard = allTargetedCards.get("field").get(message.getInt("opponent_pos"));
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId() ||
                 playedCard.getCardInfo().getId() == CardRepository.CardTemplate.B_30.getId()) {
             damagedCard.decreaseHp(playedCard.getCardInfo().getDamage());
-            if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DEAL_ENERGY_DMG))
-                damagedCard.addStatus(CardRepository.Status.ENERGY);
-            CardUtil.putDamagedCardInfo(damagedCard, CardRepository.Status.ENERGY, message.getInt("opponent_pos"), responseDamaged, responseOther);
+            if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DEAL_ENERGY_DMG)) {
+                CardRepository.Status previous = damagedCard.getCurrentAlignedStatus();
+                List<Integer> attackedIndexes = new ArrayList<>(List.of(message.getInt("opponent_pos")));
+                if (previous != null) {
+                    AlignmentUtil.onAlignedStatusApply(playedCard, damagedCard, allTargetedCards.get("field"), attackedIndexes,
+                            previous, CardRepository.Status.ENERGY, attackerPlayer, room);
+                }
+                CardUtil.putFieldChanges(responseOther, allPlayerCards.get("field"), allTargetedCards.get("field"),
+                        List.of(allPlayerCards.get("field").indexOf(playedCard)), attackedIndexes);
+                CardUtil.putFieldChanges(responseDamaged, allTargetedCards.get("field"), allPlayerCards.get("field"),
+                        attackedIndexes, List.of(allPlayerCards.get("field").indexOf(playedCard)));
+            }
+            else CardUtil.putDamagedCardInfo(damagedCard, message.getInt("opponent_pos"), responseDamaged, responseOther);
         }
     }
 
@@ -147,7 +159,7 @@ public class CardOnPlayedUtil {
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneAssassin.getId() ||
                 playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Hydra.getId()) {
             destroyedCard.setHp(0);
-            CardUtil.putDamagedCardInfo(destroyedCard, null, message.getInt("opponent_pos"), responseDestroyed, responseOther);
+            CardUtil.putDamagedCardInfo(destroyedCard, message.getInt("opponent_pos"), responseDestroyed, responseOther);
         }
     }
 

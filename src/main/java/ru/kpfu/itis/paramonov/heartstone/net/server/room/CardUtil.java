@@ -68,7 +68,6 @@ public class CardUtil {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
                 card.setAtk(card.getAtk() + card.getCardInfo().getAtkIncrease());
                 card.increaseMaxHp(card.getCardInfo().getHpIncrease());
-                card.increaseHp(card.getCardInfo().getHpIncrease());
                 JSONObject response = new JSONObject();
                 JSONObject otherResponse = new JSONObject();
                 response.put("room_action", GameRoom.RoomAction.GET_CHANGE);
@@ -77,7 +76,7 @@ public class CardUtil {
                 putCardStatsAndId(card, response);
 
                 otherResponse.put("opponent_pos", field.indexOf(card));
-                putCardStatsAndId(card, response);
+                putCardStatsAndId(card, otherResponse);
 
                 server.sendResponse(response.toString(), player);
                 server.sendResponse(otherResponse.toString(), other);
@@ -107,30 +106,28 @@ public class CardUtil {
         return res;
     }
 
-    public static void putDamagedCardInfo(Card damagedCard, CardRepository.Status status, int pos, JSONObject responseDamaged, JSONObject responseOther) {
+    public static void putDamagedCardInfo(Card damagedCard, int pos, JSONObject responseDamaged, JSONObject responseOther) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
         responseDamaged.put("hp", damagedCard.getHp());
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
-        if (status != null) {
-            responseDamaged.put("card_status", status.toString());
-            responseOther.put("card_status", status.toString());
-        }
+        checkShieldRemoved(damagedCard, responseDamaged);
+        checkShieldRemoved(damagedCard, responseOther);
+
     }
 
     public static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
         responseDamaged.put("pos", pos);
         responseOther.put("opponent_pos", pos);
-        if (unfrozen) {
-            responseDamaged.put("card_status", "no_frozen");
-            responseOther.put("card_status", "no_frozen");
-        }
-        else {
-            responseDamaged.put("card_status", CardRepository.Status.FROZEN.toString());
-            responseOther.put("card_status", CardRepository.Status.FROZEN.toString());
-        }
+        if (unfrozen) putCardStatus(responseDamaged, responseOther, "no_frozen");
+        else putCardStatus(responseDamaged, responseOther, CardRepository.Status.FROZEN.toString());
+    }
+
+    public static void putCardStatus(JSONObject responsePlayer1, JSONObject responsePlayer2, String cardStatus) {
+        responsePlayer1.put("card_status", cardStatus);
+        responsePlayer2.put("card_status", cardStatus);
     }
 
     public static void putFieldChanges(JSONObject response, List<Card> field, List<Card> opponentField,
@@ -149,6 +146,9 @@ public class CardUtil {
             changedCard.put("pos", position);
             changedCard.put("hp", card.getHp());
             changedCard.put("atk", card.getAtk());
+            if (card.getCurrentAlignedStatus() != null) changedCard.put("aligned_status", card.getCurrentAlignedStatus().toString());
+            else changedCard.put("aligned_status", "no_aligned");
+            checkShieldRemoved(card, changedCard);
 
             changes.put(changedCard);
         }
@@ -263,6 +263,26 @@ public class CardUtil {
         response.put("atk", card.getAtk());
         response.put("cost", card.getCost());
         response.put("id", card.getCardInfo().getId());
+    }
+
+    public static void putStatuses(List<CardRepository.Status> statuses, JSONObject response) {
+        JSONArray responseStatuses = new JSONArray();
+        for (CardRepository.Status status : statuses) {
+            responseStatuses.put(status.toString());
+        }
+        response.put("statuses", responseStatuses);
+    }
+
+    public static void checkShieldRemoved(Card card, JSONObject response) {
+        if (card.getStatuses().contains(CardRepository.Status.SHIELD_REMOVED_2)) {
+            card.removeStatus(CardRepository.Status.SHIELD_REMOVED_2);
+            response.put("shield_status", "removed");
+        }
+        if (card.getStatuses().contains(CardRepository.Status.SHIELD_REMOVED_1)) {
+            card.removeStatus(CardRepository.Status.SHIELD_REMOVED_1);
+            card.addStatus(CardRepository.Status.SHIELD_REMOVED_2);
+            response.put("shield_status", "removed");
+        }
     }
 
     private static JSONObject getJsonCard(Card card) {
