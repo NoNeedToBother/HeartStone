@@ -289,7 +289,10 @@ public class BattlefieldController {
     private void checkShieldStatus(JSONObject json, Card card) {
         String shieldStatus = getStringParam(json, "shield_status");
         if (shieldStatus != null) {
-            if (shieldStatus.equals("removed")) card.removeStatus(CardRepository.Status.SHIELDED);
+            if (shieldStatus.equals("removed")) {
+                card.removeStatus(CardRepository.Status.SHIELDED);
+                Animations.removeShield(card);
+            }
         }
     }
 
@@ -420,6 +423,7 @@ public class BattlefieldController {
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
     }
@@ -476,7 +480,7 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
