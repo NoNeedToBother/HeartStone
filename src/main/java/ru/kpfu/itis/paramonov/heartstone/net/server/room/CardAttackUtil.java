@@ -63,9 +63,10 @@ public class CardAttackUtil {
     }
 
     public static void checkAttackSpecialEffects(Card attacker, Card attacked, List<Card> attackerField,
-                                                 List<Card> attackedField, Hero attackerHero, Hero attackedHero,
+                                                 List<Card> attackedField, List<Integer> attackerIndexes,
+                                                 List<Integer> attackedIndexes, Hero attackerHero, Hero attackedHero,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
-                                                 GameServer.Client attackerPlayer, GameServer.Client attackedPlayer) {
+                                                 GameServer.Client attackerPlayer, GameServer.Client attackedPlayer, GameRoom room) {
         if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT)) {
             if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId() && attacked.getHp() > 0) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,
@@ -81,21 +82,21 @@ public class CardAttackUtil {
             }
         }
         if (attacker.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.ALIGNMENT)) {
-            CardRepository.Status alignment = getAlignment(attacker);
+            CardRepository.Status previous = attacked.getCurrentAlignedStatus();
+            CardRepository.Status alignment = AlignmentUtil.getAlignment(attacker);
+            if (previous != null)
+                AlignmentUtil.onAlignedStatusApply(attacker, attacked, attackedField, attackedIndexes, previous, alignment, attackerPlayer, room);
             CardRepository.Status newAlignment = attacked.addStatus(alignment);
             if (newAlignment == null) CardUtil.putCardStatus(attackerResponse, attackedResponse, "no_aligned");
             else CardUtil.putCardStatus(attackerResponse, attackedResponse, newAlignment.toString());
         }
     }
-
-    private static CardRepository.Status getAlignment(Card attacker) {
-        if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_CHAOS_DMG)) return CardRepository.Status.CHAOS;
-        else if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_ENERGY_DMG)) return CardRepository.Status.ENERGY;
-        else if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_INTELLIGENCE_DMG)) return CardRepository.Status.INTELLIGENCE;
-        else if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_LIFE_DMG)) return CardRepository.Status.LIFE;
-        else if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_VOID_DMG)) return CardRepository.Status.VOID;
-        else if (attacker.getCardInfo().getActions().contains(CardRepository.Action.DEAL_STRENGTH_DMG)) return CardRepository.Status.STRENGTH;
-        else throw new RuntimeException("No alignment");
+    public static void decreaseHpFromNeighbourCard(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
+        try {
+            Card card = field.get(pos);
+            card.decreaseHp(hpDecrease);
+            indexes.add(pos);
+        } catch (IndexOutOfBoundsException ignored) {}
     }
 
     private static void dealHeroDamageOnPunishment(Hero attackerHero, Hero attackedHero, int punishmentDamage,

@@ -300,7 +300,7 @@ public class BattlefieldController {
             if (status != null) {
                 if (status.equals("no_frozen")) card.removeStatus(CardRepository.Status.FROZEN);
                 else if (status.equals("no_aligned")) card.removeStatus(card.getCurrentAlignedStatus());
-                else card.addStatus(CardRepository.Status.valueOf(status));
+                else card.addJustStatus(CardRepository.Status.valueOf(status));
             }
         }
     }
@@ -472,15 +472,15 @@ public class BattlefieldController {
     public void updateCards(JSONObject json) {
         JSONArray changes = json.getJSONArray("stat_changes");
         JSONArray opponentChanges = json.getJSONArray("opponent_stat_changes");
-        updateCards(changes, field);
-        updateCards(opponentChanges, opponentField);
-
         String cardStatus = getStringParam(json, "card_status");
         if (cardStatus != null) {
             if (json.getString("role").equals("attacker"))
                 applyChange(opponentField, null, json.getInt("opponent_pos"), null, null, cardStatus);
             else applyChange(field, null, json.getInt("pos"), null, null, cardStatus);
         }
+
+        updateCards(changes, field);
+        updateCards(opponentChanges, opponentField);
     }
 
     private void updateCards(JSONArray changes, List<Card> field) {
@@ -512,6 +512,8 @@ public class BattlefieldController {
             if (status.equals(CardRepository.Status.FROZEN.toString()))
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
         }
+        String alignedStatus = getStringParam(cardChange, "aligned_status");
+        if (alignedStatus != null) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
         return cardToChange;
     }
 

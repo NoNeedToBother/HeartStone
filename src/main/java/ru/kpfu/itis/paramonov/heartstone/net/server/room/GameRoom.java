@@ -242,15 +242,17 @@ public class GameRoom {
 
                 JSONObject attackerResponse = new JSONObject();
                 JSONObject attackedResponse = new JSONObject();
-                CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerHero, attackedHero,
-                        attackerResponse, attackedResponse, client, getOtherPlayer(client));
+                List<Integer> attackerIndexes = new ArrayList<>(List.of(attackerPos));
+                List<Integer> attackedIndexes = new ArrayList<>(List.of(attackedPos));
+                CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerIndexes, attackedIndexes,
+                        attackerHero, attackedHero, attackerResponse, attackedResponse, client, getOtherPlayer(client), this);
 
                 attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
                 attackerResponse.put("status", "ok");
                 attackerResponse.put("pos", attackerPos);
                 attackerResponse.put("opponent_pos", attackedPos);
                 attackerResponse.put("role", "attacker");
-                CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, List.of(attackerPos), List.of(attackedPos));
+                CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, attackerIndexes, attackedIndexes);
                 sendResponse(attackerResponse.toString(), client);
 
                 attackedResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
@@ -258,7 +260,7 @@ public class GameRoom {
                 attackedResponse.put("opponent_pos", attackerPos);
                 attackedResponse.put("pos", attackedPos);
                 attackedResponse.put("role", "attacked");
-                CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, List.of(attackedPos), List.of(attackerPos));
+                CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, attackedIndexes, attackerIndexes);
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 
                 CardUtil.removeDefeatedCards(attackerField);
