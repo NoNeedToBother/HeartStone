@@ -93,7 +93,11 @@ public class Card implements Sprite {
     }
 
     public void decreaseHp(int hp) {
-        this.hp -= hp;
+        if (statuses.contains(CardRepository.Status.SHIELDED)) {
+            removeStatus(CardRepository.Status.SHIELDED);
+            addStatus(CardRepository.Status.SHIELD_REMOVED_1);
+        }
+        else this.hp -= hp;
     }
 
     public void increaseHp(int hp) {

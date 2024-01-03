@@ -9,7 +9,7 @@ public class CardRepository {
     public enum Action {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ALL_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
         ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
-        DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG
+        DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG, SHIELD_ON_PLAY, CANNOT_ATTACK_ON_PLAY
     }
 
     public enum KeyWord {
@@ -20,7 +20,8 @@ public class CardRepository {
         RUSH("Rush", "Can  attack immediately after played"),
         DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
         GIANT("Giant", "Decreases cost when conditions are met"),
-        ALIGNMENT("Alignment", "When attacking enemy cards apply corresponding alignment status");
+        ALIGNMENT("Alignment", "When attacking enemy cards apply corresponding alignment status"),
+        SHIELD("Shield", "Blocks 1 instance of damage and disappears after");
 
         private final String displayName;
 
@@ -52,6 +53,7 @@ public class CardRepository {
         FROZEN(false, false, "frozen"), CANNOT_ATTACK(false, false, "cannot attack"),
         ATTACKED(true, false, null), FROZEN_1(true, false, null),
         FROZEN_2(true, false, null), SHIELDED(false, false, "shielded"),
+        SHIELD_REMOVED_1(true, false, null), SHIELD_REMOVED_2(true, false, null),
 
         ENERGY(false, true, "powered"), INTELLIGENCE(false, true, "enlightened"),
         VOID(false, true, "nullified"), LIFE(false, true, "saturated"),
@@ -124,7 +126,7 @@ public class CardRepository {
                 List.of(), List.of(), Faction.STONE, Rarity.COMMON, Map.of()),
 
         KnightStone(2, "Stoneland knight", 4, 4, 4, "Taunt", DEFAULT_PATH + "/knight_stone.png",
-                List.of(), List.of(KeyWord.TAUNT), Faction.STONE, Rarity.RARE, Map.of()),
+                List.of(), List.of(KeyWord.TAUNT), Faction.STONE, Rarity.COMMON, Map.of()),
         FireElemental(3, "Fire elemental", 1, 1, 2, "Battlecry: deal 2 energy damage to chosen enemy",
                 DEFAULT_PATH + "/fire_elemental.png", List.of(Action.DAMAGE_ENEMY_ON_PLAY, Action.DEAL_ENERGY_DMG), List.of(KeyWord.BATTLE_CRY),
                 Faction.ELEMENTAL, Rarity.COMMON, Map.of(StatChange.DMG, 2)),
@@ -144,15 +146,14 @@ public class CardRepository {
         StoneGiant(10, "Stone giant", 6, 6, 10, "Giant: cost -1 for each played stone. Alignment: life", DEFAULT_PATH + "/stone_giant.png",
                 List.of(Action.DEAL_LIFE_DMG), List.of(KeyWord.GIANT, KeyWord.ALIGNMENT), Faction.STONE, Rarity.EPIC, Map.of(StatChange.COST, -1)),
         FierceTiger(11, "Fierce tiger", 3, 3, 4, "Charge", DEFAULT_PATH + "/tiger.png", List.of(Action.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL,
-                Rarity.RARE, Map.of()),
+                Rarity.COMMON, Map.of()),
         StoneAssassin(12, "Stone assassin", 2, 2, 5, "Battlecry: destroy chosen enemy. Alignment: void", DEFAULT_PATH + "/stone_assassin.png",
                 List.of(Action.DESTROY_ENEMY_ON_PLAY, Action.DEAL_VOID_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY, KeyWord.ALIGNMENT), Faction.STONE, Rarity.EPIC, Map.of()),
         CrazyPyromaniac(13, "Crazy pyromaniac", 4, 4, 5, "Battlecry: deals 2 damage to all other cards", DEFAULT_PATH + "/crazy_pyromaniac.png",
                 List.of(Action.DAMAGE_ALL_ON_PLAY), List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.RARE, Map.of(StatChange.ALL_DMG, 2)),
         Trantos(14, "Tran'tos", 3, 3, 6, "Battlecry: deals 3 damage to all other cards. For each defeated card +2/1",
                 DEFAULT_PATH + "/trantos.png", List.of(Action.DAMAGE_ALL_ON_PLAY, Action.HP_UP, Action.ATK_UP),
-                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY,
-                Map.of(StatChange.ALL_DMG, 3, StatChange.ATK, 2, StatChange.HP, 1)),
+                List.of(KeyWord.BATTLE_CRY), Faction.ELEMENTAL, Rarity.LEGENDARY, Map.of(StatChange.ALL_DMG, 3, StatChange.ATK, 2, StatChange.HP, 1)),
         TheGreatestApex(15, "The greatest apex", 7, 7, 8, "Charge", DEFAULT_PATH + "/greatest_apex.png",
                 List.of(Action.RUSH_ON_PLAY), List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.LEGENDARY, Map.of()),
         Slime(16, "Slime", 2, 2, 1, "", DEFAULT_PATH + "/slime.png", List.of(), List.of(),
@@ -182,7 +183,7 @@ public class CardRepository {
         ProfessorDog(28, "Professor Dog", 3, 3, 5, "Whenever you draw a card gains +2/2. Alignment: intelligence", DEFAULT_PATH + "/prof_dog.png",
                 List.of(Action.DEAL_INTELLIGENCE_DMG), List.of(KeyWord.ALIGNMENT), Faction.ANIMAL, Rarity.LEGENDARY, Map.of(StatChange.ATK, 2, StatChange.HP, 2)),
 
-        SlimeWarrior(29, "Slime warrior", 4, 5, 5, "Taunt", DEFAULT_PATH + "/warrior_slime.png",
+        SlimeWarrior(29, "Slime warrior", 4, 5, 4, "Taunt", DEFAULT_PATH + "/warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON, Map.of()),
         SlimeCommander(30, "Slime commander", 4, 5, 6, "Punishment: deals 4 damage to opponent hero. Alignment: strength",
                 DEFAULT_PATH + "/slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
@@ -207,7 +208,9 @@ public class CardRepository {
                 DEFAULT_PATH + "/heart_stone.png", List.of(), List.of(KeyWord.TAUNT, KeyWord.PUNISHMENT),
                 Faction.STONE, Rarity.RARE, Map.of(StatChange.HERO_DMG, 2)),
         RushingHound(40, "Rushing hound", 2, 1, 2, "Rush", DEFAULT_PATH + "/hound.png", List.of(Action.RUSH_ON_PLAY),
-                List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON, Map.of());
+                List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON, Map.of()),
+        GuardRobot(41, "Robot of Royal Guard", 4, 4, 5, "Taunt. Shield", DEFAULT_PATH + "/royal_guard_robot.png",
+                List.of(Action.SHIELD_ON_PLAY), List.of(KeyWord.TAUNT, KeyWord.SHIELD), Faction.ROBOT, Rarity.RARE, Map.of());
 
         private enum StatChange {
             ATK, HP, COST, DMG, ALL_DMG, HERO_DMG, CARD_DRAWN

@@ -138,25 +138,34 @@ public class GameRoom {
                         case "deal_dmg" -> response.put("opponent_pos", msg.getInt("opponent_pos"));
                     }
                 } catch (JSONException ignored) {}
+                List<CardRepository.Status> initialStatuses = new ArrayList<>();
+                Card card = getAllCards(client).get("hand").get(msg.getInt("hand_pos"));
+                if (card.getCardInfo().getActions().contains(CardRepository.Action.SHIELD_ON_PLAY)) {
+                    initialStatuses.add(CardRepository.Status.SHIELDED);
+                }
+                CardUtil.putStatuses(initialStatuses, response);
                 sendResponse(response.toString(), client);
             }
 
             case PLAY_CARD -> {
+                JSONObject response = new JSONObject();
                 Card playedCard = CardOnPlayedUtil.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
-                if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.BuriedColossus.getId() ||
-                playedCard.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
+                List<CardRepository.Status> initialStatuses = new ArrayList<>();
+                if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.CANNOT_ATTACK_ON_PLAY))
                     playedCard.addStatus(CardRepository.Status.CANNOT_ATTACK);
+                if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.SHIELD_ON_PLAY)) {
+                    playedCard.addStatus(CardRepository.Status.SHIELDED);
+                    initialStatuses.add(CardRepository.Status.SHIELDED);
                 }
                 if (client.equals(player1)) player1AllCards.get("played").add(playedCard);
                 else player2AllCards.get("played").add(playedCard);
                 Hero hero = getHero(client);
                 int newMana = hero.getMana() - playedCard.getCost();
                 hero.setMana(newMana);
-
-                JSONObject response = new JSONObject();
                 response.put("room_action", GameRoom.RoomAction.PLAY_CARD_OPPONENT.toString());
                 response.put("status", "ok");
                 CardUtil.putCardStatsAndId(playedCard, response);
+                CardUtil.putStatuses(initialStatuses, response);
                 response.put("opponent_mana", newMana);
                 sendResponse(response.toString(), getOtherPlayer(client));
 

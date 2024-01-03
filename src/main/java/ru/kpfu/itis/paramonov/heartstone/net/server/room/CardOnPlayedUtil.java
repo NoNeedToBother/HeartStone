@@ -114,7 +114,7 @@ public class CardOnPlayedUtil {
                 CardUtil.putFieldChanges(responseDamaged, allTargetedCards.get("field"), allPlayerCards.get("field"),
                         attackedIndexes, List.of(allPlayerCards.get("field").indexOf(playedCard)));
             }
-            else CardUtil.putDamagedCardInfo(damagedCard, null, message.getInt("opponent_pos"), responseDamaged, responseOther);
+            else CardUtil.putDamagedCardInfo(damagedCard, message.getInt("opponent_pos"), responseDamaged, responseOther);
         }
     }
 
@@ -157,7 +157,7 @@ public class CardOnPlayedUtil {
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.StoneAssassin.getId() ||
                 playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Hydra.getId()) {
             destroyedCard.setHp(0);
-            CardUtil.putDamagedCardInfo(destroyedCard, null, message.getInt("opponent_pos"), responseDestroyed, responseOther);
+            CardUtil.putDamagedCardInfo(destroyedCard, message.getInt("opponent_pos"), responseDestroyed, responseOther);
         }
     }
 

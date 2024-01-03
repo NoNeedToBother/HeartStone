@@ -280,11 +280,19 @@ public class BattlefieldController {
         });
     }
 
+    private void checkShieldStatus(JSONObject json, Card card) {
+        String shieldStatus = getStringParam(json, "shield_status");
+        if (shieldStatus != null) {
+            if (shieldStatus.equals("removed")) card.removeStatus(CardRepository.Status.SHIELDED);
+        }
+    }
+
     private void applyChanges(JSONObject json, int pos, List<Card> field) {
         Card targeted = field.get(pos);
         Integer hp = getIntParam(json, "hp");
         Integer atk = getIntParam(json, "atk");
         String status = getStringParam(json, "card_status");
+        checkShieldStatus(json, field.get(pos));
         applyChange(field, targeted, pos, hp, atk, status);
     }
 
@@ -367,6 +375,7 @@ public class BattlefieldController {
     public void placeCard(JSONObject json) {
         int handPos = json.getInt("hand_pos");
         Card card = hand.get(handPos);
+        addStatuses(card, json);
 
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -511,6 +520,7 @@ public class BattlefieldController {
             if (!alignedStatus.equals("no_aligned")) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
             else cardToChange.removeStatus(cardToChange.getCurrentAlignedStatus());
         }
+        checkShieldStatus(cardChange, cardToChange);
         return cardToChange;
     }
 
@@ -520,12 +530,24 @@ public class BattlefieldController {
     }
 
     private Card getCard(JSONObject json) {
-        return new Card(
+        Card card = new Card(
                 json.getInt("id"),
                 json.getInt("hp"),
                 json.getInt("atk"),
                 json.getInt("cost")
         );
+        addStatuses(card, json);
+        return card;
+    }
+
+    private void addStatuses(Card card, JSONObject json) {
+        try {
+            JSONArray statuses = json.getJSONArray("statuses");
+            for (int i = 0; i < statuses.length(); i++) {
+                CardRepository.Status status = CardRepository.Status.valueOf(statuses.getString(i));
+                if (!status.isUtility()) card.addStatus(status);
+            }
+        } catch (JSONException ignored) {}
     }
 
     private void onCardSelected(ImageView card) {
