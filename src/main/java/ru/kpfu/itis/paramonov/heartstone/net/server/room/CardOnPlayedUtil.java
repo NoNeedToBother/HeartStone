@@ -122,17 +122,19 @@ public class CardOnPlayedUtil {
                                          Card playedCard, JSONObject player1Response, JSONObject player2Response, GameServer.Client client, GameServer.Client player1) {
         List<Integer> player1Indexes = new ArrayList<>();
         List<Integer> player2Indexes = new ArrayList<>();
-        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.CrazyPyromaniac.getId()) {
-            damageAllCardsExceptPlayedAndAdd(player1AllCards.get("field"), playedCard, player1Indexes, false);
-            damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, false);
-        }
-        else if(playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId()) {
-            damageAllCardsExceptPlayedAndAdd(player1AllCards.get("field"), playedCard, player1Indexes, true);
-            damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, true);
-            int defeatedAmount = CardUtil.getDefeatedCardAmount(player1AllCards.get("field")) +
-                    CardUtil.getDefeatedCardAmount(player2AllCards.get("field"));
-            playedCard.setAtk(playedCard.getAtk() + playedCard.getCardInfo().getAtkIncrease() * defeatedAmount);
-            playedCard.increaseMaxHp(playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
+        boolean isCardTrantos = playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId();
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.CrazyPyromaniac.getId() || isCardTrantos) {
+            damageAllCardsExceptPlayedAndAdd(player1AllCards.get("field"), playedCard, player1Indexes, isCardTrantos);
+            damageAllCardsExceptPlayedAndAdd(player2AllCards.get("field"), playedCard, player2Indexes, isCardTrantos);
+            player1Response.put("anim", "field_fire");
+            player2Response.put("anim", "field_fire");
+            if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Trantos.getId()) {
+                int defeatedAmount = CardUtil.getDefeatedCardAmount(player1AllCards.get("field")) +
+                        CardUtil.getDefeatedCardAmount(player2AllCards.get("field"));
+                playedCard.setAtk(playedCard.getAtk() + playedCard.getCardInfo().getAtkIncrease() * defeatedAmount);
+                playedCard.increaseMaxHp(playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
+                playedCard.increaseHp(playedCard.getCardInfo().getHpIncrease() * defeatedAmount);
+            }
         }
         CardUtil.putFieldChanges(player1Response, player1AllCards.get("field"), player2AllCards.get("field"),
                 player1Indexes, player2Indexes);

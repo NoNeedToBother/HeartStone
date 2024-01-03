@@ -486,5 +486,4 @@ public class GameRoom {
         } catch (NullPointerException ignored) {}
         activePlayer = null;
     }
-
 }

@@ -2,7 +2,7 @@ package ru.kpfu.itis.paramonov.heartstone.model.user;
 
 import javafx.scene.image.Image;
 import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
-import ru.kpfu.itis.paramonov.heartstone.util.BufferedImageUtil;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
 
@@ -65,7 +65,7 @@ public class Hero implements Sprite {
         private final String DEFAULT_PATH = "/assets/images/heroes";
 
         private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
-            img = BufferedImageUtil.addImage(img, imgUrl);
+            img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
@@ -86,13 +86,13 @@ public class Hero implements Sprite {
 
         @Override
         public SpriteBuilder<Image> scale(double scale) {
-            img = BufferedImageUtil.scale(img, scale);
+            img = ImageUtil.scale(img, scale);
             return this;
         }
 
         @Override
         public Image build() {
-            return BufferedImageUtil.toImage(img);
+            return ImageUtil.toImage(img);
         }
     }
 
