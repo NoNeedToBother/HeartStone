@@ -33,12 +33,13 @@ public class CardImages {
 
     private final static String DEFAULT_PATH = "/assets/animations/card_statuses/";
 
-    public static Image getWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
+    public static Image getPortraitWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
         Image base = getPortrait(card.getCardInfo().getId());
         if (card.hasStatus(CardRepository.Status.SHIELDED) && !ignoredStatuses.contains(CardRepository.Status.SHIELDED))
             base = addShield(base);
         if (card.hasStatus(CardRepository.Status.FROZEN) && !ignoredStatuses.contains(CardRepository.Status.FROZEN))
             base = addFrozenEffect(base);
+        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) base = addTaunt(base);
         return base;
     }
 
@@ -57,7 +58,7 @@ public class CardImages {
     }
 
     public static void removeShield(Card card) {
-        Image base = getWithStatusesAndEffects(card, List.of(CardRepository.Status.SHIELDED));
+        Image base = getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.SHIELDED));
         card.getAssociatedImageView().setImage(base);
     }
 

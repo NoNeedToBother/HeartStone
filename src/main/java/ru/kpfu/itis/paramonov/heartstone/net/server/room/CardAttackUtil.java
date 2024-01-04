@@ -109,4 +109,12 @@ public class CardAttackUtil {
         PlayerRoomUtil.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         PlayerRoomUtil.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
     }
+
+    public static void putCardCardAttackAnimationInfo(JSONObject response, int pos, int opponentPos, String role) {
+        response.put("room_action", GameRoom.RoomAction.CARD_CARD_ATTACK.toString());
+        response.put("status", "ok");
+        response.put("pos", pos);
+        response.put("opponent_pos", opponentPos);
+        response.put("role", role);
+    }
 }

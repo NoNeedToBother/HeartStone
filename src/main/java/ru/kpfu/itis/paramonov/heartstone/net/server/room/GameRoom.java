@@ -148,7 +148,7 @@ public class GameRoom {
             }
 
             case PLAY_CARD -> {
-                JSONObject response = new JSONObject();
+                JSONObject opponentResponse = new JSONObject();
                 Card playedCard = CardOnPlayedUtil.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();
                 if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.CANNOT_ATTACK_ON_PLAY))
@@ -162,12 +162,19 @@ public class GameRoom {
                 Hero hero = getHero(client);
                 int newMana = hero.getMana() - playedCard.getCost();
                 hero.setMana(newMana);
-                response.put("room_action", GameRoom.RoomAction.PLAY_CARD_OPPONENT.toString());
-                response.put("status", "ok");
-                CardUtil.putCardStatsAndId(playedCard, response);
+                opponentResponse.put("room_action", RoomAction.PLAY_CARD_OPPONENT.toString());
+                opponentResponse.put("status", "ok");
+                CardUtil.putCardStatsAndId(playedCard, opponentResponse);
+                CardUtil.putStatuses(initialStatuses, opponentResponse);
+                opponentResponse.put("opponent_mana", newMana);
+                sendResponse(opponentResponse.toString(), getOtherPlayer(client));
+
+                JSONObject response = new JSONObject();
+                response.put("room_action", RoomAction.PLAY_CARD.toString());
+                response.put("pos", msg.getInt("pos"));
                 CardUtil.putStatuses(initialStatuses, response);
-                response.put("opponent_mana", newMana);
-                sendResponse(response.toString(), getOtherPlayer(client));
+                response.put("mana", newMana);
+                sendResponse(response.toString(), client);
 
                 CardOnPlayedUtil.checkOnCardPlayed(client, getAllCards(client), playedCard, server);
 
@@ -256,19 +263,11 @@ public class GameRoom {
                 CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerIndexes, attackedIndexes,
                         attackerHero, attackedHero, attackerResponse, attackedResponse, client, getOtherPlayer(client), this);
 
-                attackerResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
-                attackerResponse.put("status", "ok");
-                attackerResponse.put("pos", attackerPos);
-                attackerResponse.put("opponent_pos", attackedPos);
-                attackerResponse.put("role", "attacker");
+                CardAttackUtil.putCardCardAttackAnimationInfo(attackerResponse, attackerPos, attackedPos, "attacker");
                 CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, attackerIndexes, attackedIndexes);
                 sendResponse(attackerResponse.toString(), client);
 
-                attackedResponse.put("room_action", RoomAction.CARD_CARD_ATTACK.toString());
-                attackedResponse.put("status", "ok");
-                attackedResponse.put("opponent_pos", attackerPos);
-                attackedResponse.put("pos", attackedPos);
-                attackedResponse.put("role", "attacked");
+                CardAttackUtil.putCardCardAttackAnimationInfo(attackedResponse, attackedPos, attackerPos, "attacked");
                 CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, attackedIndexes, attackerIndexes);
                 sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 

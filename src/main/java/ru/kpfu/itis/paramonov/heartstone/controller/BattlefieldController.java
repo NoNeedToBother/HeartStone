@@ -392,10 +392,8 @@ public class BattlefieldController {
         });
     }
 
-    public void placeCard(JSONObject json) {
+    public void playCard(JSONObject json) {
         int handPos = json.getInt("hand_pos");
-        Card card = hand.get(handPos);
-        addStatuses(card, json);
 
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -412,11 +410,16 @@ public class BattlefieldController {
         } catch (JSONException ignored) {}
 
         GameApplication.getApplication().getClient().sendMessage(builder.build());
+    }
 
+    public void placeCard(JSONObject json) {
+        int handPos = json.getInt("pos");
+        Card card = hand.get(handPos);
+        addStatuses(card, json);
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
 
-        int newMana = player.getMana() - card.getCost();
+        int newMana = json.getInt("mana");
         manaBar.setMana(newMana, player.getMaxMana());
         player.setMana(newMana);
 

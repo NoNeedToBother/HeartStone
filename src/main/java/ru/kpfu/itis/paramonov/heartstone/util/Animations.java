@@ -73,12 +73,12 @@ public class Animations {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                Image base = CardImages.getWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
+                Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
                 BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
                 ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
                 card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
             }
-            Image base = CardImages.getWithStatusesAndEffects(card, List.of());
+            Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of());
             card.getAssociatedImageView().setImage(base);
         };
 
@@ -87,7 +87,8 @@ public class Animations {
     }
 
     public static Image getFreezingFrame(int frameUntil) {
-        BufferedImage bufferedImage = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bufferedImage = new BufferedImage(
+                Card.CardSpriteBuilder.DEFAULT_WIDTH, Card.CardSpriteBuilder.DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
         for(int i = 1; i <= frameUntil; i++) {
             ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "freezing/freezing_" + i + ".png");
         }
