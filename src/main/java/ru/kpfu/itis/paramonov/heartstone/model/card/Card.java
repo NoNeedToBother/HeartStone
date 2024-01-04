@@ -9,7 +9,6 @@ import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class Card implements Sprite {
 
@@ -115,150 +114,22 @@ public class Card implements Sprite {
         return statuses;
     }
 
-    public void addJustStatus(CardRepository.Status status) {
+    public void addStatus(CardRepository.Status status) {
         statuses.remove(status);
         statuses.add(status);
     }
-
-    public CardRepository.Status addStatus(CardRepository.Status status) {
-        statuses.remove(status);
-        if (status.isAlignmentStatus()) {
-            return onAlignedStatusApplied(status);
-        } else statuses.add(status);
-        return status;
-    }
     public boolean hasStatus(CardRepository.Status status) {
-        for (CardRepository.Status cardStatus : statuses) {
-            if (cardStatus.equals(status)) return true;
-        }
-        return false;
+        return statuses.contains(status);
     }
 
-    private CardRepository.Status onAlignedStatusApplied(CardRepository.Status alignment) {
-        CardRepository.Status currentAlignment = getCurrentAlignedStatus();
-        if (currentAlignment == null) {
-            statuses.add(alignment);
-            return alignment;
-        }
-        if (currentAlignment.equals(alignment)) return alignment;
-        if (currentAlignment.equals(CardRepository.Status.VOID)) removeStatus(CardRepository.Status.VOID);
-        if (alignment.equals(CardRepository.Status.VOID)) removeStatus(currentAlignment);
-        switch (currentAlignment) {
-            case STRENGTH -> {
-                switch (alignment) {
-                    case ENERGY -> {
-                        return getDamageAndChangeAlignment(1, CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
-                    }
-                    case CHAOS -> {
-                        return changeAlignment(currentAlignment, alignment);
-                    }
-                    case LIFE, INTELLIGENCE -> {
-                        return changeAlignment(currentAlignment, null);
-                    }
-                }
-            }
-            case ENERGY -> {
-                switch (alignment) {
-                    case STRENGTH -> {
-                        return getDamageAndChangeAlignment(1, CardRepository.Status.ENERGY, alignment);
-                    }
-                    case LIFE -> {
-                        return getDamageAndChangeAlignment(1, CardRepository.Status.ENERGY, null);
-                    }
-                    case CHAOS -> {
-                        return getDamageAndChangeAlignment(2, CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
-                    }
-                    case INTELLIGENCE -> {
-                        return changeAlignment(currentAlignment, alignment);
-                    }
-                }
-            }
-            case CHAOS -> {
-                switch (alignment) {
-                    case ENERGY -> {
-                        return getDamageAndChangeAlignment(2, CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
-                    }
-                    case INTELLIGENCE, LIFE -> {
-                        return changeAlignment(CardRepository.Status.CHAOS, null);
-                    }
-                    case STRENGTH -> {
-                        return changeAlignment(currentAlignment, alignment);
-                    }
-                }
-            }
-            case INTELLIGENCE -> {
-                switch (alignment) {
-                    case CHAOS -> {
-                        return getDamageAndChangeAlignment(2, CardRepository.Status.INTELLIGENCE, null);
-                    }
-                    case STRENGTH -> {
-                        return changeAlignment(CardRepository.Status.INTELLIGENCE, null);
-                    }
-                    case LIFE -> {
-                        return changeAlignment(currentAlignment, alignment);
-                    }
-                    case ENERGY -> {
-                        return CardRepository.Status.INTELLIGENCE;
-                    }
-                }
-            }
-            case LIFE -> {
-                switch (alignment) {
-                    case STRENGTH -> {
-                        return changeAlignment(CardRepository.Status.LIFE, null);
-                    }
-                    case ENERGY -> {
-                        return getDamageAndChangeAlignment(1, CardRepository.Status.LIFE, null);
-                    }
-                    case INTELLIGENCE, CHAOS -> {
-                        return changeAlignment(currentAlignment, alignment);
-                    }
-                }
-            }
-        }
-        return null;
+    public boolean hasAction(CardRepository.Action action) {
+        return cardInfo.getActions().contains(action);
     }
 
-    public void onApplyAlignedStatus(CardRepository.Status previousStatus, CardRepository.Status alignment) {
-        if (previousStatus == null) return;
-        switch (previousStatus) {
-            case ENERGY -> {
-                switch (alignment) {
-                    case STRENGTH -> changeStats(1, null, null);
-                    case LIFE -> changeStats(null, 2, null);
-                }
-            }
-            case STRENGTH -> {
-                switch (alignment) {
-                    case LIFE -> changeStats(1, null, 1);
-                    case ENERGY -> changeStats(1, null, null);
-                }
-            }
-            case LIFE -> {
-                switch (alignment) {
-                    case STRENGTH -> changeStats(1, null, 1);
-                    case ENERGY -> changeStats(null, 2, null);
-                }
-            }
-            case INTELLIGENCE -> {
-                switch (alignment) {
-                    case STRENGTH -> changeStats(2, null, null);
-                }
-            }
-            case CHAOS -> {
-                switch (alignment) {
-                    case INTELLIGENCE -> addStatus(CardRepository.Status.SHIELDED);
-                    case LIFE -> changeStats(null, 1, 2);
-                }
-            }
-        }
-    }
-
-    public CardRepository.Status getDamageAndChangeAlignment(Integer hpDecrease, CardRepository.Status alignedStatusToRemove,
-                                                             CardRepository.Status newAlignedStatus) {
+    public void getDamageAndChangeAlignment(Integer hpDecrease, CardRepository.Status alignedStatusToRemove,
+                                            CardRepository.Status newAlignedStatus) {
         if (hpDecrease != null) hp -= hpDecrease;
         changeAlignment(alignedStatusToRemove, newAlignedStatus);
-        return newAlignedStatus;
     }
 
     public void changeStats(Integer atkIncrease, Integer hpHeal, Integer maxHpIncrease) {
@@ -267,10 +138,9 @@ public class Card implements Sprite {
         if (maxHpIncrease != null) increaseMaxHp(maxHpIncrease);
     }
 
-    public CardRepository.Status changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
+    public void changeAlignment(CardRepository.Status alignedStatusToRemove, CardRepository.Status newAlignedStatus) {
         if (alignedStatusToRemove != null) statuses.remove(alignedStatusToRemove);
         if (newAlignedStatus != null) statuses.add(newAlignedStatus);
-        return newAlignedStatus;
     }
 
     public CardRepository.Status getCurrentAlignedStatus() {
