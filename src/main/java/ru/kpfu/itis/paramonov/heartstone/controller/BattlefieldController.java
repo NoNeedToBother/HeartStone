@@ -333,7 +333,7 @@ public class BattlefieldController {
                         }
                     }
                     case "no_aligned" -> card.removeStatus(card.getCurrentAlignedStatus());
-                    default -> card.addJustStatus(CardRepository.Status.valueOf(status));
+                    default -> card.addStatus(CardRepository.Status.valueOf(status));
                 }
             }
         }
@@ -570,7 +570,7 @@ public class BattlefieldController {
         }
         String alignedStatus = getStringParam(cardChange, "aligned_status");
         if (alignedStatus != null) {
-            if (!alignedStatus.equals("no_aligned")) cardToChange.addJustStatus(CardRepository.Status.valueOf(alignedStatus));
+            if (!alignedStatus.equals("no_aligned")) cardToChange.addStatus(CardRepository.Status.valueOf(alignedStatus));
             else cardToChange.removeStatus(cardToChange.getCurrentAlignedStatus());
         }
         checkShieldStatus(cardChange, cardToChange);

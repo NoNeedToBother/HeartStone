@@ -7,11 +7,13 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.LoginController"
             prefHeight="900.0" prefWidth="1600.0" fx:id="root">
 
+    <ImageView fx:id="logo" layoutX="455" layoutY="100"/>
     <VBox layoutX="725" layoutY="250" fx:id="loginMenu" spacing="12.5">
         <TextField fx:id="login" promptText="login"/>
         <PasswordField fx:id="password" promptText="password"/>

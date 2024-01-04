@@ -52,7 +52,7 @@ public class CardOnPlayedUtil {
             checkTargetedCardsOnBattleCry(player1, player2, player1AllCards, player2AllCards, playedCard, message, responsePlayer1, responsePlayer2, server, room);
         else
             checkTargetedCardsOnBattleCry(player2, player1, player2AllCards, player1AllCards, playedCard, message, responsePlayer2, responsePlayer1, server, room);
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DRAW_CARD_ON_PLAY)) {
+        if (playedCard.hasAction(CardRepository.Action.DRAW_CARD_ON_PLAY)) {
             for (int i = 0; i < playedCard.getCardInfo().getDrawnCards(); i++) {
                 room.drawCard(client);
                 if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Illusionist.getId()) {
@@ -60,7 +60,7 @@ public class CardOnPlayedUtil {
                 }
             }
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ALL_ON_PLAY)) {
+        if (playedCard.hasAction(CardRepository.Action.DAMAGE_ALL_ON_PLAY)) {
             checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
             CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
@@ -72,15 +72,15 @@ public class CardOnPlayedUtil {
                                                      HashMap<String, List<Card>> allTargetedCards, Card playedCard,
                                                      JSONObject message, JSONObject response, JSONObject responseTargeted,
                                                      GameServer server, GameRoom room) {
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
+        if (playedCard.hasAction(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
             freezeEnemyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY)) {
+        if (playedCard.hasAction(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY)) {
             checkEnemyDamageOnPlay(allPlayerCards, allTargetedCards, message, playedCard, responseTargeted, response, room, player);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
-        if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) {
+        if (playedCard.hasAction(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) {
             checkDestroyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
@@ -102,7 +102,7 @@ public class CardOnPlayedUtil {
         if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.FireElemental.getId() ||
                 playedCard.getCardInfo().getId() == CardRepository.CardTemplate.B_30.getId()) {
             damagedCard.decreaseHp(playedCard.getCardInfo().getDamage());
-            if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.DEAL_ENERGY_DMG)) {
+            if (playedCard.hasAction(CardRepository.Action.DEAL_ENERGY_DMG)) {
                 CardRepository.Status previous = damagedCard.getCurrentAlignedStatus();
                 List<Integer> attackedIndexes = new ArrayList<>(List.of(message.getInt("opponent_pos")));
                 if (previous != null) {

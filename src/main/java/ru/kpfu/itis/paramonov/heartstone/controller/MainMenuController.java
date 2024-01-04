@@ -1,6 +1,8 @@
 package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.fxml.FXML;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
@@ -11,6 +13,8 @@ import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 public class MainMenuController {
+    @FXML
+    private ImageView logo;
 
     @FXML
     private VBox mainMenu;
@@ -34,6 +38,7 @@ public class MainMenuController {
     private void initialize() {
         application = GameApplication.getApplication();
         controller = this;
+        addLogo();
         addButtons();
         setMoney();
         setOnClickListeners();
@@ -99,6 +104,11 @@ public class MainMenuController {
             GameApplication.getApplication().disconnect();
             System.exit(0);
         });
+    }
+
+    private void addLogo() {
+        String src = GameApplication.class.getResource("/assets/images/logo.png").toString();
+        logo.setImage(new Image(src));
     }
 
     private void onPlayClicked() {
