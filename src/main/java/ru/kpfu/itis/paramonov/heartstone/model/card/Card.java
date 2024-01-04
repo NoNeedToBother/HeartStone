@@ -9,6 +9,7 @@ import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Card implements Sprite {
 
@@ -114,6 +115,13 @@ public class Card implements Sprite {
         return statuses;
     }
 
+    public List<CardRepository.Status> getNonUtilityStatuses() {
+        List<CardRepository.Status> res = new ArrayList<>(statuses);
+        return res.stream()
+                .filter(status -> !status.isUtility())
+                .collect(Collectors.toList());
+    }
+
     public void addStatus(CardRepository.Status status) {
         statuses.remove(status);
         statuses.add(status);
@@ -155,7 +163,11 @@ public class Card implements Sprite {
     }
 
     public static class CardSpriteBuilder implements SpriteBuilder<Image> {
-        private BufferedImage img = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
+        public static final int DEFAULT_WIDTH = 96;
+
+        public static final int DEFAULT_HEIGHT = 128;
+
+        private BufferedImage img = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
         private final String DEFAULT_PATH = "/assets/images/cards";
 

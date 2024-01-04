@@ -24,7 +24,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class Animations {
     private static final String DEFAULT_PATH = "/assets/animations/";
@@ -72,14 +75,12 @@ public class Animations {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                Image base = CardImages.getPortrait(card.getCardInfo().getId());
-                if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+                Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
                 BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
                 ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
                 card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
             }
-            Image base = CardImages.getPortrait(card.getCardInfo().getId());
-            if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+            Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of());
             card.getAssociatedImageView().setImage(base);
         };
 
@@ -87,27 +88,9 @@ public class Animations {
         thread.start();
     }
 
-    public static void addShield(ImageView iv) {
-        iv.setImage(addShield(iv.getImage()));
-    }
-    private static Image addShield(Image img) {
-        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
-        ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_shield.png");
-        return ImageUtil.toImage(bufferedImage);
-    }
-
-    public static void removeShield(Card card) {
-        Image base = CardImages.getPortrait(card.getCardInfo().getId());
-        if (card.hasStatus(CardRepository.Status.FROZEN)) {
-            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
-            ImageUtil.addImage(bufferedImage, getFreezingFrame(FREEZING_FRAME_AMOUNT));
-            base = ImageUtil.toImage(bufferedImage);
-        }
-        card.getAssociatedImageView().setImage(base);
-    }
-
-    private static Image getFreezingFrame(int frameUntil) {
-        BufferedImage bufferedImage = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
+    public static Image getFreezingFrame(int frameUntil) {
+        BufferedImage bufferedImage = new BufferedImage(
+                Card.CardSpriteBuilder.DEFAULT_WIDTH, Card.CardSpriteBuilder.DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
         for(int i = 1; i <= frameUntil; i++) {
             ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "freezing/freezing_" + i + ".png");
         }
@@ -206,7 +189,7 @@ public class Animations {
         transition.get().play();
     }
 
-    public static void playCardAttacking(ImageView attacker, ImageView attacked) {
+    public static void playCardAttacking(ImageView attacker, ImageView attacked, Runnable onAnimationEnded) {
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
         double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
@@ -216,6 +199,7 @@ public class Animations {
         double deltaY = attackedY - attackerY;
         playTransition(transition, attacker, deltaX, deltaY, 400);
         transition.get().setOnFinished(actionEvent -> {
+            if (onAnimationEnded != null) onAnimationEnded.run();
             playTransition(transition, attacker, -deltaX, -deltaY, 200);
             transition.get().setOnFinished(actionEvent1 -> {
                 try {
@@ -245,5 +229,22 @@ public class Animations {
 
         Thread thread = new Thread(fieldFireAnim);
         thread.start();
+    }
+
+    public static void playPunishmentAnimation(ImageView iv, int punishmentSrcId) {
+        if (punishmentSrcId == CardRepository.CardTemplate.TheRock.getId()) {
+            Image before = iv.getImage();
+            Runnable runnable = () -> {
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(iv.getImage(), null);
+                ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_effects/rock_punishment.png");
+                iv.setImage(ImageUtil.toImage(bufferedImage));
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ignored) {}
+                iv.setImage(before);
+            };
+            Thread thread = new Thread(runnable);
+            thread.start();
+        }
     }
 }

@@ -49,6 +49,9 @@ public class BattlefieldController {
     @FXML
     private HBox hBoxHandCards;
 
+    @FXML
+    private AnchorPane opponentHand;
+
     private final List<Card> hand = new ArrayList<>();
     private final List<Card> field = new ArrayList<>();
     private final List<Card> opponentField = new ArrayList<>();
@@ -210,19 +213,22 @@ public class BattlefieldController {
         try {
             int pos = json.getInt("pos");
             int opponentPos = json.getInt("opponent_pos");
+            Runnable onAnimationEnded = null;
+            Integer punishmentSrc = getIntParam(json, "punishment_src");
+            if (punishmentSrc != null) onAnimationEnded = () -> onPunishmentDamage(json);
             if (json.getString("role").equals("attacker"))
-                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView());
-            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView());
+                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView(), onAnimationEnded);
+            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView(), onAnimationEnded);
             return;
         } catch (JSONException ignored) {}
         try {
             int pos = json.getInt("field_pos");
             card = field.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait());
+            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait(), null);
         } catch (JSONException e) {
             int pos = json.getInt("opponent_field_pos");
             card = opponentField.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, playerHeroInfo.getPortrait());
+            Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null);
         }
     }
     public void notifyAttackingAnimationStopped() {
@@ -291,7 +297,7 @@ public class BattlefieldController {
         if (shieldStatus != null) {
             if (shieldStatus.equals("removed")) {
                 card.removeStatus(CardRepository.Status.SHIELDED);
-                Animations.removeShield(card);
+                CardImages.removeShield(card);
             }
         }
     }
@@ -392,10 +398,8 @@ public class BattlefieldController {
         });
     }
 
-    public void placeCard(JSONObject json) {
+    public void playCard(JSONObject json) {
         int handPos = json.getInt("hand_pos");
-        Card card = hand.get(handPos);
-        addStatuses(card, json);
 
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
@@ -412,20 +416,49 @@ public class BattlefieldController {
         } catch (JSONException ignored) {}
 
         GameApplication.getApplication().getClient().sendMessage(builder.build());
+    }
 
+    public void placeCard(JSONObject json) {
+        int handPos = json.getInt("pos");
+        Card card = hand.get(handPos);
+        addStatuses(card, json);
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
 
-        int newMana = player.getMana() - card.getCost();
+        int newMana = json.getInt("mana");
         manaBar.setMana(newMana, player.getMaxMana());
         player.setMana(newMana);
 
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
+    }
+
+    public void updateOpponentHand(JSONObject json) {
+        opponentHand.getChildren().clear();
+        int handSize = json.getInt("opponent_hand_size");
+        Image deckCover = Card.spriteBuilder()
+                .addImage("/assets/images/cards/card_cover.png")
+                .setStyle(Card.CardStyle.BASE.toString())
+                .build();
+        double deltaX = 40;
+        for (int i = 0; i < handSize; i++) {
+            ImageView iv = new ImageView(deckCover);
+            AnchorPane.setLeftAnchor(iv, deltaX * i);
+            opponentHand.getChildren().add(iv);
+        }
+    }
+
+    public void onPunishmentDamage(JSONObject json) {
+        String target = json.getString("target");
+        switch (target) {
+            case "opponent" -> Animations.playPunishmentAnimation(opponentHeroInfo.getPortrait(), json.getInt("punishment_src"));
+            case "player" -> Animations.playPunishmentAnimation(playerHeroInfo.getPortrait(), json.getInt("punishment_src"));
+        }
     }
 
     public void changeOpponentMana(int newOpponentMana) {
@@ -480,7 +513,8 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
