@@ -56,8 +56,11 @@ public class CardUtil {
 
     public static void makeCardsUnableToAttackOnStart(List<Card> deck) {
         for (Card card : deck) {
-            if (!card.hasAction(CardRepository.Action.RUSH_ON_PLAY))
+            if (!(card.hasAction(CardRepository.Action.RUSH_ON_PLAY) || card.hasAction(CardRepository.Action.BOARD_ON_PLAY)))
                 card.addStatus(CardRepository.Status.ATTACKED);
+            if (card.hasAction(CardRepository.Action.BOARD_ON_PLAY)) {
+                card.addStatus(CardRepository.Status.CAN_ATTACK_CARDS_ON_PLAY);
+            }
         }
     }
 

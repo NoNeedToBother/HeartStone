@@ -184,7 +184,8 @@ public class GameRoom {
                         msg.getString("card_action");
                         JSONObject responsePlayer1 = new JSONObject();
                         JSONObject responsePlayer2 = new JSONObject();
-                        CardOnPlayedUtil.checkBattleCry(client, player1, player2, player1AllCards, player2AllCards, playedCard, msg, responsePlayer1, responsePlayer2, server, this);
+                        CardOnPlayedUtil.checkBattleCry(client, player1, player2, player1AllCards, player2AllCards,
+                                playedCard, msg, responsePlayer1, responsePlayer2, server, this);
                     } catch (JSONException ignored) {}
                 }
             }
@@ -200,21 +201,27 @@ public class GameRoom {
                     sendResponse(response.toString(), client);
                 }
                 if (target.equals("hero")) {
-                    boolean res = CardAttackUtil.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)), response, allCards.get("field").get(pos), pos, target);
+                    boolean res = CardAttackUtil.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)),
+                            response, allCards.get("field").get(pos), pos, target);
                     if (!res) {
                         response.put("status", "not_ok");
                         response.put("reason", "The card cannot attack right now");
                     }
-                    else if (!allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.Action.IGNORE_TAUNT)) {
-                        List<Integer> positions = CardAttackUtil.checkTaunts(getAllCards(getOtherPlayer(client)));
-                        if (positions.size() > 0) {
-                            response.put("status", "not_ok");
-                            response.put("reason", "You must attack card with taunt");
-                        } else {
-                            response.put("status", "ok");
+                    else {
+                        if (!allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.Action.IGNORE_TAUNT)) {
+                            List<Integer> positions = CardAttackUtil.checkTaunts(getAllCards(getOtherPlayer(client)));
+                            if (positions.size() > 0) {
+                                response.put("status", "not_ok");
+                                response.put("reason", "You must attack card with taunt");
+                                res = false;
+                            }
                         }
-                    } else {
-                        response.put("status", "ok");
+                        if (allCards.get("field").get(pos).hasStatus(CardRepository.Status.CAN_ATTACK_CARDS_ON_PLAY) && res) {
+                            response.put("status", "not_ok");
+                            response.put("reason", "Cards with board\ncannot attack heroes immediately");
+                            res = false;
+                        }
+                        if (res) response.put("status", "ok");
                     }
                 } else {
                     int opponentPos = msg.getInt("opponent_pos");

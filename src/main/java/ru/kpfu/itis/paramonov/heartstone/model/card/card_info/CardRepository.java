@@ -9,7 +9,8 @@ public class CardRepository {
     public enum Action {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ALL_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
         ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
-        DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG, SHIELD_ON_PLAY, CANNOT_ATTACK_ON_PLAY
+        DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG, SHIELD_ON_PLAY, GIVE_SHIELD_ON_PLAY, CANNOT_ATTACK_ON_PLAY,
+        BOARD_ON_PLAY
     }
 
     public enum KeyWord {
@@ -17,11 +18,12 @@ public class CardRepository {
         TAUNT("Taunt", "Cards must attack card with this status"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
-        RUSH("Rush", "Can  attack immediately after played"),
+        RUSH("Rush", "Can attack immediately after played"),
         DESTROY("Destroy", "Sets chosen enemy's hp to zero"),
         GIANT("Giant", "Decreases cost when conditions are met"),
         ALIGNMENT("Alignment", "When attacking enemy cards apply corresponding alignment status"),
-        SHIELD("Shield", "Blocks 1 instance of damage and disappears after");
+        SHIELD("Shield", "Blocks 1 instance of damage and disappears after"),
+        BOARD("Board!", "Can attacker enemy cards immediately after played");
 
         private final String displayName;
 
@@ -42,7 +44,7 @@ public class CardRepository {
     }
 
     public enum Faction {
-        NO_FACTION, STONE, ELEMENTAL, ANIMAL, ROBOT //etc
+        NO_FACTION, STONE, ELEMENTAL, ANIMAL, ROBOT, PIRATE
     }
 
     public enum Rarity {
@@ -54,6 +56,7 @@ public class CardRepository {
         ATTACKED(true, false, null), FROZEN_1(true, false, null),
         FROZEN_2(true, false, null), SHIELDED(false, false, "shielded"),
         SHIELD_REMOVED_1(true, false, null), SHIELD_REMOVED_2(true, false, null),
+        CAN_ATTACK_CARDS_ON_PLAY(true, false, null),
 
         ENERGY(false, true, "powered"), INTELLIGENCE(false, true, "enlightened"),
         VOID(false, true, "nullified"), LIFE(false, true, "saturated"),
@@ -197,7 +200,7 @@ public class CardRepository {
         SwampThing(34, "Swamp thing", 4, 6, 5, "TAUNT. ALIGNMENT: chaos", DEFAULT_PATH + "/swamp_thing.png",
                 List.of(Action.DEAL_CHAOS_DMG), List.of(KeyWord.TAUNT, KeyWord.ALIGNMENT), Faction.NO_FACTION, Rarity.RARE, Map.of()),
         Hydra(35, "Hydra", 4, 5, 7, "BATTELCRY: DESTROYS chosen ENEMY CARD", DEFAULT_PATH + "/hydra.png", List.of(Action.DESTROY_ENEMY_ON_PLAY),
-                List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.ANIMAL, Rarity.EPIC, Map.of()),
+                List.of(KeyWord.BATTLE_CRY, KeyWord.DESTROY), Faction.ANIMAL, Rarity.RARE, Map.of()),
         AnimalKing(36, "King of animals", 6, 6, 10, "GIANT: cost -1 for each played ANIMAL. ALIGNMENT: strength", DEFAULT_PATH + "/animal_king.png",
                 List.of(Action.DEAL_STRENGTH_DMG), List.of(KeyWord.GIANT, KeyWord.ALIGNMENT), Faction.ANIMAL, Rarity.EPIC, Map.of(StatChange.COST, -1)),
         Deity(37, "His deity", 8, 8, 20, "GIANT: cost -6 for each played GIANT. ALIGNMENT: chaos", DEFAULT_PATH + "/his_deity.png",
@@ -210,7 +213,14 @@ public class CardRepository {
         RushingHound(40, "Rushing hound", 2, 1, 2, "RUSH", DEFAULT_PATH + "/hound.png", List.of(Action.RUSH_ON_PLAY),
                 List.of(KeyWord.RUSH), Faction.ANIMAL, Rarity.COMMON, Map.of()),
         GuardRobot(41, "Robot of Royal Guard", 4, 4, 5, "TAUNT. SHIELD", DEFAULT_PATH + "/royal_guard_robot.png",
-                List.of(Action.SHIELD_ON_PLAY), List.of(KeyWord.TAUNT, KeyWord.SHIELD), Faction.ROBOT, Rarity.RARE, Map.of());
+                List.of(Action.SHIELD_ON_PLAY), List.of(KeyWord.TAUNT, KeyWord.SHIELD), Faction.ROBOT, Rarity.RARE, Map.of()),
+        LightVindicator(42, "Vindicator of Light", 4, 3, 4, "SHIELD", DEFAULT_PATH + "/light_vindicator.png", List.of(Action.SHIELD_ON_PLAY),
+                List.of(KeyWord.SHIELD), Faction.ELEMENTAL, Rarity.COMMON, Map.of()),
+        SandHunter(43, "Sand hunter elemental", 7, 3, 5, "", DEFAULT_PATH + "/sand_hunter.png", List.of(),
+                List.of(), Faction.ELEMENTAL, Rarity.COMMON, Map.of()),
+        BoardingPirate(44, "Boarding pirate", 4, 4, 4, "BOARD!", DEFAULT_PATH + "/boarding_pirate.png", List.of(Action.BOARD_ON_PLAY),
+                List.of(KeyWord.BOARD), Faction.PIRATE, Rarity.COMMON, Map.of());
+
 
         private enum StatChange {
             ATK, HP, COST, DMG, ALL_DMG, HERO_DMG, CARD_DRAWN
