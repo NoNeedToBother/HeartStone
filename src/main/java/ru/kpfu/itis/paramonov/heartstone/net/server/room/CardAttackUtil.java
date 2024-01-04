@@ -80,6 +80,10 @@ public class CardAttackUtil {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }
+            attackedResponse.put("punishment_src", attacked.getCardInfo().getId());
+            attackerResponse.put("punishment_src", attacked.getCardInfo().getId());
+            attackedResponse.put("target", "opponent");
+            attackerResponse.put("target", "player");
         }
         if (attacker.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.ALIGNMENT)) {
             CardRepository.Status previous = attacked.getCurrentAlignedStatus();

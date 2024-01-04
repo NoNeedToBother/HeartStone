@@ -25,7 +25,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class Animations {
     private static final String DEFAULT_PATH = "/assets/animations/";
@@ -187,7 +189,7 @@ public class Animations {
         transition.get().play();
     }
 
-    public static void playCardAttacking(ImageView attacker, ImageView attacked) {
+    public static void playCardAttacking(ImageView attacker, ImageView attacked, Runnable onAnimationEnded) {
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
         double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
@@ -197,6 +199,7 @@ public class Animations {
         double deltaY = attackedY - attackerY;
         playTransition(transition, attacker, deltaX, deltaY, 400);
         transition.get().setOnFinished(actionEvent -> {
+            if (onAnimationEnded != null) onAnimationEnded.run();
             playTransition(transition, attacker, -deltaX, -deltaY, 200);
             transition.get().setOnFinished(actionEvent1 -> {
                 try {
@@ -226,5 +229,22 @@ public class Animations {
 
         Thread thread = new Thread(fieldFireAnim);
         thread.start();
+    }
+
+    public static void playPunishmentAnimation(ImageView iv, int punishmentSrcId) {
+        if (punishmentSrcId == CardRepository.CardTemplate.TheRock.getId()) {
+            Image before = iv.getImage();
+            Runnable runnable = () -> {
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(iv.getImage(), null);
+                ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_effects/rock_punishment.png");
+                iv.setImage(ImageUtil.toImage(bufferedImage));
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ignored) {}
+                iv.setImage(before);
+            };
+            Thread thread = new Thread(runnable);
+            thread.start();
+        }
     }
 }

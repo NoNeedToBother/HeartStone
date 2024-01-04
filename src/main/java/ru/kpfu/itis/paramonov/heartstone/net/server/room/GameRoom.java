@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class GameRoom {
 
     public enum RoomAction {
-        GET_INITIAL_INFO, DRAW_CARD, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
+        GET_INITIAL_INFO, DRAW_CARD, DRAW_CARD_OPPONENT, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
         GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE, TIMER_UPDATE
     }
 
@@ -167,6 +167,7 @@ public class GameRoom {
                 CardUtil.putCardStatsAndId(playedCard, opponentResponse);
                 CardUtil.putStatuses(initialStatuses, opponentResponse);
                 opponentResponse.put("opponent_mana", newMana);
+                opponentResponse.put("opponent_hand_size", getAllCards(client).get("hand").size());
                 sendResponse(opponentResponse.toString(), getOtherPlayer(client));
 
                 JSONObject response = new JSONObject();
@@ -342,8 +343,12 @@ public class GameRoom {
         }
         response.put("deck_size", allCards.get("deck").size());
         response.put("status", "ok");
-
         sendResponse(response.toString(), client);
+
+        JSONObject opponentResponse = new JSONObject();
+        opponentResponse.put("room_action", RoomAction.DRAW_CARD_OPPONENT.toString());
+        opponentResponse.put("opponent_hand_size", allCards.get("hand").size());
+        sendResponse(opponentResponse.toString(), getOtherPlayer(client));
     }
 
     private void onPlayerDefeated() {
@@ -407,8 +412,8 @@ public class GameRoom {
         PlayerRoomUtil.putHpInfo(player2Response, player2Hp, player1Hp);
 
         int randomBg = random.nextInt(1, BACKGROUND_AMOUNT + 1);
-        putInitialInfo(player1Response, player1AllCards.get("deck"), player1, randomBg);
-        putInitialInfo(player2Response, player2AllCards.get("deck"), player2, randomBg);
+        putInitialInfo(player1Response, player2Response, player1AllCards.get("deck"), player1, randomBg);
+        putInitialInfo(player2Response, player1Response, player2AllCards.get("deck"), player2, randomBg);
 
         sendResponse(player1Response.toString(), player1);
         sendResponse(player2Response.toString(), player2);
@@ -418,7 +423,8 @@ public class GameRoom {
 
     private final int HAND_SIZE = 7;
 
-    private void putInitialInfo(JSONObject response, List<Card> deck, GameServer.Client client, int background) {
+    private void putInitialInfo(JSONObject response, JSONObject otherResponse,
+                                List<Card> deck, GameServer.Client client, int background) {
         response.put("room_action", RoomAction.GET_INITIAL_INFO.toString());
         JSONArray arrayHand = new JSONArray();
 
@@ -438,6 +444,8 @@ public class GameRoom {
         response.put("hand", arrayHand);
         response.put("deck_size", deck.size());
         response.put("background", "bg_" + background + ".png");
+
+        otherResponse.put("opponent_hand_size", arrayHand.length());
     }
 
     private List<Card> getShuffledDeck(GameServer.Client client) {
