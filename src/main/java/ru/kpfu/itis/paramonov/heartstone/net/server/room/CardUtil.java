@@ -36,11 +36,11 @@ public class CardUtil {
     public static void changeCardAbilityToAttackOnTurnEnd(List<Card> field, GameServer.Client player, GameServer.Client otherPlayer,
                                                           GameServer server) {
         for (Card card : field) {
-            if (card.getStatuses().contains(CardRepository.Status.FROZEN_2)) {
+            if (card.hasStatus(CardRepository.Status.FROZEN_2)) {
                 card.removeStatus(CardRepository.Status.FROZEN_2);
                 card.addStatus(CardRepository.Status.FROZEN_1);
             }
-            else if (card.getStatuses().contains(CardRepository.Status.FROZEN_1)) {
+            else if (card.hasStatus(CardRepository.Status.FROZEN_1)) {
                 card.removeStatus(CardRepository.Status.FROZEN_1);
                 card.removeStatus(CardRepository.Status.FROZEN);
                 JSONObject responsePlayer = new JSONObject();
@@ -56,9 +56,10 @@ public class CardUtil {
 
     public static void makeCardsUnableToAttackOnStart(List<Card> deck) {
         for (Card card : deck) {
-            CardRepository.CardTemplate cardInfo = card.getCardInfo();
-            if (!cardInfo.getActions().contains(CardRepository.Action.RUSH_ON_PLAY)) {
+            if (!(card.hasAction(CardRepository.Action.RUSH_ON_PLAY) || card.hasAction(CardRepository.Action.BOARD_ON_PLAY)))
                 card.addStatus(CardRepository.Status.ATTACKED);
+            if (card.hasAction(CardRepository.Action.BOARD_ON_PLAY)) {
+                card.addStatus(CardRepository.Status.CAN_ATTACK_CARDS_ON_PLAY);
             }
         }
     }
@@ -274,11 +275,11 @@ public class CardUtil {
     }
 
     public static void checkShieldRemoved(Card card, JSONObject response) {
-        if (card.getStatuses().contains(CardRepository.Status.SHIELD_REMOVED_2)) {
+        if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_2)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_2);
             response.put("shield_status", "removed");
         }
-        if (card.getStatuses().contains(CardRepository.Status.SHIELD_REMOVED_1)) {
+        if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_1)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_1);
             card.addStatus(CardRepository.Status.SHIELD_REMOVED_2);
             response.put("shield_status", "removed");

@@ -24,6 +24,7 @@ public class ClientRoomMsgHandler {
                 BattlefieldController.getController().setHand(json.getJSONArray("hand"));
                 BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
                 BattlefieldController.getController().setHeroes(json);
+                BattlefieldController.getController().updateOpponentHand(json);
             }
             case END_TURN -> BattlefieldController.getController().changeEndTurnButton(GameButton.GameButtonStyle.RED);
             case BEGIN_TURN -> {
@@ -39,10 +40,13 @@ public class ClientRoomMsgHandler {
                 }
                 BattlefieldController.getController().setDeckSize(json.getInt("deck_size"));
             }
+            case DRAW_CARD_OPPONENT -> BattlefieldController.getController().updateOpponentHand(json);
             case PLAY_CARD_OPPONENT -> {
                 BattlefieldController.getController().addOpponentCard(json);
                 BattlefieldController.getController().changeOpponentMana(json.getInt("opponent_mana"));
+                BattlefieldController.getController().updateOpponentHand(json);
             }
+            case PLAY_CARD -> BattlefieldController.getController().placeCard(json);
             case CARD_CARD_ATTACK -> {
                 BattlefieldController.getController().playAttackingAnimation(json);
                 BattlefieldController.getController().updateCards(json);
@@ -53,11 +57,8 @@ public class ClientRoomMsgHandler {
             }
             case GET_OPPONENT_MANA -> BattlefieldController.getController().setMana(json);
             case CHECK_CARD_PLAYED -> {
-                if (json.getString("status").equals("ok")) {
-                    BattlefieldController.getController().placeCard(json);
-                } else {
-                    BattlefieldController.getController().showMessage(json.getString("reason"));
-                }
+                if (json.getString("status").equals("ok")) BattlefieldController.getController().playCard(json);
+                else BattlefieldController.getController().showMessage(json.getString("reason"));
             }
             case CHECK_CARD_TO_ATTACK -> {
                 if (json.getString("status").equals("ok")) {

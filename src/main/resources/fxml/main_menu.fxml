@@ -14,6 +14,7 @@
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.MainMenuController"
             prefHeight="900.0" prefWidth="1600.0">
 
+    <ImageView fx:id="logo" layoutX="455" layoutY="100"/>
     <VBox layoutX="700" layoutY="250" fx:id="mainMenu" spacing="12.5">
     </VBox>
 

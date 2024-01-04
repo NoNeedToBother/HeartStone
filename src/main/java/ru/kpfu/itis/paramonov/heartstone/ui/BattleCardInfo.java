@@ -9,6 +9,8 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 
+import java.util.List;
+
 public class BattleCardInfo extends Pane {
     private final ImageView bg = new ImageView();
 
@@ -58,7 +60,8 @@ public class BattleCardInfo extends Pane {
 
     public void updateInfo(Card card) {
         setText(card.getCardInfo().getName());
-        addTextLine(card.getCardInfo().getActionDesc());
+        String actionDescription = card.getCardInfo().getActionDesc();
+        if (!actionDescription.isEmpty()) addTextLine(card.getCardInfo().getActionDesc());
         addTextLine("ATK: ");
         addText(String.valueOf(card.getAtk()));
         addTextLine("HP: ");
@@ -69,10 +72,12 @@ public class BattleCardInfo extends Pane {
             addTextLine("Faction: ");
             addText(String.valueOf(card.getCardInfo().getFaction()).toLowerCase());
         }
-        for (CardRepository.Status status : card.getStatuses()) {
-            if (!status.isUtility()) {
-                addTextLine("Status: ");
-                addText(status.getDisplayName());
+        List<CardRepository.Status> statuses = card.getNonUtilityStatuses();
+        if (!statuses.isEmpty()) {
+            addTextLine("Statuses: ");
+            for (int i = 0; i < statuses.size(); i++) {
+                if (i != statuses.size() - 1) addText(statuses.get(i).getDisplayName() + ", ");
+                else addText(statuses.get(i).getDisplayName());
             }
         }
         addTextLine("");

@@ -80,13 +80,17 @@ public class CardAttackUtil {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }
+            attackedResponse.put("punishment_src", attacked.getCardInfo().getId());
+            attackerResponse.put("punishment_src", attacked.getCardInfo().getId());
+            attackedResponse.put("target", "opponent");
+            attackerResponse.put("target", "player");
         }
         if (attacker.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.ALIGNMENT)) {
             CardRepository.Status previous = attacked.getCurrentAlignedStatus();
             CardRepository.Status alignment = AlignmentUtil.getAlignment(attacker);
             if (previous != null)
                 AlignmentUtil.onAlignedStatusApply(attacker, attacked, attackedField, attackedIndexes, previous, alignment, attackerPlayer, room);
-            attacked.addStatus(alignment);
+            AlignmentUtil.addAlignment(attacked, alignment);
         }
     }
     public static void decreaseHpFromNeighbourCard(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
@@ -108,5 +112,13 @@ public class CardAttackUtil {
         }
         PlayerRoomUtil.putHpInfo(attackerResponse, attackerHero.getHp(), attackedHero.getHp());
         PlayerRoomUtil.putHpInfo(attackedResponse, attackedHero.getHp(), attackerHero.getHp());
+    }
+
+    public static void putCardCardAttackAnimationInfo(JSONObject response, int pos, int opponentPos, String role) {
+        response.put("room_action", GameRoom.RoomAction.CARD_CARD_ATTACK.toString());
+        response.put("status", "ok");
+        response.put("pos", pos);
+        response.put("opponent_pos", opponentPos);
+        response.put("role", role);
     }
 }

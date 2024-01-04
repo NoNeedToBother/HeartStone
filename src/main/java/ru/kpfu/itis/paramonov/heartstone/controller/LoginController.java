@@ -3,6 +3,8 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
@@ -16,6 +18,9 @@ import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 public class LoginController {
     @FXML
     private AnchorPane root;
+
+    @FXML
+    private ImageView logo;
 
     @FXML
     private TextField login;
@@ -38,6 +43,7 @@ public class LoginController {
     private void initialize() {
         controller = this;
         application = GameApplication.getApplication();
+        addLogo();
         setTextFieldsStyle();
         addGameButtons();
         setOnClickListeners();
@@ -83,9 +89,13 @@ public class LoginController {
             mouseEvent.consume();
         });
     }
+    private void addLogo() {
+        String src = GameApplication.class.getResource("/assets/images/logo.png").toString();
+        logo.setImage(new Image(src));
+    }
 
     public void showMessage(String reason, int duration) {
-        GameMessage.make(reason).show(root, duration, 500, 550);
+        GameMessage.make(reason).show(root, duration, 625, 680);
     }
 
     public static LoginController getController() {

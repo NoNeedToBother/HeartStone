@@ -54,6 +54,8 @@
 
     <ManaBar fx:id="opponentManaBar" AnchorPane.topAnchor="12.5" AnchorPane.rightAnchor="12.5"/>
 
+    <AnchorPane fx:id="opponentHand" AnchorPane.topAnchor="12.5" AnchorPane.leftAnchor="360"/>
+
     <HeroInfo fx:id="playerHeroInfo" AnchorPane.bottomAnchor="12.5" AnchorPane.rightAnchor="125"/>
 
     <HeroInfo fx:id="opponentHeroInfo" AnchorPane.topAnchor="12.5" AnchorPane.rightAnchor="625"/>
