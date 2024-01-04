@@ -389,7 +389,7 @@ public class GameRoom {
         sendResponse(responseOpponentMana.toString(), getNonActivePlayer());
     }
 
-    private final int BACKGROUND_AMOUNT = 4;
+    private final int BACKGROUND_AMOUNT = 9;
     private void sendInitialInfo() {
         player1AllCards.put("deck", getShuffledDeck(player1));
         player2AllCards.put("deck", getShuffledDeck(player2));
