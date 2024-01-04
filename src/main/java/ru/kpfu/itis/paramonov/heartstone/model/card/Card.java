@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class Card implements Sprite {
 
@@ -113,6 +114,13 @@ public class Card implements Sprite {
 
     public List<CardRepository.Status> getStatuses() {
         return statuses;
+    }
+
+    public List<CardRepository.Status> getNonUtilityStatuses() {
+        List<CardRepository.Status> res = new ArrayList<>(statuses);
+        return res.stream()
+                .filter(status -> !status.isUtility())
+                .collect(Collectors.toList());
     }
 
     public void addJustStatus(CardRepository.Status status) {
