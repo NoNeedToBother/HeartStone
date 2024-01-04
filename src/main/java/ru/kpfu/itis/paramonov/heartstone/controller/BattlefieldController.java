@@ -291,7 +291,7 @@ public class BattlefieldController {
         if (shieldStatus != null) {
             if (shieldStatus.equals("removed")) {
                 card.removeStatus(CardRepository.Status.SHIELDED);
-                Animations.removeShield(card);
+                CardImages.removeShield(card);
             }
         }
     }
@@ -423,7 +423,8 @@ public class BattlefieldController {
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
     }
@@ -480,7 +481,8 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) Animations.addShield(cardIv);
+        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 

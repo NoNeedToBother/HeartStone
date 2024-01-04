@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Animations {
@@ -72,14 +73,12 @@ public class Animations {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                Image base = CardImages.getPortrait(card.getCardInfo().getId());
-                if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+                Image base = CardImages.getWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
                 BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
                 ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
                 card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
             }
-            Image base = CardImages.getPortrait(card.getCardInfo().getId());
-            if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) base = addShield(base);
+            Image base = CardImages.getWithStatusesAndEffects(card, List.of());
             card.getAssociatedImageView().setImage(base);
         };
 
@@ -87,26 +86,7 @@ public class Animations {
         thread.start();
     }
 
-    public static void addShield(ImageView iv) {
-        iv.setImage(addShield(iv.getImage()));
-    }
-    private static Image addShield(Image img) {
-        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
-        ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "card_shield.png");
-        return ImageUtil.toImage(bufferedImage);
-    }
-
-    public static void removeShield(Card card) {
-        Image base = CardImages.getPortrait(card.getCardInfo().getId());
-        if (card.hasStatus(CardRepository.Status.FROZEN)) {
-            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
-            ImageUtil.addImage(bufferedImage, getFreezingFrame(FREEZING_FRAME_AMOUNT));
-            base = ImageUtil.toImage(bufferedImage);
-        }
-        card.getAssociatedImageView().setImage(base);
-    }
-
-    private static Image getFreezingFrame(int frameUntil) {
+    public static Image getFreezingFrame(int frameUntil) {
         BufferedImage bufferedImage = new BufferedImage(96, 128, BufferedImage.TYPE_INT_ARGB);
         for(int i = 1; i <= frameUntil; i++) {
             ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "freezing/freezing_" + i + ".png");
