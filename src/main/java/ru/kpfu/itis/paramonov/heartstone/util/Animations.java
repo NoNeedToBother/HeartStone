@@ -12,6 +12,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
@@ -103,6 +104,12 @@ public class Animations {
         draw(img, iv);
     }
 
+    private static void drawFrame(String src, ImageView iv) {
+        BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
+        img = ImageUtil.addImage(img, DEFAULT_PATH + src);
+        draw(img, iv);
+    }
+
     public static void playHeroCrackingAnimation(ImageView iv, boolean win) {
         final int FRAME_AMOUNT = 3;
 
@@ -189,7 +196,7 @@ public class Animations {
         transition.get().play();
     }
 
-    public static void playCardAttacking(ImageView attacker, ImageView attacked, Runnable onAnimationEnded) {
+    public static void playCardAttacking(ImageView attacker, ImageView attacked, Consumer<JSONObject> onAnimationEnded, JSONObject jsonObject) {
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
         double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
@@ -199,7 +206,7 @@ public class Animations {
         double deltaY = attackedY - attackerY;
         playTransition(transition, attacker, deltaX, deltaY, 400);
         transition.get().setOnFinished(actionEvent -> {
-            if (onAnimationEnded != null) onAnimationEnded.run();
+            if (onAnimationEnded != null) onAnimationEnded.accept(jsonObject);
             playTransition(transition, attacker, -deltaX, -deltaY, 200);
             transition.get().setOnFinished(actionEvent1 -> {
                 try {
@@ -244,6 +251,23 @@ public class Animations {
                 iv.setImage(before);
             };
             Thread thread = new Thread(runnable);
+            thread.start();
+        }
+    }
+
+    public static void playCutAttackAnimation(List<Integer> positions, List<Card> field) {
+        for (Integer pos : positions) {
+            Card card = field.get(pos);
+            Runnable anim = () -> {
+                ImageView iv = card.getAssociatedImageView();
+                drawFrame("card_effects/cut.png", iv);
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException ignored) {}
+                if (card.getHp() > 0) iv.setImage(CardImages.getPortraitWithStatusesAndEffects(card, List.of()));
+            };
+
+            Thread thread = new Thread(anim);
             thread.start();
         }
     }

@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
@@ -67,16 +68,16 @@ public class CardAttackUtil {
                                                  List<Integer> attackedIndexes, Hero attackerHero, Hero attackedHero,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
                                                  GameServer.Client attackerPlayer, GameServer.Client attackedPlayer, GameRoom room) {
-        if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT)) {
-            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId() && attacked.getHp() > 0) {
+        if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
+            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,
                         attackerPlayer, attackedPlayer);
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
 
             }
-            if (attacked.getHp() > 0 && (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
-                    attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId())) {
+            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
+                    attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }
@@ -92,13 +93,29 @@ public class CardAttackUtil {
                 AlignmentUtil.onAlignedStatusApply(attacker, attacked, attackedField, attackedIndexes, previous, alignment, attackerPlayer, room);
             AlignmentUtil.addAlignment(attacked, alignment);
         }
+        if (attacker.hasAction(CardRepository.Action.ATTACK_ADJACENT_CARDS)) {
+            JSONArray effects = null;
+            boolean isCardMutantCrab = attacker.getCardInfo().getId() == CardRepository.CardTemplate.MutantCrab.getId();
+            if (isCardMutantCrab) effects = new JSONArray();
+            decreaseHpFromNeighbourCards(attacker.getAtk(), attackedField.indexOf(attacked), attackedField, attackedIndexes, effects);
+            if (isCardMutantCrab) {
+                attackerResponse.put("opponent_anim_indexes", effects);
+                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+                attackedResponse.put("player_anim_indexes", effects);
+                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+            }
+        }
     }
-    public static void decreaseHpFromNeighbourCard(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
-        try {
-            Card card = field.get(pos);
-            card.decreaseHp(hpDecrease);
-            indexes.add(pos);
-        } catch (IndexOutOfBoundsException ignored) {}
+    public static void decreaseHpFromNeighbourCards(int hpDecrease, int pos, List<Card> field, List<Integer> indexes, JSONArray effects) {
+        List<Integer> positions = List.of(pos - 1, pos + 1);
+        for (Integer neighbourPos : positions) {
+            try {
+                Card card = field.get(neighbourPos);
+                card.decreaseHp(hpDecrease);
+                if (effects != null) effects.put(neighbourPos);
+                indexes.add(neighbourPos);
+            } catch (IndexOutOfBoundsException ignored) {}
+        }
     }
 
     private static void dealHeroDamageOnPunishment(Hero attackerHero, Hero attackedHero, int punishmentDamage,

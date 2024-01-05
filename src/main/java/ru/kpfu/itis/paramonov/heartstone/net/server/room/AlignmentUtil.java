@@ -7,6 +7,12 @@ import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 import java.util.List;
 
 public class AlignmentUtil {
+    public static final int POWER_DMG = 1;
+    public static final int MADNESS_DIRECT_DMG = 2;
+    public static final int MADNESS_INDIRECT_DMG = 1;
+    public static final int OVERSATURATION_DMG = 2;
+    public static final int ENTROPY_DMG = 2;
+    public static final int ENLIGHTMENT_DMG = 1;
     public static void onAlignedStatusApply(Card attacker, Card attacked, List<Card> attackedField, List<Integer> attackedIndexes,
                                             CardRepository.Status previous, CardRepository.Status alignment,
                                             GameServer.Client attackerPlayer, GameRoom room) {
@@ -16,16 +22,16 @@ public class AlignmentUtil {
             switch (alignment) {
                 case ENERGY -> room.drawCard(attackerPlayer);
                 case CHAOS -> {
-                    attacked.decreaseHp(2);
+                    attacked.decreaseHp(MADNESS_DIRECT_DMG);
                     int attackedIndex = attackedField.indexOf(attacked);
-                    CardAttackUtil.decreaseHpFromNeighbourCard(1, attackedIndex - 1, attackedField, attackedIndexes);
-                    CardAttackUtil.decreaseHpFromNeighbourCard(1, attackedIndex - 1, attackedField, attackedIndexes);
+                    CardAttackUtil.decreaseHpFromNeighbourCards(MADNESS_INDIRECT_DMG, attackedIndex, attackedField,
+                            attackedIndexes, null);
                 }
             }
         }
         if (previous.equals(CardRepository.Status.STRENGTH) && alignment.equals(CardRepository.Status.INTELLIGENCE)) {
             for (int index = 0; index < attackedField.size(); index++) {
-                attackedField.get(index).decreaseHp(1);
+                attackedField.get(index).decreaseHp(ENLIGHTMENT_DMG);
                 if (!attackedIndexes.contains(index)) attackedIndexes.add(index);
             }
         }
@@ -54,7 +60,7 @@ public class AlignmentUtil {
             case STRENGTH -> {
                 switch (alignment) {
                     case ENERGY ->
-                            applied.getDamageAndChangeAlignment(1, CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
+                            applied.getDamageAndChangeAlignment(POWER_DMG, CardRepository.Status.STRENGTH, CardRepository.Status.ENERGY);
                     case CHAOS -> applied.changeAlignment(currentAlignment, alignment);
                     case LIFE, INTELLIGENCE -> applied.changeAlignment(currentAlignment, null);
                 }
@@ -62,27 +68,26 @@ public class AlignmentUtil {
             case ENERGY -> {
                 switch (alignment) {
                     case STRENGTH ->
-                            applied.getDamageAndChangeAlignment(1, CardRepository.Status.ENERGY, alignment);
+                            applied.getDamageAndChangeAlignment(POWER_DMG, CardRepository.Status.ENERGY, alignment);
                     case LIFE ->
-                            applied.getDamageAndChangeAlignment(1, CardRepository.Status.ENERGY, null);
+                            applied.getDamageAndChangeAlignment(OVERSATURATION_DMG, CardRepository.Status.ENERGY, null);
                     case CHAOS ->
-                            applied.getDamageAndChangeAlignment(2, CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
+                            applied.getDamageAndChangeAlignment(ENTROPY_DMG, CardRepository.Status.ENERGY, CardRepository.Status.CHAOS);
                     case INTELLIGENCE -> applied.changeAlignment(currentAlignment, alignment);
                 }
             }
             case CHAOS -> {
                 switch (alignment) {
                     case ENERGY ->
-                            applied.getDamageAndChangeAlignment(2, CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
+                            applied.getDamageAndChangeAlignment(ENTROPY_DMG, CardRepository.Status.CHAOS, CardRepository.Status.ENERGY);
                     case INTELLIGENCE, LIFE -> applied.changeAlignment(CardRepository.Status.CHAOS, null);
                     case STRENGTH -> applied.changeAlignment(currentAlignment, alignment);
                 }
             }
             case INTELLIGENCE -> {
                 switch (alignment) {
-                    case CHAOS ->
-                            applied.getDamageAndChangeAlignment(2, CardRepository.Status.INTELLIGENCE, null);
-                    case STRENGTH -> applied.changeAlignment(CardRepository.Status.INTELLIGENCE, null);
+                    case CHAOS, STRENGTH ->
+                            applied.changeAlignment(CardRepository.Status.INTELLIGENCE, null);
                     case LIFE -> applied.changeAlignment(currentAlignment, alignment);
                     case ENERGY -> {}
                 }
@@ -91,7 +96,7 @@ public class AlignmentUtil {
                 switch (alignment) {
                     case STRENGTH -> applied.changeAlignment(CardRepository.Status.LIFE, null);
                     case ENERGY ->
-                            applied.getDamageAndChangeAlignment(1, CardRepository.Status.LIFE, null);
+                            applied.getDamageAndChangeAlignment(OVERSATURATION_DMG, CardRepository.Status.LIFE, null);
                     case INTELLIGENCE, CHAOS -> applied.changeAlignment(currentAlignment, alignment);
                 }
             }
