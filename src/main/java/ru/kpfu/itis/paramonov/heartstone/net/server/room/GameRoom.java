@@ -18,7 +18,8 @@ public class GameRoom {
 
     public enum RoomAction {
         GET_INITIAL_INFO, DRAW_CARD, DRAW_CARD_OPPONENT, BEGIN_TURN, END_TURN, PLAY_CARD, PLAY_CARD_OPPONENT, CARD_CARD_ATTACK,
-        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE, TIMER_UPDATE
+        GET_OPPONENT_MANA, CHECK_CARD_PLAYED, CARD_HERO_ATTACK, CHECK_CARD_TO_ATTACK, GAME_END, CHANGE_HP, GET_CHANGE, TIMER_UPDATE,
+        ADD_CARDS_TO_HAND
     }
 
     private final GameServer.Client player1;
@@ -76,7 +77,7 @@ public class GameRoom {
         if (player.equals(player1)) return player2;
         else return player1;
     }
-    private HashMap<String, List<Card>> getAllCards(GameServer.Client player) {
+    public HashMap<String, List<Card>> getAllCards(GameServer.Client player) {
         if (player.equals(player1)) return player1AllCards;
         else return player2AllCards;
     }
@@ -98,7 +99,7 @@ public class GameRoom {
                     activePlayer = player1;
                     CardUtil.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
                 }
-                CardUtil.checkEndTurnCards(client, player1, player2, player1AllCards, player2AllCards, server, this);
+                CardUtil.checkEndTurnCards(client, server, this);
                 JSONObject responseEnd = new JSONObject();
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
@@ -135,12 +136,12 @@ public class GameRoom {
                     String action = msg.getString("card_action");
                     response.put("card_action", msg.getString("card_action"));
                     switch (action) {
-                        case "deal_dmg" -> response.put("opponent_pos", msg.getInt("opponent_pos"));
+                        case "target_enemy_card" -> response.put("opponent_pos", msg.getInt("opponent_pos"));
                     }
                 } catch (JSONException ignored) {}
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();
                 Card card = getAllCards(client).get("hand").get(msg.getInt("hand_pos"));
-                if (card.getCardInfo().getActions().contains(CardRepository.Action.SHIELD_ON_PLAY)) {
+                if (card.hasAction(CardRepository.Action.SHIELD_ON_PLAY)) {
                     initialStatuses.add(CardRepository.Status.SHIELDED);
                 }
                 CardUtil.putStatuses(initialStatuses, response);
@@ -151,9 +152,9 @@ public class GameRoom {
                 JSONObject opponentResponse = new JSONObject();
                 Card playedCard = CardOnPlayedUtil.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();
-                if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.CANNOT_ATTACK_ON_PLAY))
+                if (playedCard.hasAction(CardRepository.Action.CANNOT_ATTACK_ON_PLAY))
                     playedCard.addStatus(CardRepository.Status.CANNOT_ATTACK);
-                if (playedCard.getCardInfo().getActions().contains(CardRepository.Action.SHIELD_ON_PLAY)) {
+                if (playedCard.hasAction(CardRepository.Action.SHIELD_ON_PLAY)) {
                     playedCard.addStatus(CardRepository.Status.SHIELDED);
                     initialStatuses.add(CardRepository.Status.SHIELDED);
                 }
@@ -179,7 +180,7 @@ public class GameRoom {
 
                 CardOnPlayedUtil.checkOnCardPlayed(client, getAllCards(client), playedCard, server);
 
-                if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) {
+                if (playedCard.hasKeyWord(CardRepository.KeyWord.BATTLE_CRY)) {
                     try {
                         msg.getString("card_action");
                         JSONObject responsePlayer1 = new JSONObject();
@@ -208,7 +209,7 @@ public class GameRoom {
                         response.put("reason", "The card cannot attack right now");
                     }
                     else {
-                        if (!allCards.get("field").get(pos).getCardInfo().getActions().contains(CardRepository.Action.IGNORE_TAUNT)) {
+                        if (!allCards.get("field").get(pos).hasAction(CardRepository.Action.IGNORE_TAUNT)) {
                             List<Integer> positions = CardAttackUtil.checkTaunts(getAllCards(getOtherPlayer(client)));
                             if (positions.size() > 0) {
                                 response.put("status", "not_ok");

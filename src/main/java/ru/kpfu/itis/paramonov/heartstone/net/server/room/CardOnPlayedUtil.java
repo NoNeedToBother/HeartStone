@@ -1,6 +1,8 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
@@ -30,7 +32,7 @@ public class CardOnPlayedUtil {
             response.put("reason", "Not your turn");
             return;
         }
-        if (allCards.get("field").size() == CardUtil.getMaxFieldSize()) {
+        if (allCards.get("field").size() == CardUtil.MAX_FIELD_SIZE) {
             response.put("status", "not_ok");
             response.put("reason", "Full field");
             return;
@@ -64,8 +66,38 @@ public class CardOnPlayedUtil {
             checkDamageOnPlay(player1AllCards, player2AllCards, playedCard, responsePlayer1, responsePlayer2, client, player1);
             CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
         }
+        if (playedCard.hasAction(CardRepository.Action.GIVE_SHIELD_ON_PLAY)) {
+            List<Card> field = room.getAllCards(client).get("field");
+            List<Integer> playerIndexes = new ArrayList<>();
+            checkGivenShield(field.indexOf(playedCard), playedCard, field, playerIndexes);
+            if (client.equals(player1)) {
+                CardUtil.putFieldChanges(responsePlayer1, player1AllCards.get("field"), player2AllCards.get("field"), playerIndexes, List.of());
+                CardUtil.putFieldChanges(responsePlayer2, player2AllCards.get("field"), player1AllCards.get("field"), List.of(), playerIndexes);
+            }
+            else {
+                CardUtil.putFieldChanges(responsePlayer2, player2AllCards.get("field"), player1AllCards.get("field"), playerIndexes, List.of());
+                CardUtil.putFieldChanges(responsePlayer1, player1AllCards.get("field"), player2AllCards.get("field"), List.of(), playerIndexes);
+            }
+            CardUtil.sendGetChangeResponses(responsePlayer1, responsePlayer2, player1, player2, server);
+        }
         CardUtil.removeDefeatedCards(player1AllCards.get("field"));
         CardUtil.removeDefeatedCards(player2AllCards.get("field"));
+    }
+
+    private static void checkGivenShield(int pos, Card playedCard, List<Card> field, List<Integer> indexes) {
+        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.Paladin.getId()) {
+            giveShield(pos + 1, field, indexes);
+            giveShield(pos - 1, field, indexes);
+        }
+    }
+
+    private static void giveShield(int pos, List<Card> field, List<Integer> indexes) {
+        try {
+            Card card = field.get(pos);
+            card.addStatus(CardRepository.Status.SHIELDED);
+            card.addStatus(CardRepository.Status.SHIELD_GIVEN_1);
+            indexes.add(pos);
+        } catch (IndexOutOfBoundsException ignored) {}
     }
 
     public static void checkTargetedCardsOnBattleCry(GameServer.Client player, GameServer.Client targetedPlayer, HashMap<String, List<Card>> allPlayerCards,
@@ -84,14 +116,43 @@ public class CardOnPlayedUtil {
             checkDestroyOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
             CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
         }
+        if (playedCard.hasAction(CardRepository.Action.FREEZE_ADJACENT_CARDS_ON_PLAY)) {
+            freezeEnemyAndAdjacentOnesOnPlay(allTargetedCards, message, playedCard, responseTargeted, response);
+            CardUtil.sendGetChangeResponses(response, responseTargeted, player, targetedPlayer, server);
+        }
     }
 
     public static void freezeEnemyOnPlay(HashMap<String, List<Card>> allTargetedCards, JSONObject message, Card playedCard,
                                          JSONObject responseTargeted, JSONObject responseOther) {
         Card frozenCard = allTargetedCards.get("field").get(message.getInt("opponent_pos"));
-        if (playedCard.getCardInfo().getId() == CardRepository.CardTemplate.IceElemental.getId()) {
-            frozenCard.addStatus(CardRepository.Status.FROZEN_1);
-            CardUtil.putFrozenCardInfo(message.getInt("opponent_pos"), responseTargeted, responseOther, false);
+        frozenCard.addStatus(CardRepository.Status.FROZEN_1);
+        CardUtil.putFrozenCardInfo(message.getInt("opponent_pos"), responseTargeted, responseOther, false);
+    }
+
+    public static void freezeEnemyAndAdjacentOnesOnPlay(HashMap<String, List<Card>> allTargetedCards, JSONObject message, Card playedCard,
+                                                        JSONObject responseTargeted, JSONObject responseOther) {
+        int frozenPos = message.getInt("opponent_pos");
+        List<Integer> indexes = new ArrayList<>();
+        Card frozenCard = allTargetedCards.get("field").get(frozenPos);
+        frozenCard.addStatus(CardRepository.Status.FROZEN_1);
+        freezeAdjacentCards(allTargetedCards.get("field"), frozenPos, indexes);
+        JSONArray frozenPositions = new JSONArray();
+        frozenPositions.put(frozenPos);
+        for (Integer pos : indexes) {
+            frozenPositions.put(pos);
+        }
+        responseOther.put("opponent_frozen_positions", frozenPositions);
+        responseTargeted.put("frozen_positions", frozenPositions);
+    }
+
+    private static void freezeAdjacentCards(List<Card> field, int targetedPos, List<Integer> indexes) {
+        List<Integer> positionsToFreeze = List.of(targetedPos - 1, targetedPos + 1);
+        for (Integer positionToFreeze : positionsToFreeze) {
+            try {
+                Card frozenCard = field.get(positionToFreeze);
+                frozenCard.addStatus(CardRepository.Status.FROZEN_1);
+                indexes.add(positionToFreeze);
+            } catch (IndexOutOfBoundsException ignored) {}
         }
     }
 
@@ -165,14 +226,16 @@ public class CardOnPlayedUtil {
 
     public static void checkOnCardPlayed(GameServer.Client player, HashMap<String, List<Card>> allCards, Card playedCard,
                                          GameServer server) {
-        CardRepository.Faction faction = playedCard.getCardInfo().getFaction();
-        switch (faction) {
-            case STONE -> CardUtil.decreaseCost(CardRepository.CardTemplate.StoneGiant, allCards, player, server);
-            case ELEMENTAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.WaterGiant, allCards, player, server);
-            case ANIMAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.AnimalKing, allCards, player, server);
-            case ROBOT -> CardUtil.decreaseCost(CardRepository.CardTemplate.STAN_3000, allCards, player, server);
+        List<CardRepository.Faction> factions = playedCard.getCardInfo().getFactions();
+        for (CardRepository.Faction faction : factions) {
+            switch (faction) {
+                case STONE -> CardUtil.decreaseCost(CardRepository.CardTemplate.StoneGiant, allCards, player, server);
+                case ELEMENTAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.WaterGiant, allCards, player, server);
+                case ANIMAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.AnimalKing, allCards, player, server);
+                case ROBOT -> CardUtil.decreaseCost(CardRepository.CardTemplate.STAN_3000, allCards, player, server);
+            }
         }
-        if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.GIANT)) {
+        if (playedCard.hasKeyWord(CardRepository.KeyWord.GIANT)) {
             CardUtil.decreaseCost(CardRepository.CardTemplate.Deity, allCards, player, server);
         }
     }

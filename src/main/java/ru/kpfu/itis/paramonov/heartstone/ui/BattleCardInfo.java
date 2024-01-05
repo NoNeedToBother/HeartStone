@@ -68,9 +68,13 @@ public class BattleCardInfo extends Pane {
         addText(String.valueOf(card.getHp()));
         addTextLine("Cost: ");
         addText(String.valueOf(card.getCost()));
-        if (!card.getCardInfo().getFaction().equals(CardRepository.Faction.NO_FACTION)) {
-            addTextLine("Faction: ");
-            addText(String.valueOf(card.getCardInfo().getFaction()).toLowerCase());
+        List<CardRepository.Faction> factions = card.getCardInfo().getFactions();
+        if (!factions.isEmpty()) {
+            addTextLine("Factions: ");
+            for (int i = 0; i < factions.size(); i++) {
+                if (i != factions.size() - 1) addText(factions.get(i).toString().toLowerCase() + ", ");
+                else addText(factions.get(i).toString().toLowerCase());
+            }
         }
         List<CardRepository.Status> statuses = card.getNonUtilityStatuses();
         if (!statuses.isEmpty()) {
