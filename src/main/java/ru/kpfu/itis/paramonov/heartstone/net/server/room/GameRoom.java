@@ -76,7 +76,7 @@ public class GameRoom {
         if (player.equals(player1)) return player2;
         else return player1;
     }
-    private HashMap<String, List<Card>> getAllCards(GameServer.Client player) {
+    public HashMap<String, List<Card>> getAllCards(GameServer.Client player) {
         if (player.equals(player1)) return player1AllCards;
         else return player2AllCards;
     }
@@ -135,7 +135,7 @@ public class GameRoom {
                     String action = msg.getString("card_action");
                     response.put("card_action", msg.getString("card_action"));
                     switch (action) {
-                        case "deal_dmg" -> response.put("opponent_pos", msg.getInt("opponent_pos"));
+                        case "target_enemy_card" -> response.put("opponent_pos", msg.getInt("opponent_pos"));
                     }
                 } catch (JSONException ignored) {}
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();

@@ -278,6 +278,23 @@ public class BattlefieldController {
             Card card = hand.get(handPos);
             card.setCost(json.getInt("cost"));
         }
+
+        try {
+            JSONArray frozenCards = json.getJSONArray("frozen_positions");
+            freezeEnemyCards(frozenCards, field);
+        } catch (JSONException ignored) {}
+        try {
+            JSONArray frozenCards = json.getJSONArray("opponent_frozen_positions");
+            freezeEnemyCards(frozenCards, opponentField);
+        } catch (JSONException ignored) {}
+    }
+
+    private void freezeEnemyCards(JSONArray frozenCards, List<Card> field) {
+        for (int i = 0; i < frozenCards.length(); i++) {
+            Card card = field.get(frozenCards.getInt(i));
+            card.addStatus(CardRepository.Status.FROZEN);
+            Animations.playFreezingAnimation(card.getAssociatedImageView());
+        }
     }
 
     private void setSelectionBehaviour(ImageView iv) {
@@ -295,9 +312,15 @@ public class BattlefieldController {
     private void checkShieldStatus(JSONObject json, Card card) {
         String shieldStatus = getStringParam(json, "shield_status");
         if (shieldStatus != null) {
-            if (shieldStatus.equals("removed")) {
-                card.removeStatus(CardRepository.Status.SHIELDED);
-                CardImages.removeShield(card);
+            switch (shieldStatus) {
+                case "removed" -> {
+                    card.removeStatus(CardRepository.Status.SHIELDED);
+                    CardImages.removeShield(card);
+                }
+                case "given" -> {
+                    card.addStatus(CardRepository.Status.SHIELDED);
+                    CardImages.addShield(card.getAssociatedImageView());
+                }
             }
         }
     }
@@ -410,7 +433,7 @@ public class BattlefieldController {
             String cardAction = json.getString("card_action");
             builder.addParameter("card_action", cardAction);
             switch (cardAction) {
-                case "deal_dmg" -> builder.addParameter("opponent_pos",
+                case "target_enemy_card" -> builder.addParameter("opponent_pos",
                         String.valueOf(json.getInt("opponent_pos")));
             }
         } catch (JSONException ignored) {}
@@ -489,12 +512,13 @@ public class BattlefieldController {
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
             if (handCard != null) {
-                if ((handCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
-                    sendAttackingOnPlay(handCard, selected);
-                    mouseEvent.consume();
-                    return;
+                List<CardRepository.Action> enemyCardTargetedActions = CardRepository.Action.getEnemyCardTargetedActions();
+                for (CardRepository.Action action : handCard.getCardInfo().getActions()) {
+                    if (enemyCardTargetedActions.contains(action)) {
+                        sendAttackingOnPlay(handCard, selected);
+                        mouseEvent.consume();
+                        return;
+                    }
                 }
             }
 
@@ -524,7 +548,7 @@ public class BattlefieldController {
                 .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                 .addPosition("hand_pos", hand.indexOf(handCard))
                 .addPosition("opponent_pos", opponentField.indexOf(opponentCard))
-                .addParameter("card_action", "deal_dmg")
+                .addParameter("card_action", "target_enemy_card")
                 .build();
         GameApplication.getApplication().getClient().sendMessage(msg);
     }

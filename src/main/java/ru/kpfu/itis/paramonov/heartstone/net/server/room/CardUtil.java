@@ -114,8 +114,8 @@ public class CardUtil {
         responseOther.put("hp", damagedCard.getHp());
         responseDamaged.put("atk", damagedCard.getAtk());
         responseOther.put("atk", damagedCard.getAtk());
-        checkShieldRemoved(damagedCard, responseDamaged);
-        checkShieldRemoved(damagedCard, responseOther);
+        checkShield(damagedCard, responseDamaged);
+        checkShield(damagedCard, responseOther);
 
     }
 
@@ -149,7 +149,7 @@ public class CardUtil {
             changedCard.put("atk", card.getAtk());
             if (card.getCurrentAlignedStatus() != null) changedCard.put("aligned_status", card.getCurrentAlignedStatus().toString());
             else changedCard.put("aligned_status", "no_aligned");
-            checkShieldRemoved(card, changedCard);
+            checkShield(card, changedCard);
 
             changes.put(changedCard);
         }
@@ -274,15 +274,24 @@ public class CardUtil {
         response.put("statuses", responseStatuses);
     }
 
-    public static void checkShieldRemoved(Card card, JSONObject response) {
+    public static void checkShield(Card card, JSONObject response) {
         if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_2)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_2);
             response.put("shield_status", "removed");
         }
-        if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_1)) {
+        else if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_1)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_1);
             card.addStatus(CardRepository.Status.SHIELD_REMOVED_2);
             response.put("shield_status", "removed");
+        }
+        if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_2)) {
+            card.removeStatus(CardRepository.Status.SHIELD_GIVEN_2);
+            response.put("shield_status", "given");
+        }
+        else if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_1)) {
+            card.removeStatus(CardRepository.Status.SHIELD_GIVEN_1);
+            card.addStatus(CardRepository.Status.SHIELD_GIVEN_2);
+            response.put("shield_status", "given");
         }
     }
 
