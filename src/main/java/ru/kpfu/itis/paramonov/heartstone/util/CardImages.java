@@ -39,7 +39,7 @@ public class CardImages {
             base = addShield(base);
         if (card.hasStatus(CardRepository.Status.FROZEN) && !ignoredStatuses.contains(CardRepository.Status.FROZEN))
             base = addFrozenEffect(base);
-        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) base = addTaunt(base);
+        if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) base = addTaunt(base);
         return base;
     }
 

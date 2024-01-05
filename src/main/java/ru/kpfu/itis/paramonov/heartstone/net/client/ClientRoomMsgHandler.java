@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
@@ -95,6 +96,14 @@ public class ClientRoomMsgHandler {
                         case "field_fire" -> BattlefieldController.getController().playFieldFireAnimation();
                     }
                 } catch (JSONException ignored) {}
+            }
+            case ADD_CARDS_TO_HAND -> {
+                try {
+                    JSONArray gottenCards = json.getJSONArray("gotten_cards");
+                    BattlefieldController.getController().addCardsToHand(gottenCards);
+                } catch (JSONException ignored) {
+                    BattlefieldController.getController().updateOpponentHand(json);
+                }
             }
             case TIMER_UPDATE -> BattlefieldController.getController().handleTimer(json);
         }

@@ -32,7 +32,7 @@ public class CardOnPlayedUtil {
             response.put("reason", "Not your turn");
             return;
         }
-        if (allCards.get("field").size() == CardUtil.getMaxFieldSize()) {
+        if (allCards.get("field").size() == CardUtil.MAX_FIELD_SIZE) {
             response.put("status", "not_ok");
             response.put("reason", "Full field");
             return;
@@ -226,14 +226,16 @@ public class CardOnPlayedUtil {
 
     public static void checkOnCardPlayed(GameServer.Client player, HashMap<String, List<Card>> allCards, Card playedCard,
                                          GameServer server) {
-        CardRepository.Faction faction = playedCard.getCardInfo().getFaction();
-        switch (faction) {
-            case STONE -> CardUtil.decreaseCost(CardRepository.CardTemplate.StoneGiant, allCards, player, server);
-            case ELEMENTAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.WaterGiant, allCards, player, server);
-            case ANIMAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.AnimalKing, allCards, player, server);
-            case ROBOT -> CardUtil.decreaseCost(CardRepository.CardTemplate.STAN_3000, allCards, player, server);
+        List<CardRepository.Faction> factions = playedCard.getCardInfo().getFactions();
+        for (CardRepository.Faction faction : factions) {
+            switch (faction) {
+                case STONE -> CardUtil.decreaseCost(CardRepository.CardTemplate.StoneGiant, allCards, player, server);
+                case ELEMENTAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.WaterGiant, allCards, player, server);
+                case ANIMAL -> CardUtil.decreaseCost(CardRepository.CardTemplate.AnimalKing, allCards, player, server);
+                case ROBOT -> CardUtil.decreaseCost(CardRepository.CardTemplate.STAN_3000, allCards, player, server);
+            }
         }
-        if (playedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.GIANT)) {
+        if (playedCard.hasKeyWord(CardRepository.KeyWord.GIANT)) {
             CardUtil.decreaseCost(CardRepository.CardTemplate.Deity, allCards, player, server);
         }
     }

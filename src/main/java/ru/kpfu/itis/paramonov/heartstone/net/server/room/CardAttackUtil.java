@@ -32,7 +32,7 @@ public class CardAttackUtil {
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
         boolean res = checkCardToAttack(client, activePlayer, opponentCards, response, attacker, pos, target);
         if (res) {
-            if (!attacker.getCardInfo().getActions().contains(CardRepository.Action.IGNORE_TAUNT)) {
+            if (!attacker.hasAction(CardRepository.Action.IGNORE_TAUNT)) {
                 res = checkTaunts(opponentCards, opponentPos);
                 if (!res) response.put("reason", "You must attack card with taunt");
             }
@@ -51,7 +51,7 @@ public class CardAttackUtil {
     public static List<Integer> checkTaunts(HashMap<String, List<Card>> cards) {
         List<Integer> tauntCardPositions = new ArrayList<>();
         for (Card card : cards.get("field")) {
-            if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) {
+            if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) {
                 tauntCardPositions.add(cards.get("field").indexOf(card));
             }
         }
@@ -68,13 +68,12 @@ public class CardAttackUtil {
                                                  List<Integer> attackedIndexes, Hero attackerHero, Hero attackedHero,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
                                                  GameServer.Client attackerPlayer, GameServer.Client attackedPlayer, GameRoom room) {
-        if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
+        if (attacked.hasKeyWord(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
             if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,
                         attackerPlayer, attackedPlayer);
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
-
             }
             if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
                     attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
@@ -86,7 +85,7 @@ public class CardAttackUtil {
             attackedResponse.put("target", "opponent");
             attackerResponse.put("target", "player");
         }
-        if (attacker.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.ALIGNMENT)) {
+        if (attacker.hasKeyWord(CardRepository.KeyWord.ALIGNMENT)) {
             CardRepository.Status previous = attacked.getCurrentAlignedStatus();
             CardRepository.Status alignment = AlignmentUtil.getAlignment(attacker);
             if (previous != null)
@@ -96,13 +95,14 @@ public class CardAttackUtil {
         if (attacker.hasAction(CardRepository.Action.ATTACK_ADJACENT_CARDS)) {
             JSONArray effects = null;
             boolean isCardMutantCrab = attacker.getCardInfo().getId() == CardRepository.CardTemplate.MutantCrab.getId();
-            if (isCardMutantCrab) effects = new JSONArray();
+            boolean isCardPirateParrot = attacker.getCardInfo().getId() == CardRepository.CardTemplate.PirateParrot.getId();
+            if (isCardMutantCrab || isCardPirateParrot) effects = new JSONArray();
             decreaseHpFromNeighbourCards(attacker.getAtk(), attackedField.indexOf(attacked), attackedField, attackedIndexes, effects);
-            if (isCardMutantCrab) {
+            if (isCardMutantCrab || isCardPirateParrot) {
                 attackerResponse.put("opponent_anim_indexes", effects);
-                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+                attackerResponse.put("attack_anim_src", attacker.getCardInfo().getId());
                 attackedResponse.put("player_anim_indexes", effects);
-                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+                attackerResponse.put("attack_anim_src", attacker.getCardInfo().getId());
             }
         }
     }

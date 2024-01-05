@@ -195,7 +195,8 @@ public class BattlefieldController {
             Consumer<JSONObject> onAnimationEnded = (jsonObject) -> {
                 if (getIntParam(jsonObject, "punishment_src") != null) onPunishmentDamage(jsonObject);
                 if (getIntParam(jsonObject, "attack_anim_src") != null &&
-                        getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.MutantCrab.getId()) {
+                        (getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.MutantCrab.getId() ||
+                         getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.PirateParrot.getId())) {
                     playCutAnimation(jsonObject, "opponent_anim_indexes", opponentField);
                     playCutAnimation(jsonObject, "player_anim_indexes", field);
                 }
@@ -414,7 +415,7 @@ public class BattlefieldController {
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                         .addPosition("hand_pos", hand.indexOf(selectedCard));
-                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
+                if (selectedCard.hasKeyWord(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
@@ -455,8 +456,8 @@ public class BattlefieldController {
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
-        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
+        if (card.hasStatus(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
     }
@@ -537,8 +538,8 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
-        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
+        if (card.hasStatus(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
@@ -662,6 +663,14 @@ public class BattlefieldController {
     }
 
     public void setHand(JSONArray cards) {
+        ObservableList<Node> hBoxCardsChildren = hBoxHandCards.getChildren();
+        for (int i = 0; i < cards.length(); i++) {
+            JSONObject json = cards.getJSONObject(i);
+            addCardToHand(json, hBoxCardsChildren);
+        }
+    }
+
+    public void addCardsToHand(JSONArray cards) {
         ObservableList<Node> hBoxCardsChildren = hBoxHandCards.getChildren();
         for (int i = 0; i < cards.length(); i++) {
             JSONObject json = cards.getJSONObject(i);
