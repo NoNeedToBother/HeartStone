@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.net.client;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
@@ -49,7 +50,6 @@ public class ClientRoomMsgHandler {
             case PLAY_CARD -> BattlefieldController.getController().placeCard(json);
             case CARD_CARD_ATTACK -> {
                 BattlefieldController.getController().playAttackingAnimation(json);
-                BattlefieldController.getController().updateCards(json);
                 try {
                     json.getInt("hp");
                     BattlefieldController.getController().updateHp(json);
@@ -61,12 +61,7 @@ public class ClientRoomMsgHandler {
                 else BattlefieldController.getController().showMessage(json.getString("reason"));
             }
             case CHECK_CARD_TO_ATTACK -> {
-                if (json.getString("status").equals("ok")) {
-                    switch (json.getString("target")) {
-                        case "hero" -> BattlefieldController.getController().attack(json.getInt("pos"), null, "hero");
-                        case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
-                    }
-                } else {
+                if (json.getString("status").equals("not_ok")) {
                     try {
                         String reason = json.getString("reason");
                         BattlefieldController.getController().showMessage(reason);
@@ -101,6 +96,14 @@ public class ClientRoomMsgHandler {
                         case "field_fire" -> BattlefieldController.getController().playFieldFireAnimation();
                     }
                 } catch (JSONException ignored) {}
+            }
+            case ADD_CARDS_TO_HAND -> {
+                try {
+                    JSONArray gottenCards = json.getJSONArray("gotten_cards");
+                    BattlefieldController.getController().addCardsToHand(gottenCards);
+                } catch (JSONException ignored) {
+                    BattlefieldController.getController().updateOpponentHand(json);
+                }
             }
             case TIMER_UPDATE -> BattlefieldController.getController().handleTimer(json);
         }

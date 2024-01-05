@@ -111,6 +111,10 @@ public class Card implements Sprite {
         this.hp += hp;
     }
 
+    public void decreaseCost(int cost) {
+        this.cost -= cost;
+    }
+
     public List<CardRepository.Status> getStatuses() {
         return statuses;
     }
@@ -132,6 +136,14 @@ public class Card implements Sprite {
 
     public boolean hasAction(CardRepository.Action action) {
         return cardInfo.getActions().contains(action);
+    }
+
+    public boolean hasFaction(CardRepository.Faction faction) {
+        return cardInfo.getFactions().contains(faction);
+    }
+
+    public boolean hasKeyWord(CardRepository.KeyWord keyWord) {
+        return cardInfo.getKeyWords().contains(keyWord);
     }
 
     public void getDamageAndChangeAlignment(Integer hpDecrease, CardRepository.Status alignedStatusToRemove,

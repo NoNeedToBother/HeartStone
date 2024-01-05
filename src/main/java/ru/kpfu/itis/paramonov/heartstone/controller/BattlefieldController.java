@@ -29,6 +29,8 @@ import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class BattlefieldController {
 
@@ -180,29 +182,6 @@ public class BattlefieldController {
         GameMessage.make(reason).show(root, 800, 625, 375);
     }
 
-    public void attack(Integer pos, Integer opponentPos, String target) {
-        String msg = null;
-        switch (target) {
-            case "hero" ->
-                msg = ServerMessage.builder()
-                        .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
-                        .addPosition("pos", pos)
-                        .build();
-            case "card" -> {
-                msg = ServerMessage.builder()
-                        .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
-                        .addPosition("attacked_pos", opponentPos)
-                        .addPosition("attacker_pos", pos)
-                        .build();
-
-                onCardDeselected(selectedCard.getAssociatedImageView());
-            }
-        }
-        GameApplication.getApplication().getClient().sendMessage(msg);
-    }
-
     public void playFieldFireAnimation() {
         Animations.playFieldFireAnimation(fieldEffects);
     }
@@ -213,24 +192,46 @@ public class BattlefieldController {
         try {
             int pos = json.getInt("pos");
             int opponentPos = json.getInt("opponent_pos");
-            Runnable onAnimationEnded = null;
-            Integer punishmentSrc = getIntParam(json, "punishment_src");
-            if (punishmentSrc != null) onAnimationEnded = () -> onPunishmentDamage(json);
+            Consumer<JSONObject> onAnimationEnded = (jsonObject) -> {
+                if (getIntParam(jsonObject, "punishment_src") != null) onPunishmentDamage(jsonObject);
+                if (getIntParam(jsonObject, "attack_anim_src") != null &&
+                        (getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.MutantCrab.getId() ||
+                         getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.PirateParrot.getId())) {
+                    playCutAnimation(jsonObject, "opponent_anim_indexes", opponentField);
+                    playCutAnimation(jsonObject, "player_anim_indexes", field);
+                }
+                updateCards(jsonObject);
+            };
             if (json.getString("role").equals("attacker"))
-                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView(), onAnimationEnded);
-            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView(), onAnimationEnded);
+                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(),
+                        opponentField.get(opponentPos).getAssociatedImageView(), onAnimationEnded, json);
+            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(),
+                    field.get(pos).getAssociatedImageView(), onAnimationEnded, json);
             return;
         } catch (JSONException ignored) {}
         try {
             int pos = json.getInt("field_pos");
             card = field.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait(), null);
+            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait(), null, json);
         } catch (JSONException e) {
             int pos = json.getInt("opponent_field_pos");
             card = opponentField.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null);
+            Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null, json);
         }
     }
+    private void playCutAnimation(JSONObject jsonObject, String key, List<Card> field) {
+        List<Integer> positions;
+        try {
+            positions = jsonObject.getJSONArray(key).toList()
+                    .stream()
+                    .map(obj -> (Integer) obj)
+                    .collect(Collectors.toList());
+            Animations.playCutAttackAnimation(positions, field);
+        } catch (JSONException ignored) {
+            System.out.println("BRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUH");
+        }
+    }
+
     public void notifyAttackingAnimationStopped() {
         attacking = false;
     }
@@ -278,6 +279,23 @@ public class BattlefieldController {
             Card card = hand.get(handPos);
             card.setCost(json.getInt("cost"));
         }
+
+        try {
+            JSONArray frozenCards = json.getJSONArray("frozen_positions");
+            freezeEnemyCards(frozenCards, field);
+        } catch (JSONException ignored) {}
+        try {
+            JSONArray frozenCards = json.getJSONArray("opponent_frozen_positions");
+            freezeEnemyCards(frozenCards, opponentField);
+        } catch (JSONException ignored) {}
+    }
+
+    private void freezeEnemyCards(JSONArray frozenCards, List<Card> field) {
+        for (int i = 0; i < frozenCards.length(); i++) {
+            Card card = field.get(frozenCards.getInt(i));
+            card.addStatus(CardRepository.Status.FROZEN);
+            Animations.playFreezingAnimation(card.getAssociatedImageView());
+        }
     }
 
     private void setSelectionBehaviour(ImageView iv) {
@@ -295,9 +313,15 @@ public class BattlefieldController {
     private void checkShieldStatus(JSONObject json, Card card) {
         String shieldStatus = getStringParam(json, "shield_status");
         if (shieldStatus != null) {
-            if (shieldStatus.equals("removed")) {
-                card.removeStatus(CardRepository.Status.SHIELDED);
-                CardImages.removeShield(card);
+            switch (shieldStatus) {
+                case "removed" -> {
+                    card.removeStatus(CardRepository.Status.SHIELDED);
+                    CardImages.removeShield(card);
+                }
+                case "given" -> {
+                    card.addStatus(CardRepository.Status.SHIELDED);
+                    CardImages.addShield(card.getAssociatedImageView());
+                }
             }
         }
     }
@@ -391,7 +415,7 @@ public class BattlefieldController {
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                         .addPosition("hand_pos", hand.indexOf(selectedCard));
-                if (selectedCard.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
+                if (selectedCard.hasKeyWord(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
             mouseEvent.consume();
@@ -410,7 +434,7 @@ public class BattlefieldController {
             String cardAction = json.getString("card_action");
             builder.addParameter("card_action", cardAction);
             switch (cardAction) {
-                case "deal_dmg" -> builder.addParameter("opponent_pos",
+                case "target_enemy_card" -> builder.addParameter("opponent_pos",
                         String.valueOf(json.getInt("opponent_pos")));
             }
         } catch (JSONException ignored) {}
@@ -432,8 +456,8 @@ public class BattlefieldController {
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
         field.add(card);
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
-        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
+        if (card.hasStatus(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxFieldCards.getChildren().add(cardIv);
         setOnHoverListener(cardIv, "field");
     }
@@ -489,12 +513,13 @@ public class BattlefieldController {
             Card selected = getOpponentFieldCardByImageView(cardIv);
 
             if (handCard != null) {
-                if ((handCard.getCardInfo().getActions().contains(CardRepository.Action.DAMAGE_ENEMY_ON_PLAY) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.Action.DESTROY_ENEMY_ON_PLAY)) ||
-                        handCard.getCardInfo().getActions().contains(CardRepository.Action.FREEZE_ENEMY_ON_PLAY)) {
-                    sendAttackingOnPlay(handCard, selected);
-                    mouseEvent.consume();
-                    return;
+                List<CardRepository.Action> enemyCardTargetedActions = CardRepository.Action.getEnemyCardTargetedActions();
+                for (CardRepository.Action action : handCard.getCardInfo().getActions()) {
+                    if (enemyCardTargetedActions.contains(action)) {
+                        sendAttackingOnPlay(handCard, selected);
+                        mouseEvent.consume();
+                        return;
+                    }
                 }
             }
 
@@ -513,8 +538,8 @@ public class BattlefieldController {
 
             GameApplication.getApplication().getClient().sendMessage(msg);
         });
-        if (card.getStatuses().contains(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
-        if (card.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
+        if (card.hasStatus(CardRepository.Status.SHIELDED)) CardImages.addShield(cardIv);
+        if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) CardImages.addTaunt(cardIv);
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
@@ -524,7 +549,7 @@ public class BattlefieldController {
                 .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
                 .addPosition("hand_pos", hand.indexOf(handCard))
                 .addPosition("opponent_pos", opponentField.indexOf(opponentCard))
-                .addParameter("card_action", "deal_dmg")
+                .addParameter("card_action", "target_enemy_card")
                 .build();
         GameApplication.getApplication().getClient().sendMessage(msg);
     }
@@ -638,6 +663,14 @@ public class BattlefieldController {
     }
 
     public void setHand(JSONArray cards) {
+        ObservableList<Node> hBoxCardsChildren = hBoxHandCards.getChildren();
+        for (int i = 0; i < cards.length(); i++) {
+            JSONObject json = cards.getJSONObject(i);
+            addCardToHand(json, hBoxCardsChildren);
+        }
+    }
+
+    public void addCardsToHand(JSONArray cards) {
         ObservableList<Node> hBoxCardsChildren = hBoxHandCards.getChildren();
         for (int i = 0; i < cards.length(); i++) {
             JSONObject json = cards.getJSONObject(i);
