@@ -49,7 +49,6 @@ public class ClientRoomMsgHandler {
             case PLAY_CARD -> BattlefieldController.getController().placeCard(json);
             case CARD_CARD_ATTACK -> {
                 BattlefieldController.getController().playAttackingAnimation(json);
-                BattlefieldController.getController().updateCards(json);
                 try {
                     json.getInt("hp");
                     BattlefieldController.getController().updateHp(json);

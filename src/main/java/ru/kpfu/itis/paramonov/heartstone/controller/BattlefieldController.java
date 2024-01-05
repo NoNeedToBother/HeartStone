@@ -29,6 +29,7 @@ import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BattlefieldController {
 
@@ -213,22 +214,25 @@ public class BattlefieldController {
         try {
             int pos = json.getInt("pos");
             int opponentPos = json.getInt("opponent_pos");
-            Runnable onAnimationEnded = null;
-            Integer punishmentSrc = getIntParam(json, "punishment_src");
-            if (punishmentSrc != null) onAnimationEnded = () -> onPunishmentDamage(json);
+            Consumer<JSONObject> onAnimationEnded = (jsonObject) -> {
+                if (getIntParam(jsonObject, "punishment_src") != null) onPunishmentDamage(jsonObject);
+                updateCards(jsonObject);
+            };
             if (json.getString("role").equals("attacker"))
-                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(), opponentField.get(opponentPos).getAssociatedImageView(), onAnimationEnded);
-            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(), field.get(pos).getAssociatedImageView(), onAnimationEnded);
+                Animations.playCardAttacking(field.get(pos).getAssociatedImageView(),
+                        opponentField.get(opponentPos).getAssociatedImageView(), onAnimationEnded, json);
+            else Animations.playCardAttacking(opponentField.get(opponentPos).getAssociatedImageView(),
+                    field.get(pos).getAssociatedImageView(), onAnimationEnded, json);
             return;
         } catch (JSONException ignored) {}
         try {
             int pos = json.getInt("field_pos");
             card = field.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait(), null);
+            Animations.playCardAttacking(card, opponentHeroInfo.getPortrait(), null, json);
         } catch (JSONException e) {
             int pos = json.getInt("opponent_field_pos");
             card = opponentField.get(pos).getAssociatedImageView();
-            Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null);
+            Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null, json);
         }
     }
     public void notifyAttackingAnimationStopped() {

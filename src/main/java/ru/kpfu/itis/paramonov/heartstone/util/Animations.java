@@ -12,6 +12,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
@@ -189,7 +190,7 @@ public class Animations {
         transition.get().play();
     }
 
-    public static void playCardAttacking(ImageView attacker, ImageView attacked, Runnable onAnimationEnded) {
+    public static void playCardAttacking(ImageView attacker, ImageView attacked, Consumer<JSONObject> onAnimationEnded, JSONObject jsonObject) {
         AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
         double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
         double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
@@ -199,7 +200,7 @@ public class Animations {
         double deltaY = attackedY - attackerY;
         playTransition(transition, attacker, deltaX, deltaY, 400);
         transition.get().setOnFinished(actionEvent -> {
-            if (onAnimationEnded != null) onAnimationEnded.run();
+            if (onAnimationEnded != null)  onAnimationEnded.accept(jsonObject);
             playTransition(transition, attacker, -deltaX, -deltaY, 200);
             transition.get().setOnFinished(actionEvent1 -> {
                 try {

@@ -10,12 +10,12 @@ public class CardRepository {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ALL_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
         ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
         DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG, SHIELD_ON_PLAY, GIVE_SHIELD_ON_PLAY, CANNOT_ATTACK_ON_PLAY,
-        BOARD_ON_PLAY
+        BOARD_ON_PLAY, ATTACK_ADJACENT_CARDS
     }
 
     public enum KeyWord {
-        BATTLE_CRY("Battle cry", "Triggers when card is played from hand"),
-        TAUNT("Taunt", "Cards must attack card with this status"),
+        BATTLE_CRY("Battle cry", "Triggers when this card is played from hand"),
+        TAUNT("Taunt", "Enemy cards must attack cards with this status"),
         PUNISHMENT("Punishment", "Triggers when card is attacked and survives damage"),
         FREEZE("Freeze", "Cannot attack for 1 turn"),
         RUSH("Rush", "Can attack immediately after played"),
@@ -23,7 +23,7 @@ public class CardRepository {
         GIANT("Giant", "Decreases cost when conditions are met"),
         ALIGNMENT("Alignment", "When attacking enemy cards apply corresponding alignment status"),
         SHIELD("Shield", "Blocks 1 instance of damage and disappears after"),
-        BOARD("Board!", "Can attacker enemy cards immediately after played");
+        BOARD("Board", "Can attack enemy cards immediately after played");
 
         private final String displayName;
 
@@ -188,7 +188,7 @@ public class CardRepository {
 
         SlimeWarrior(29, "Slime warrior", 4, 5, 4, "TAUNT", DEFAULT_PATH + "/warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), Faction.NO_FACTION, Rarity.COMMON, Map.of()),
-        SlimeCommander(30, "Slime commander", 4, 5, 6, "PUNISHMENT: DEALS 4 damage to opponent hero. ALIGNMENT: strength",
+        SlimeCommander(30, "Slime commander", 4, 5, 6, "PUNISHMENT: DEALS 4 damage to ENEMY HERO. ALIGNMENT: strength",
                 DEFAULT_PATH + "/slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
                 Faction.NO_FACTION, Rarity.EPIC, Map.of(StatChange.HERO_DMG, 4)),
         Postman(31, "Postman", 3, 3, 4, "When turn ENDS, DRAW a card", DEFAULT_PATH + "/postman.png",
@@ -219,7 +219,9 @@ public class CardRepository {
         SandHunter(43, "Sand hunter elemental", 7, 3, 5, "", DEFAULT_PATH + "/sand_hunter.png", List.of(),
                 List.of(), Faction.ELEMENTAL, Rarity.COMMON, Map.of()),
         BoardingPirate(44, "Boarding pirate", 4, 4, 4, "BOARD!", DEFAULT_PATH + "/boarding_pirate.png", List.of(Action.BOARD_ON_PLAY),
-                List.of(KeyWord.BOARD), Faction.PIRATE, Rarity.COMMON, Map.of());
+                List.of(KeyWord.BOARD), Faction.PIRATE, Rarity.COMMON, Map.of()),
+        MutantCrab(45, "Mutant crab", 3, 3, 5, "BOARD. When attacking DEALS same damage to adjacent enemy cards", DEFAULT_PATH + "/mutant_crab.png",
+                List.of(Action.BOARD_ON_PLAY, Action.ATTACK_ADJACENT_CARDS), List.of(KeyWord.BOARD), Faction.ANIMAL, Rarity.RARE, Map.of());
 
 
         private enum StatChange {

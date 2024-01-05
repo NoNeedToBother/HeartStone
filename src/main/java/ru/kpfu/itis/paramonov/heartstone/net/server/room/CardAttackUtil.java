@@ -67,16 +67,16 @@ public class CardAttackUtil {
                                                  List<Integer> attackedIndexes, Hero attackerHero, Hero attackedHero,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
                                                  GameServer.Client attackerPlayer, GameServer.Client attackedPlayer, GameRoom room) {
-        if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT)) {
-            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId() && attacked.getHp() > 0) {
+        if (attacked.getCardInfo().getKeyWords().contains(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
+            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,
                         attackerPlayer, attackedPlayer);
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
 
             }
-            if (attacked.getHp() > 0 && (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
-                    attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId())) {
+            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
+                    attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }
@@ -92,12 +92,20 @@ public class CardAttackUtil {
                 AlignmentUtil.onAlignedStatusApply(attacker, attacked, attackedField, attackedIndexes, previous, alignment, attackerPlayer, room);
             AlignmentUtil.addAlignment(attacked, alignment);
         }
+        if (attacker.hasAction(CardRepository.Action.ATTACK_ADJACENT_CARDS)) {
+            decreaseHpFromNeighbourCards(attacker.getAtk(), attackedField.indexOf(attacked), attackedField, attackedIndexes);
+        }
     }
-    public static void decreaseHpFromNeighbourCard(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
+    public static void decreaseHpFromNeighbourCards(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
         try {
-            Card card = field.get(pos);
+            Card card = field.get(pos - 1);
             card.decreaseHp(hpDecrease);
-            indexes.add(pos);
+            indexes.add(pos - 1);
+        } catch (IndexOutOfBoundsException ignored) {}
+        try {
+            Card card = field.get(pos + 1);
+            card.decreaseHp(hpDecrease);
+            indexes.add(pos + 1);
         } catch (IndexOutOfBoundsException ignored) {}
     }
 
