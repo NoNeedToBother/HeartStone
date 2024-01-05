@@ -24,7 +24,8 @@ public class AlignmentUtil {
                 case CHAOS -> {
                     attacked.decreaseHp(MADNESS_DIRECT_DMG);
                     int attackedIndex = attackedField.indexOf(attacked);
-                    CardAttackUtil.decreaseHpFromNeighbourCards(MADNESS_INDIRECT_DMG, attackedIndex, attackedField, attackedIndexes);
+                    CardAttackUtil.decreaseHpFromNeighbourCards(MADNESS_INDIRECT_DMG, attackedIndex, attackedField,
+                            attackedIndexes, null);
                 }
             }
         }

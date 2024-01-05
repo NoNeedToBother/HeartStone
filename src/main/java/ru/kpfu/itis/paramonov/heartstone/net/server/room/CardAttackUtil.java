@@ -1,5 +1,6 @@
 package ru.kpfu.itis.paramonov.heartstone.net.server.room;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
@@ -93,20 +94,28 @@ public class CardAttackUtil {
             AlignmentUtil.addAlignment(attacked, alignment);
         }
         if (attacker.hasAction(CardRepository.Action.ATTACK_ADJACENT_CARDS)) {
-            decreaseHpFromNeighbourCards(attacker.getAtk(), attackedField.indexOf(attacked), attackedField, attackedIndexes);
+            JSONArray effects = null;
+            boolean isCardMutantCrab = attacker.getCardInfo().getId() == CardRepository.CardTemplate.MutantCrab.getId();
+            if (isCardMutantCrab) effects = new JSONArray();
+            decreaseHpFromNeighbourCards(attacker.getAtk(), attackedField.indexOf(attacked), attackedField, attackedIndexes, effects);
+            if (isCardMutantCrab) {
+                attackerResponse.put("opponent_anim_indexes", effects);
+                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+                attackedResponse.put("player_anim_indexes", effects);
+                attackerResponse.put("attack_anim_src", CardRepository.CardTemplate.MutantCrab.getId());
+            }
         }
     }
-    public static void decreaseHpFromNeighbourCards(int hpDecrease, int pos, List<Card> field, List<Integer> indexes) {
-        try {
-            Card card = field.get(pos - 1);
-            card.decreaseHp(hpDecrease);
-            indexes.add(pos - 1);
-        } catch (IndexOutOfBoundsException ignored) {}
-        try {
-            Card card = field.get(pos + 1);
-            card.decreaseHp(hpDecrease);
-            indexes.add(pos + 1);
-        } catch (IndexOutOfBoundsException ignored) {}
+    public static void decreaseHpFromNeighbourCards(int hpDecrease, int pos, List<Card> field, List<Integer> indexes, JSONArray effects) {
+        List<Integer> positions = List.of(pos - 1, pos + 1);
+        for (Integer neighbourPos : positions) {
+            try {
+                Card card = field.get(neighbourPos);
+                card.decreaseHp(hpDecrease);
+                if (effects != null) effects.put(neighbourPos);
+                indexes.add(neighbourPos);
+            } catch (IndexOutOfBoundsException ignored) {}
+        }
     }
 
     private static void dealHeroDamageOnPunishment(Hero attackerHero, Hero attackedHero, int punishmentDamage,

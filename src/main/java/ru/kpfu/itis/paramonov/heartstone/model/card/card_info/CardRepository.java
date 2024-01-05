@@ -220,7 +220,7 @@ public class CardRepository {
                 List.of(), Faction.ELEMENTAL, Rarity.COMMON, Map.of()),
         BoardingPirate(44, "Boarding pirate", 4, 4, 4, "BOARD!", DEFAULT_PATH + "/boarding_pirate.png", List.of(Action.BOARD_ON_PLAY),
                 List.of(KeyWord.BOARD), Faction.PIRATE, Rarity.COMMON, Map.of()),
-        MutantCrab(45, "Mutant crab", 3, 3, 5, "BOARD. When attacking DEALS same damage to adjacent enemy cards", DEFAULT_PATH + "/mutant_crab.png",
+        MutantCrab(45, "Mutant crab", 3, 3, 5, "BOARD. When attacking ENEMY CARD DEALS same damage to adjacent enemy cards", DEFAULT_PATH + "/mutant_crab.png",
                 List.of(Action.BOARD_ON_PLAY, Action.ATTACK_ADJACENT_CARDS), List.of(KeyWord.BOARD), Faction.ANIMAL, Rarity.RARE, Map.of());
 
 

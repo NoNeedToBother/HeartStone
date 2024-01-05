@@ -30,6 +30,7 @@ import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class BattlefieldController {
 
@@ -181,29 +182,6 @@ public class BattlefieldController {
         GameMessage.make(reason).show(root, 800, 625, 375);
     }
 
-    public void attack(Integer pos, Integer opponentPos, String target) {
-        String msg = null;
-        switch (target) {
-            case "hero" ->
-                msg = ServerMessage.builder()
-                        .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.CARD_HERO_ATTACK)
-                        .addPosition("pos", pos)
-                        .build();
-            case "card" -> {
-                msg = ServerMessage.builder()
-                        .setEntityToConnect(ServerMessage.Entity.ROOM)
-                        .setRoomAction(GameRoom.RoomAction.CARD_CARD_ATTACK)
-                        .addPosition("attacked_pos", opponentPos)
-                        .addPosition("attacker_pos", pos)
-                        .build();
-
-                onCardDeselected(selectedCard.getAssociatedImageView());
-            }
-        }
-        GameApplication.getApplication().getClient().sendMessage(msg);
-    }
-
     public void playFieldFireAnimation() {
         Animations.playFieldFireAnimation(fieldEffects);
     }
@@ -216,6 +194,11 @@ public class BattlefieldController {
             int opponentPos = json.getInt("opponent_pos");
             Consumer<JSONObject> onAnimationEnded = (jsonObject) -> {
                 if (getIntParam(jsonObject, "punishment_src") != null) onPunishmentDamage(jsonObject);
+                if (getIntParam(jsonObject, "attack_anim_src") != null &&
+                        getIntParam(jsonObject, "attack_anim_src") == CardRepository.CardTemplate.MutantCrab.getId()) {
+                    playCutAnimation(jsonObject, "opponent_anim_indexes", opponentField);
+                    playCutAnimation(jsonObject, "player_anim_indexes", field);
+                }
                 updateCards(jsonObject);
             };
             if (json.getString("role").equals("attacker"))
@@ -235,6 +218,19 @@ public class BattlefieldController {
             Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null, json);
         }
     }
+    private void playCutAnimation(JSONObject jsonObject, String key, List<Card> field) {
+        List<Integer> positions;
+        try {
+            positions = jsonObject.getJSONArray(key).toList()
+                    .stream()
+                    .map(obj -> (Integer) obj)
+                    .collect(Collectors.toList());
+            Animations.playCutAttackAnimation(positions, field);
+        } catch (JSONException ignored) {
+            System.out.println("BRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUH");
+        }
+    }
+
     public void notifyAttackingAnimationStopped() {
         attacking = false;
     }

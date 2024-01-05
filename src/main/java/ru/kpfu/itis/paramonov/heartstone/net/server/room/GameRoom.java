@@ -228,60 +228,64 @@ public class GameRoom {
                     CardAttackUtil.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)),
                             response, allCards.get("field").get(pos), pos, opponentPos, target);
                 }
-                sendResponse(response.toString(), client);
-            }
-
-            case CARD_HERO_ATTACK -> {
-                HashMap<String, List<Card>> allCards = getAllCards(client);
-                Card attacker = allCards.get("field").get(msg.getInt("pos"));
-                Hero attackedHero;
-                if (client.equals(player1)) attackedHero = player2Hero;
-                else attackedHero = player1Hero;
-                JSONObject responseAttacker = new JSONObject();
-                JSONObject responseAttacked = new JSONObject();
-                PlayerRoomUtil.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker, msg.getInt("pos"));
-
-                sendResponse(responseAttacker.toString(), client);
-                sendResponse(responseAttacked.toString(), getOtherPlayer(client));
-                attacker.addStatus(CardRepository.Status.ATTACKED);
-
-                if (attackedHero.getHp() <= 0) {
-                    onPlayerDefeated();
+                if (response.getString("status").equals("not_ok")) sendResponse(response.toString(), client);
+                else {
+                    if (target.equals("hero")) onCardHeroAttack(msg, client);
+                    else onCardCardAttack(msg, client);
                 }
             }
+        }
+    }
 
-            case CARD_CARD_ATTACK -> {
-                GameServer.Client otherPlayer = getOtherPlayer(client);
-                Hero attackerHero = getHero(client);
-                Hero attackedHero = getHero(otherPlayer);
-                List<Card> attackerField = getAllCards(client).get("field");
-                List<Card> attackedField = getAllCards(otherPlayer).get("field");
-                int attackerPos = msg.getInt("attacker_pos");
-                int attackedPos = msg.getInt("attacked_pos");
+    private void onCardCardAttack(JSONObject msg, GameServer.Client client) {
+        GameServer.Client otherPlayer = getOtherPlayer(client);
+        Hero attackerHero = getHero(client);
+        Hero attackedHero = getHero(otherPlayer);
+        List<Card> attackerField = getAllCards(client).get("field");
+        List<Card> attackedField = getAllCards(otherPlayer).get("field");
+        int attackerPos = msg.getInt("pos");
+        int attackedPos = msg.getInt("opponent_pos");
 
-                Card attacker = attackerField.get(attackerPos);
-                Card attacked = attackedField.get(attackedPos);
-                attacker.addStatus(CardRepository.Status.ATTACKED);
-                CardAttackUtil.decreaseHpOnDirectAttack(attacker, attacked);
+        Card attacker = attackerField.get(attackerPos);
+        Card attacked = attackedField.get(attackedPos);
+        attacker.addStatus(CardRepository.Status.ATTACKED);
+        CardAttackUtil.decreaseHpOnDirectAttack(attacker, attacked);
 
-                JSONObject attackerResponse = new JSONObject();
-                JSONObject attackedResponse = new JSONObject();
-                List<Integer> attackerIndexes = new ArrayList<>(List.of(attackerPos));
-                List<Integer> attackedIndexes = new ArrayList<>(List.of(attackedPos));
-                CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerIndexes, attackedIndexes,
-                        attackerHero, attackedHero, attackerResponse, attackedResponse, client, getOtherPlayer(client), this);
+        JSONObject attackerResponse = new JSONObject();
+        JSONObject attackedResponse = new JSONObject();
+        List<Integer> attackerIndexes = new ArrayList<>(List.of(attackerPos));
+        List<Integer> attackedIndexes = new ArrayList<>(List.of(attackedPos));
+        CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerIndexes, attackedIndexes,
+                attackerHero, attackedHero, attackerResponse, attackedResponse, client, getOtherPlayer(client), this);
 
-                CardAttackUtil.putCardCardAttackAnimationInfo(attackerResponse, attackerPos, attackedPos, "attacker");
-                CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, attackerIndexes, attackedIndexes);
-                sendResponse(attackerResponse.toString(), client);
+        CardAttackUtil.putCardCardAttackAnimationInfo(attackerResponse, attackerPos, attackedPos, "attacker");
+        CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, attackerIndexes, attackedIndexes);
+        sendResponse(attackerResponse.toString(), client);
 
-                CardAttackUtil.putCardCardAttackAnimationInfo(attackedResponse, attackedPos, attackerPos, "attacked");
-                CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, attackedIndexes, attackerIndexes);
-                sendResponse(attackedResponse.toString(), getOtherPlayer(client));
+        CardAttackUtil.putCardCardAttackAnimationInfo(attackedResponse, attackedPos, attackerPos, "attacked");
+        CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, attackedIndexes, attackerIndexes);
+        sendResponse(attackedResponse.toString(), getOtherPlayer(client));
 
-                CardUtil.removeDefeatedCards(attackerField);
-                CardUtil.removeDefeatedCards(attackedField);
-            }
+        CardUtil.removeDefeatedCards(attackerField);
+        CardUtil.removeDefeatedCards(attackedField);
+    }
+
+    private void onCardHeroAttack(JSONObject msg, GameServer.Client client) {
+        HashMap<String, List<Card>> allCards = getAllCards(client);
+        Card attacker = allCards.get("field").get(msg.getInt("pos"));
+        Hero attackedHero;
+        if (client.equals(player1)) attackedHero = player2Hero;
+        else attackedHero = player1Hero;
+        JSONObject responseAttacker = new JSONObject();
+        JSONObject responseAttacked = new JSONObject();
+        PlayerRoomUtil.onHeroAttacked(responseAttacker, responseAttacked, attackedHero, attacker, msg.getInt("pos"));
+
+        sendResponse(responseAttacker.toString(), client);
+        sendResponse(responseAttacked.toString(), getOtherPlayer(client));
+        attacker.addStatus(CardRepository.Status.ATTACKED);
+
+        if (attackedHero.getHp() <= 0) {
+            onPlayerDefeated();
         }
     }
 

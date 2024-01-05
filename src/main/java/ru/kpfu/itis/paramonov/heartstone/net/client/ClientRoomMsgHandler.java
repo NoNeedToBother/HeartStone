@@ -60,12 +60,7 @@ public class ClientRoomMsgHandler {
                 else BattlefieldController.getController().showMessage(json.getString("reason"));
             }
             case CHECK_CARD_TO_ATTACK -> {
-                if (json.getString("status").equals("ok")) {
-                    switch (json.getString("target")) {
-                        case "hero" -> BattlefieldController.getController().attack(json.getInt("pos"), null, "hero");
-                        case "card" -> BattlefieldController.getController().attack(json.getInt("pos"), json.getInt("opponent_pos"), "card");
-                    }
-                } else {
+                if (json.getString("status").equals("not_ok")) {
                     try {
                         String reason = json.getString("reason");
                         BattlefieldController.getController().showMessage(reason);
