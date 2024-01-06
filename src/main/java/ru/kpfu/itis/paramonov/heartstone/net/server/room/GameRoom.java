@@ -73,6 +73,9 @@ public class GameRoom {
         if (activePlayer.equals(player1)) return player2;
         else return player1;
     }
+    public GameServer.Client getActivePlayer() {
+        return activePlayer;
+    }
     public GameServer.Client getOtherPlayer(GameServer.Client player) {
         if (player.equals(player1)) return player2;
         else return player1;
@@ -81,29 +84,35 @@ public class GameRoom {
         if (player.equals(player1)) return player1AllCards;
         else return player2AllCards;
     }
-    private Hero getHero(GameServer.Client player) {
+    public Hero getHero(GameServer.Client player) {
         if (player.equals(player1)) return player1Hero;
         else return player2Hero;
     }
 
-    public void handleMessage(JSONObject msg, GameServer.Client client) {
+    private Thread getTimer(GameServer.Client player) {
+        if (player.equals(player1)) return player1Timer;
+        else return player2Timer;
+    }
+
+    public void handleMessage(JSONObject msg, GameServer.Client player) {
+        System.out.println(msg.toString());
         switch (RoomAction.valueOf(msg.getString("room_action"))) {
             case END_TURN -> {
-                if (client.equals(player1)) {
-                    player1Timer.interrupt();
-                    activePlayer = player2;
-                    CardUtil.changeCardAbilityToAttackOnTurnEnd(player1AllCards.get("field"), player1, player2, server);
-                }
-                else {
-                    player2Timer.interrupt();
-                    activePlayer = player1;
-                    CardUtil.changeCardAbilityToAttackOnTurnEnd(player2AllCards.get("field"), player2, player1, server);
-                }
-                CardUtil.checkEndTurnCards(client, server, this);
                 JSONObject responseEnd = new JSONObject();
+                if (!player.equals(activePlayer)) {
+                    responseEnd.put("status", "not_ok");
+                    responseEnd.put("reason", "Not your turn!");
+                    server.sendResponse(responseEnd.toString(), player);
+                    return;
+                }
+                getTimer(player).interrupt();
+                activePlayer = getOtherPlayer(player);
+                CardUtil.changeCardAbilityToAttackOnTurnEnd(getAllCards(player).get("field"), player,
+                        getOtherPlayer(player), this);
+                CardUtil.checkEndTurnCards(player, server, this);
                 responseEnd.put("room_action", RoomAction.END_TURN.toString());
                 responseEnd.put("status", "ok");
-                sendResponse(responseEnd.toString(), client);
+                sendResponse(responseEnd.toString(), player);
 
                 JSONObject responseBegin = new JSONObject();
                 responseBegin.put("room_action", RoomAction.BEGIN_TURN.toString());
@@ -123,15 +132,21 @@ public class GameRoom {
             case CHECK_CARD_PLAYED -> {
                 JSONObject response = new JSONObject();
                 response.put("room_action", RoomAction.CHECK_CARD_PLAYED.toString());
-                if (client != activePlayer) {
-                    response.put("status", "ok");
+                if (player != activePlayer) {
+                    response.put("room_action", RoomAction.CHECK_CARD_PLAYED);
+                    response.put("status", "not_ok");
                     response.put("reason", "Not your turn");
-                    sendResponse(response.toString(), client);
+                    sendResponse(response.toString(), player);
+                    return;
                 }
-                int mana = getHero(client).getMana();
+                if (!checkCardIdFrom(msg, getAllCards(player).get("hand"), msg.getInt("hand_pos"), false)) {
+                    response.put("room_action", RoomAction.CHECK_CARD_PLAYED);
+                    putInvalidDataAndSendResponse(response, player);
+                    return;
+                }
+                int mana = getHero(player).getMana();
 
-                CardOnPlayedUtil.checkCardPlayed(response, client, activePlayer, player1, msg.getInt("hand_pos"),
-                        player1AllCards, player2AllCards, mana);
+                CardOnPlayedUtil.checkCardPlayed(response, player, msg.getInt("hand_pos"), mana, this);
                 try {
                     String action = msg.getString("card_action");
                     response.put("card_action", msg.getString("card_action"));
@@ -140,17 +155,17 @@ public class GameRoom {
                     }
                 } catch (JSONException ignored) {}
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();
-                Card card = getAllCards(client).get("hand").get(msg.getInt("hand_pos"));
+                Card card = getAllCards(player).get("hand").get(msg.getInt("hand_pos"));
                 if (card.hasAction(CardRepository.Action.SHIELD_ON_PLAY)) {
                     initialStatuses.add(CardRepository.Status.SHIELDED);
                 }
                 CardUtil.putStatuses(initialStatuses, response);
-                sendResponse(response.toString(), client);
+                sendResponse(response.toString(), player);
             }
 
             case PLAY_CARD -> {
                 JSONObject opponentResponse = new JSONObject();
-                Card playedCard = CardOnPlayedUtil.onCardPlayed(msg, client, player1, player1AllCards, player2AllCards);
+                Card playedCard = CardOnPlayedUtil.addCardOnFieldWhenCardPlayed(msg, player, this);
                 List<CardRepository.Status> initialStatuses = new ArrayList<>();
                 if (playedCard.hasAction(CardRepository.Action.CANNOT_ATTACK_ON_PLAY))
                     playedCard.addStatus(CardRepository.Status.CANNOT_ATTACK);
@@ -158,9 +173,9 @@ public class GameRoom {
                     playedCard.addStatus(CardRepository.Status.SHIELDED);
                     initialStatuses.add(CardRepository.Status.SHIELDED);
                 }
-                if (client.equals(player1)) player1AllCards.get("played").add(playedCard);
+                if (player.equals(player1)) player1AllCards.get("played").add(playedCard);
                 else player2AllCards.get("played").add(playedCard);
-                Hero hero = getHero(client);
+                Hero hero = getHero(player);
                 int newMana = hero.getMana() - playedCard.getCost();
                 hero.setMana(newMana);
                 opponentResponse.put("room_action", RoomAction.PLAY_CARD_OPPONENT.toString());
@@ -168,49 +183,55 @@ public class GameRoom {
                 CardUtil.putCardStatsAndId(playedCard, opponentResponse);
                 CardUtil.putStatuses(initialStatuses, opponentResponse);
                 opponentResponse.put("opponent_mana", newMana);
-                opponentResponse.put("opponent_hand_size", getAllCards(client).get("hand").size());
-                sendResponse(opponentResponse.toString(), getOtherPlayer(client));
+                opponentResponse.put("opponent_hand_size", getAllCards(player).get("hand").size());
+                sendResponse(opponentResponse.toString(), getOtherPlayer(player));
 
                 JSONObject response = new JSONObject();
                 response.put("room_action", RoomAction.PLAY_CARD.toString());
                 response.put("pos", msg.getInt("pos"));
                 CardUtil.putStatuses(initialStatuses, response);
                 response.put("mana", newMana);
-                sendResponse(response.toString(), client);
+                sendResponse(response.toString(), player);
 
-                CardOnPlayedUtil.checkOnCardPlayed(client, getAllCards(client), playedCard, server);
+                CardOnPlayedUtil.checkOnCardPlayed(player, getAllCards(player), playedCard, this);
 
                 if (playedCard.hasKeyWord(CardRepository.KeyWord.BATTLE_CRY)) {
                     try {
                         msg.getString("card_action");
-                        JSONObject responsePlayer1 = new JSONObject();
-                        JSONObject responsePlayer2 = new JSONObject();
-                        CardOnPlayedUtil.checkBattleCry(client, player1, player2, player1AllCards, player2AllCards,
-                                playedCard, msg, responsePlayer1, responsePlayer2, server, this);
+                        JSONObject responsePlayer = new JSONObject();
+                        JSONObject responsePlayerTargeted = new JSONObject();
+                        CardOnPlayedUtil.checkBattleCry(player, playedCard, msg, responsePlayer, responsePlayerTargeted, this);
                     } catch (JSONException ignored) {}
                 }
             }
 
             case CHECK_CARD_TO_ATTACK -> {
                 JSONObject response = new JSONObject();
-                HashMap<String, List<Card>> allCards = getAllCards(client);
+                HashMap<String, List<Card>> allCards = getAllCards(player);
                 String target = msg.getString("target");
                 int pos = msg.getInt("pos");
-                if(client != activePlayer) {
+                if(player != activePlayer) {
+                    response.put("room_action", RoomAction.CHECK_CARD_TO_ATTACK);
                     response.put("status", "ok");
                     response.put("reason", "Not your turn");
-                    sendResponse(response.toString(), client);
+                    sendResponse(response.toString(), player);
+                    return;
                 }
+                if (!checkCardIdFrom(msg, allCards.get("field"), pos, false)) {
+                    response.put("room_action", RoomAction.CHECK_CARD_TO_ATTACK);
+                    putInvalidDataAndSendResponse(response, player);
+                    return;
+                };
                 if (target.equals("hero")) {
-                    boolean res = CardAttackUtil.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)),
-                            response, allCards.get("field").get(pos), pos, target);
+                    boolean res = CardAttackUtil.checkCardToAttack(player, activePlayer, response,
+                            allCards.get("field").get(pos), pos, target);
                     if (!res) {
                         response.put("status", "not_ok");
                         response.put("reason", "The card cannot attack right now");
                     }
                     else {
                         if (!allCards.get("field").get(pos).hasAction(CardRepository.Action.IGNORE_TAUNT)) {
-                            List<Integer> positions = CardAttackUtil.checkTaunts(getAllCards(getOtherPlayer(client)));
+                            List<Integer> positions = CardAttackUtil.checkTaunts(getAllCards(getOtherPlayer(player)));
                             if (positions.size() > 0) {
                                 response.put("status", "not_ok");
                                 response.put("reason", "You must attack card with taunt");
@@ -226,23 +247,41 @@ public class GameRoom {
                     }
                 } else {
                     int opponentPos = msg.getInt("opponent_pos");
-                    CardAttackUtil.checkCardToAttack(client, activePlayer, getAllCards(getOtherPlayer(activePlayer)),
+                    if (!checkCardIdFrom(msg, getAllCards(getOtherPlayer(player)).get("field"), opponentPos, true)) {
+                        response.put("room_action", RoomAction.CHECK_CARD_TO_ATTACK);
+                        putInvalidDataAndSendResponse(response, player);
+                        return;
+                    }
+                    CardAttackUtil.checkCardToAttack(player, activePlayer, getAllCards(getOtherPlayer(activePlayer)),
                             response, allCards.get("field").get(pos), pos, opponentPos, target);
                 }
-                if (response.getString("status").equals("not_ok")) sendResponse(response.toString(), client);
+                if (response.getString("status").equals("not_ok")) sendResponse(response.toString(), player);
                 else {
-                    if (target.equals("hero")) onCardHeroAttack(msg, client);
-                    else onCardCardAttack(msg, client);
+                    if (target.equals("hero")) onCardHeroAttack(msg, player);
+                    else onCardCardAttack(msg, player);
                 }
             }
         }
     }
 
-    private void onCardCardAttack(JSONObject msg, GameServer.Client client) {
-        GameServer.Client otherPlayer = getOtherPlayer(client);
-        Hero attackerHero = getHero(client);
-        Hero attackedHero = getHero(otherPlayer);
-        List<Card> attackerField = getAllCards(client).get("field");
+    private boolean checkCardIdFrom(JSONObject msg, List<Card> from, int pos, boolean isOpponent) {
+        int realId = from.get(pos).getCardInfo().getId();
+        if (!isOpponent) {
+            return (realId == msg.getInt("card_id"));
+        } else {
+            return (realId == msg.getInt("opponent_card_id"));
+        }
+    }
+
+    private void putInvalidDataAndSendResponse(JSONObject response, GameServer.Client player) {
+        response.put("status", "not_ok");
+        response.put("reason", "There is something wrong with your client.\n Consider quitting");
+        sendResponse(response.toString(), player);
+    }
+
+    private void onCardCardAttack(JSONObject msg, GameServer.Client player) {
+        GameServer.Client otherPlayer = getOtherPlayer(player);
+        List<Card> attackerField = getAllCards(player).get("field");
         List<Card> attackedField = getAllCards(otherPlayer).get("field");
         int attackerPos = msg.getInt("pos");
         int attackedPos = msg.getInt("opponent_pos");
@@ -256,16 +295,16 @@ public class GameRoom {
         JSONObject attackedResponse = new JSONObject();
         List<Integer> attackerIndexes = new ArrayList<>(List.of(attackerPos));
         List<Integer> attackedIndexes = new ArrayList<>(List.of(attackedPos));
-        CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerField, attackedField, attackerIndexes, attackedIndexes,
-                attackerHero, attackedHero, attackerResponse, attackedResponse, client, getOtherPlayer(client), this);
+        CardAttackUtil.checkAttackSpecialEffects(attacker, attacked, attackerIndexes, attackedIndexes,
+                attackerResponse, attackedResponse, player, this);
 
         CardAttackUtil.putCardCardAttackAnimationInfo(attackerResponse, attackerPos, attackedPos, "attacker");
         CardUtil.putFieldChanges(attackerResponse, attackerField, attackedField, attackerIndexes, attackedIndexes);
-        sendResponse(attackerResponse.toString(), client);
+        sendResponse(attackerResponse.toString(), player);
 
         CardAttackUtil.putCardCardAttackAnimationInfo(attackedResponse, attackedPos, attackerPos, "attacked");
         CardUtil.putFieldChanges(attackedResponse, attackedField, attackerField, attackedIndexes, attackerIndexes);
-        sendResponse(attackedResponse.toString(), getOtherPlayer(client));
+        sendResponse(attackedResponse.toString(), getOtherPlayer(player));
 
         CardUtil.removeDefeatedCards(attackerField);
         CardUtil.removeDefeatedCards(attackedField);
@@ -337,7 +376,7 @@ public class GameRoom {
                 response.put("card_status", "drawn");
             }
             CardUtil.putCardInfo(cardToDraw, response);
-            CardUtil.checkProfessorDogOnCardDraw(allCards.get("field"), client, getOtherPlayer(client), server);
+            CardUtil.checkProfessorDogOnCardDraw(allCards.get("field"), client, getOtherPlayer(client), this);
         } catch (IndexOutOfBoundsException e) {
             response.put("card_status", "no_card");
             JSONObject responsePlayer1 = new JSONObject();
@@ -372,8 +411,7 @@ public class GameRoom {
         GameServer.Client defeated = getOtherPlayer(winner);
         PlayerRoomUtil.onHeroDefeated(responseWinner, responseDefeated, winner, defeated);
         end();
-        sendResponse(responseWinner.toString(), winner);
-        sendResponse(responseDefeated.toString(), defeated);
+        sendResponses(responseWinner, responseDefeated, winner, defeated);
     }
 
     private void sendResponse(String response, GameServer.Client client) {
@@ -427,8 +465,7 @@ public class GameRoom {
         putInitialInfo(player1Response, player2Response, player1AllCards.get("deck"), player1, randomBg);
         putInitialInfo(player2Response, player1Response, player2AllCards.get("deck"), player2, randomBg);
 
-        sendResponse(player1Response.toString(), player1);
-        sendResponse(player2Response.toString(), player2);
+        sendResponses(player1Response, player2Response, player1, player2);
     }
 
     private final int INITIAL_HAND_SIZE = 4;
@@ -488,6 +525,21 @@ public class GameRoom {
             PlayerRoomUtil.updateUsers(response, getOtherPlayer(client), client);
         } catch (SQLException e) {}
         sendResponse(response.toString(), getOtherPlayer(client));
+    }
+
+    public void putRoomAction(JSONObject responsePlayer, JSONObject responseOtherPlayer, RoomAction action) {
+        responsePlayer.put("room_action", action.toString());
+        responseOtherPlayer.put("room_action", action.toString());
+    }
+
+    public void sendResponses(JSONObject responsePlayer, JSONObject responseOtherPlayer, GameServer.Client player,
+                              GameServer.Client otherPlayer) {
+        server.sendResponse(responsePlayer.toString(), player);
+        server.sendResponse(responseOtherPlayer.toString(), otherPlayer);
+    }
+
+    public GameServer getServer() {
+        return server;
     }
 
     private void end() {

@@ -163,7 +163,8 @@ public class BattlefieldController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
-                    .addPosition("pos", field.indexOf(selectedCard))
+                    .addParameter("pos", field.indexOf(selectedCard))
+                    .addParameter("card_id", selectedCard.getCardInfo().getId())
                     .addParameter("target", "hero")
                     .build();
 
@@ -414,7 +415,8 @@ public class BattlefieldController {
                 ServerMessage.ServerMessageBuilder msg = ServerMessage.builder()
                         .setEntityToConnect(ServerMessage.Entity.ROOM)
                         .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                        .addPosition("hand_pos", hand.indexOf(selectedCard));
+                        .addParameter("hand_pos", hand.indexOf(selectedCard))
+                        .addParameter("card_id", selectedCard.getCardInfo().getId());
                 if (selectedCard.hasKeyWord(CardRepository.KeyWord.BATTLE_CRY)) msg.addParameter("card_action", "action");
                 GameApplication.getApplication().getClient().sendMessage(msg.build());
             }
@@ -428,7 +430,8 @@ public class BattlefieldController {
         ServerMessage.ServerMessageBuilder builder = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.PLAY_CARD)
-                .addPosition("pos", handPos);
+                .addParameter("pos", handPos)
+                .addParameter("card_id", hand.get(handPos).getCardInfo().getId());
 
         try {
             String cardAction = json.getString("card_action");
@@ -510,13 +513,13 @@ public class BattlefieldController {
             if (checkAttacking(mouseEvent)) return;
 
             Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
-            Card selected = getOpponentFieldCardByImageView(cardIv);
+            Card selectedEnemyCard = getOpponentFieldCardByImageView(cardIv);
 
             if (handCard != null) {
                 List<CardRepository.Action> enemyCardTargetedActions = CardRepository.Action.getEnemyCardTargetedActions();
                 for (CardRepository.Action action : handCard.getCardInfo().getActions()) {
                     if (enemyCardTargetedActions.contains(action)) {
-                        sendAttackingOnPlay(handCard, selected);
+                        sendAttackingOnPlay(handCard, selectedEnemyCard);
                         mouseEvent.consume();
                         return;
                     }
@@ -531,9 +534,11 @@ public class BattlefieldController {
             String msg = ServerMessage.builder()
                     .setEntityToConnect(ServerMessage.Entity.ROOM)
                     .setRoomAction(GameRoom.RoomAction.CHECK_CARD_TO_ATTACK)
-                    .addPosition("pos", field.indexOf(selectedCard))
-                    .addPosition("opponent_pos", opponentField.indexOf(selected))
+                    .addParameter("pos", field.indexOf(selectedCard))
+                    .addParameter("opponent_pos", opponentField.indexOf(selectedEnemyCard))
                     .addParameter("target", "card")
+                    .addParameter("card_id", selectedCard.getCardInfo().getId())
+                    .addParameter("opponent_card_id", selectedEnemyCard.getCardInfo().getId())
                     .build();
 
             GameApplication.getApplication().getClient().sendMessage(msg);
@@ -547,9 +552,11 @@ public class BattlefieldController {
         String msg = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
-                .addPosition("hand_pos", hand.indexOf(handCard))
-                .addPosition("opponent_pos", opponentField.indexOf(opponentCard))
+                .addParameter("hand_pos", hand.indexOf(handCard))
+                .addParameter("opponent_pos", opponentField.indexOf(opponentCard))
                 .addParameter("card_action", "target_enemy_card")
+                .addParameter("card_id", handCard.getCardInfo().getId())
+                .addParameter("opponent_card_id", opponentCard.getCardInfo().getId())
                 .build();
         GameApplication.getApplication().getClient().sendMessage(msg);
     }

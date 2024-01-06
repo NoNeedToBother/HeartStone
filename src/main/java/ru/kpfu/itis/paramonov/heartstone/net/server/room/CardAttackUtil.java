@@ -13,8 +13,7 @@ import java.util.List;
 
 public class CardAttackUtil {
     public static boolean checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer,
-                                            HashMap<String, List<Card>> opponentCards, JSONObject response,
-                                            Card attacker, int pos, String target) {
+                                            JSONObject response, Card attacker, int pos, String target) {
         response.put("room_action", GameRoom.RoomAction.CHECK_CARD_TO_ATTACK);
         response.put("pos", pos);
         response.put("target", target);
@@ -30,7 +29,7 @@ public class CardAttackUtil {
 
     public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, HashMap<String, List<Card>> opponentCards,
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
-        boolean res = checkCardToAttack(client, activePlayer, opponentCards, response, attacker, pos, target);
+        boolean res = checkCardToAttack(client, activePlayer, response, attacker, pos, target);
         if (res) {
             if (!attacker.hasAction(CardRepository.Action.IGNORE_TAUNT)) {
                 res = checkTaunts(opponentCards, opponentPos);
@@ -63,11 +62,14 @@ public class CardAttackUtil {
         attacker.decreaseHp(attacked.getAtk());
     }
 
-    public static void checkAttackSpecialEffects(Card attacker, Card attacked, List<Card> attackerField,
-                                                 List<Card> attackedField, List<Integer> attackerIndexes,
-                                                 List<Integer> attackedIndexes, Hero attackerHero, Hero attackedHero,
+    public static void checkAttackSpecialEffects(Card attacker, Card attacked, List<Integer> attackerIndexes, List<Integer> attackedIndexes,
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
-                                                 GameServer.Client attackerPlayer, GameServer.Client attackedPlayer, GameRoom room) {
+                                                 GameServer.Client attackerPlayer, GameRoom room) {
+        GameServer.Client attackedPlayer = room.getOtherPlayer(attackerPlayer);
+        Hero attackerHero = room.getHero(attackerPlayer);
+        Hero attackedHero = room.getHero(attackedPlayer);
+        List<Card> attackerField = room.getAllCards(attackerPlayer).get("field");
+        List<Card> attackedField = room.getAllCards(attackedPlayer).get("field");
         if (attacked.hasKeyWord(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
             if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,
@@ -75,8 +77,7 @@ public class CardAttackUtil {
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
             }
-            if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.SlimeCommander.getId() ||
-                    attacked.getCardInfo().getId() == CardRepository.CardTemplate.HeartStone.getId()) {
+            if (attacked.hasAction(CardRepository.Action.DAMAGE_ENEMY_HERO_ON_DMG)) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }

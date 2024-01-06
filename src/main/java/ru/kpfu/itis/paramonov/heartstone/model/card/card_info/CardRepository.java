@@ -2,14 +2,13 @@ package ru.kpfu.itis.paramonov.heartstone.model.card.card_info;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class CardRepository {
 
     public enum Action {
         RUSH_ON_PLAY, DAMAGE_ENEMY_ON_PLAY, DESTROY_ENEMY_ON_PLAY, DAMAGE_ALL_ON_PLAY, HP_UP, ATK_UP, FREEZE_ENEMY_ON_PLAY,
-        ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
+        ON_END_TURN, COST_DOWN, IGNORE_TAUNT, DAMAGE_ENEMY_HERO_ON_DMG, DRAW_CARD_ON_PLAY, DEAL_ENERGY_DMG, DEAL_INTELLIGENCE_DMG,
         DEAL_VOID_DMG, DEAL_LIFE_DMG, DEAL_STRENGTH_DMG, DEAL_CHAOS_DMG, SHIELD_ON_PLAY, GIVE_SHIELD_ON_PLAY, CANNOT_ATTACK_ON_PLAY,
         BOARD_ON_PLAY, ATTACK_ADJACENT_CARDS, FREEZE_ADJACENT_CARDS_ON_PLAY, GIVE_CARD_ON_TURN_END;
 
@@ -144,7 +143,7 @@ public class CardRepository {
         IceElemental(5, "Ice elemental", 2, 1, 1, "BATTLECRY: FREEZES chosen ENEMY CARD", "ice_elemental.png",
                 List.of(Action.FREEZE_ENEMY_ON_PLAY), List.of(KeyWord.BATTLE_CRY, KeyWord.FREEZE), List.of(Faction.ELEMENTAL), Rarity.COMMON, Map.of()),
         TheRock(6, "The Rock", 4, 4, 5, "PUNISHMENT: DEALS damage equal to its attack to ENEMY HERO, GAINS +2/1",
-                "dwayne_rock.png", List.of(Action.DAMAGE_HERO_ON_DMG), List.of(KeyWord.PUNISHMENT), List.of(),
+                "dwayne_rock.png", List.of(Action.DAMAGE_ENEMY_HERO_ON_DMG), List.of(KeyWord.PUNISHMENT), List.of(),
                 Rarity.LEGENDARY, Map.of(StatChange.ATK, 2, StatChange.HP, 1)),
         HypnoShroom(7, "Hypnoshroom", 6, 4, 6, "When turn ENDS, gains CONTROL of random ENEMY CARD",
                 "hypnoshroom.png", List.of(Action.ON_END_TURN), List.of(), List.of(), Rarity.LEGENDARY, Map.of()),
@@ -196,7 +195,7 @@ public class CardRepository {
         SlimeWarrior(29, "Slime warrior", 4, 5, 4, "TAUNT", "warrior_slime.png",
                 List.of(), List.of(KeyWord.TAUNT), List.of(), Rarity.COMMON, Map.of()),
         SlimeCommander(30, "Slime commander", 4, 5, 6, "PUNISHMENT: DEALS 4 damage to ENEMY HERO. ALIGNMENT: strength",
-                "slime_commander.png", List.of(Action.DAMAGE_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
+                "slime_commander.png", List.of(Action.DAMAGE_ENEMY_HERO_ON_DMG, Action.DEAL_STRENGTH_DMG), List.of(KeyWord.BATTLE_CRY, KeyWord.ALIGNMENT),
                 List.of(), Rarity.EPIC, Map.of(StatChange.HERO_DMG, 4)),
         Postman(31, "Postman", 3, 3, 4, "When turn ENDS, DRAW a card", "postman.png",
                 List.of(), List.of(), List.of(), Rarity.RARE, Map.of(StatChange.CARD_DRAWN, 1)),
