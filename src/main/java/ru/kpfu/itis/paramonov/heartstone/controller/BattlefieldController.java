@@ -651,11 +651,7 @@ public class BattlefieldController {
     }
 
     private void selectCard(ImageView card) {
-        Image sprite = Card.spriteBuilder()
-                .addImage(selectedCard.getCardInfo().getPortraitUrl())
-                .setStyle(Card.CardStyle.SELECTED.toString())
-                .addRarity(selectedCard.getCardInfo().getRarity())
-                .build();
+        Image sprite = CardImages.getSelectedPortraitWithStatusesAndEffects(selectedCard, List.of());
 
         card.setImage(sprite);
     }
@@ -664,7 +660,7 @@ public class BattlefieldController {
         Card deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
         if(deselected == null) return;
-        Image sprite = CardImages.getPortrait(deselected.getCardInfo().getId());
+        Image sprite = CardImages.getPortraitWithStatusesAndEffects(deselected, List.of());
 
         card.setImage(sprite);
     }
