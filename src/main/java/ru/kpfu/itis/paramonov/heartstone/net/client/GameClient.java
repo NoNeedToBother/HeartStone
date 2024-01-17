@@ -68,9 +68,9 @@ public class GameClient {
                 while (true) {
                     String response = input.readLine();
                     Platform.runLater(() -> {
-                        ClientServerMsgHandler serverMsgHandler = new ClientServerMsgHandler();
+                        ServerMessageHandler serverMsgHandler = new ServerMessageHandler();
                         serverMsgHandler.handle(response);
-                        ClientRoomMsgHandler roomMsgHandler = new ClientRoomMsgHandler();
+                        RoomMessageHandler roomMsgHandler = new RoomMessageHandler();
                         roomMsgHandler.handle(response);
                     });
                 }

@@ -9,7 +9,7 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 
-public class ClientServerMsgHandler {
+public class ServerMessageHandler {
     public void handle(String response) {
         JSONObject json = new JSONObject(response);
         try {

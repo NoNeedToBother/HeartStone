@@ -8,7 +8,7 @@ import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 
-public class ClientRoomMsgHandler {
+public class RoomMessageHandler {
     public void handle(String response) {
         JSONObject json = new JSONObject(response);
         try {
@@ -16,7 +16,6 @@ public class ClientRoomMsgHandler {
         } catch (JSONException e) {
             return;
         }
-        System.out.println(response);
         loadBattlefieldIfNecessary();
         switch (GameRoom.RoomAction.valueOf(json.getString("room_action"))) {
             case GET_INITIAL_INFO -> {

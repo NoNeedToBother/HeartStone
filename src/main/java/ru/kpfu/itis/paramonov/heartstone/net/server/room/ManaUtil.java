@@ -6,11 +6,8 @@ import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 
 public class ManaUtil {
     private static final int MAX_MANA = 10;
-    public static Hero increaseMana(JSONObject response, GameServer.Client activePlayer, GameServer.Client player1,
-                                    Hero player1Hero, Hero player2Hero) {
-        Hero hero;
-        if (activePlayer.equals(player1)) hero = player1Hero;
-        else hero = player2Hero;
+    public static Hero increaseMana(JSONObject response, PlayerData dataPlayer) {
+        Hero hero = dataPlayer.getHero();
         int newMaxMana = hero.getMaxMana() + 1;
         if (newMaxMana >= MAX_MANA) newMaxMana = MAX_MANA;
 

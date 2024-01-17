@@ -24,9 +24,9 @@ public class ServerMessage {
 
     private GameRoom.RoomAction roomAction = null;
 
-    private final Map<String, String> params = new HashMap<>();
+    private final Map<String, String> stringParams = new HashMap<>();
 
-    private final Map<String, Integer> positions = new HashMap<>();
+    private final Map<String, Integer> intParams = new HashMap<>();
 
     public static class ServerMessageBuilder {
         ServerMessage message = new ServerMessage();
@@ -55,12 +55,12 @@ public class ServerMessage {
         }
 
         public ServerMessageBuilder addParameter(String parameter, String value) {
-            message.params.put(parameter, value);
+            message.stringParams.put(parameter, value);
             return this;
         }
 
-        public ServerMessageBuilder addPosition(String key, Integer pos) {
-            message.positions.put(key, pos);
+        public ServerMessageBuilder addParameter(String parameter, Integer value) {
+            message.intParams.put(parameter, value);
             return this;
         }
 
@@ -69,11 +69,11 @@ public class ServerMessage {
             json.put("entity", message.entityToConnect.toString());
             if (message.entityToConnect.equals(Entity.SERVER)) json.put("server_action", message.serverAction.toString());
             if (message.entityToConnect.equals(Entity.ROOM)) json.put("room_action", message.roomAction.toString());
-            for (String key : message.params.keySet()) {
-                json.put(key, message.params.get(key));
+            for (String key : message.stringParams.keySet()) {
+                json.put(key, message.stringParams.get(key));
             }
-            for (String key : message.positions.keySet()) {
-                json.put(key, message.positions.get(key));
+            for (String key : message.intParams.keySet()) {
+                json.put(key, message.intParams.get(key));
             }
             return json.toString();
         }

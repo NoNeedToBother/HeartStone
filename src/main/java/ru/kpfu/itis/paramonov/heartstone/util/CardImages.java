@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CardImages {
-    private static final Map<Integer, Image> images = new HashMap<>();
+    private static final Map<Integer, List<Image>> images = new HashMap<>();
 
     public static void initDefaultCardImages() {
         CardRepository.CardTemplate[] cards = CardRepository.CardTemplate.values();
@@ -22,19 +22,36 @@ public class CardImages {
                     .setStyle(Card.CardStyle.BASE.toString())
                     .addRarity(card.getRarity())
                     .build();
-
-            images.put(card.getId(), cardImage);
+            Image selectedImage = Card.spriteBuilder()
+                    .addImage(card.getPortraitUrl())
+                    .setStyle(Card.CardStyle.SELECTED.toString())
+                    .addRarity(card.getRarity())
+                    .build();
+            List<Image> cardImages = List.of(cardImage, selectedImage);
+            images.put(card.getId(), cardImages);
         }
     }
 
     public static Image getPortrait(int cardId) {
-        return images.get(cardId);
+        return images.get(cardId).get(0);
+    }
+
+    public static Image getSelectedPortrait(int cardId) {
+        return images.get(cardId).get(1);
     }
 
     private final static String DEFAULT_PATH = "/assets/animations/card_statuses/";
 
     public static Image getPortraitWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
         Image base = getPortrait(card.getCardInfo().getId());
+        return addStatusesAndEffects(card, base, ignoredStatuses);
+    }
+    public static Image getSelectedPortraitWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
+        Image base = getSelectedPortrait(card.getCardInfo().getId());
+        return addStatusesAndEffects(card, base, ignoredStatuses);
+    }
+
+    private static Image addStatusesAndEffects(Card card, Image base, List<CardRepository.Status> ignoredStatuses) {
         if (card.hasStatus(CardRepository.Status.SHIELDED) && !ignoredStatuses.contains(CardRepository.Status.SHIELDED))
             base = addShield(base);
         if (card.hasStatus(CardRepository.Status.FROZEN) && !ignoredStatuses.contains(CardRepository.Status.FROZEN))
