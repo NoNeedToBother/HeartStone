@@ -12,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CardAttackUtil {
-    public static boolean checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer,
+    public static boolean checkCardToAttack(GameServer.Client player, GameServer.Client activePlayer,
                                             JSONObject response, Card attacker, int pos, String target) {
         response.put("room_action", GameRoom.RoomAction.CHECK_CARD_TO_ATTACK);
         response.put("pos", pos);
         response.put("target", target);
-        boolean canAttack = client.equals(activePlayer);
+        boolean canAttack = player.equals(activePlayer);
         for (CardRepository.Status status : attacker.getStatuses()) {
             if (CardRepository.Status.getCardAttackRestrictionStatuses().contains(status)) {
                 canAttack = false;
@@ -27,12 +27,12 @@ public class CardAttackUtil {
         return canAttack;
     }
 
-    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, HashMap<String, List<Card>> opponentCards,
+    public static void checkCardToAttack(GameServer.Client client, GameServer.Client activePlayer, PlayerData opponentData,
                                          JSONObject response, Card attacker, int pos, int opponentPos, String target) {
         boolean res = checkCardToAttack(client, activePlayer, response, attacker, pos, target);
         if (res) {
             if (!attacker.hasAction(CardRepository.Action.IGNORE_TAUNT)) {
-                res = checkTaunts(opponentCards, opponentPos);
+                res = checkTaunts(opponentData, opponentPos);
                 if (!res) response.put("reason", "You must attack card with taunt");
             }
         }
@@ -41,17 +41,17 @@ public class CardAttackUtil {
         response.put("opponent_pos", opponentPos);
     }
 
-    private static boolean checkTaunts(HashMap<String, List<Card>> cards, int pos) {
-        List<Integer> tauntCards = checkTaunts(cards);
+    private static boolean checkTaunts(PlayerData playerData, int pos) {
+        List<Integer> tauntCards = checkTaunts(playerData);
         if (tauntCards.size() == 0) return true;
-        return checkTaunts(cards).contains(pos);
+        return checkTaunts(playerData).contains(pos);
     }
 
-    public static List<Integer> checkTaunts(HashMap<String, List<Card>> cards) {
+    public static List<Integer> checkTaunts(PlayerData playerData) {
         List<Integer> tauntCardPositions = new ArrayList<>();
-        for (Card card : cards.get("field")) {
+        for (Card card : playerData.getField()) {
             if (card.hasKeyWord(CardRepository.KeyWord.TAUNT)) {
-                tauntCardPositions.add(cards.get("field").indexOf(card));
+                tauntCardPositions.add(playerData.getField().indexOf(card));
             }
         }
         return tauntCardPositions;
@@ -66,10 +66,10 @@ public class CardAttackUtil {
                                                  JSONObject attackerResponse, JSONObject attackedResponse,
                                                  GameServer.Client attackerPlayer, GameRoom room) {
         GameServer.Client attackedPlayer = room.getOtherPlayer(attackerPlayer);
-        Hero attackerHero = room.getHero(attackerPlayer);
-        Hero attackedHero = room.getHero(attackedPlayer);
-        List<Card> attackerField = room.getAllCards(attackerPlayer).get("field");
-        List<Card> attackedField = room.getAllCards(attackedPlayer).get("field");
+        Hero attackerHero = room.getPlayerData(attackerPlayer).getHero();
+        Hero attackedHero = room.getPlayerData(attackedPlayer).getHero();
+        List<Card> attackerField = room.getPlayerData(attackerPlayer).getField();
+        List<Card> attackedField = room.getPlayerData(attackedPlayer).getField();
         if (attacked.hasKeyWord(CardRepository.KeyWord.PUNISHMENT) && attacked.getHp() > 0) {
             if (attacked.getCardInfo().getId() == CardRepository.CardTemplate.TheRock.getId()) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getAtk(), attackerResponse, attackedResponse,

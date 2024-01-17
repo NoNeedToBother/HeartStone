@@ -74,24 +74,16 @@ public class PlayerRoomUtil {
         service.updateMoney(defeatedUser.login(), defeatedMoney);
         response.put("money", winnerMoney);
     }
-    public static void dealDamageOnNoCard(GameServer.Client client, GameServer.Client player1, int player1Dmg, int player2Dmg,
-                                          Hero player1Hero, Hero player2Hero, JSONObject responsePlayer1, JSONObject responsePlayer2) {
-        responsePlayer1.put("room_action", GameRoom.RoomAction.CHANGE_HP);
-        responsePlayer2.put("room_action", GameRoom.RoomAction.CHANGE_HP);
-        if (client.equals(player1)) {
-            int newHp = player1Hero.getHp() - player1Dmg;
-            responsePlayer1.put("hp", newHp);
-            responsePlayer1.put("reason", "no_card");
-            responsePlayer1.put("dmg", player1Dmg);
-            responsePlayer2.put("opponent_hp", newHp);
-            player1Hero.setHp(newHp);
-        } else {
-            int newHp = player2Hero.getHp() - player2Dmg;
-            responsePlayer2.put("hp", newHp);
-            responsePlayer2.put("reason", "no_card");
-            responsePlayer2.put("dmg", player2Dmg);
-            responsePlayer1.put("opponent_hp", newHp);
-            player2Hero.setHp(newHp);
-        }
+    public static void dealDamageOnNoCard(PlayerData playerData, JSONObject responsePlayerDamaged, JSONObject responsePlayerOther) {
+        responsePlayerDamaged.put("room_action", GameRoom.RoomAction.CHANGE_HP);
+        responsePlayerOther.put("room_action", GameRoom.RoomAction.CHANGE_HP);
+        Hero hero = playerData.getHero();
+        int dmg = playerData.getBurntCardDamage();
+        int newHp = hero.getHp() - dmg;
+        hero.setHp(newHp);
+        responsePlayerDamaged.put("hp", newHp);
+        responsePlayerDamaged.put("reason", "no_card");
+        responsePlayerDamaged.put("dmg", dmg);
+        responsePlayerOther.put("opponent_hp", newHp);
     }
 }
