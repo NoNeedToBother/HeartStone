@@ -10,10 +10,10 @@ import javafx.scene.layout.VBox;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
@@ -141,9 +141,9 @@ public class PacksController {
     }
 
     private void setCardCoverImageView() {
-        Image cardCover = Card.spriteBuilder()
+        Image cardCover = BattleCard.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
-                .setStyle(Card.CardStyle.BASE.toString())
+                .setStyle(BattleCard.CardStyle.BASE.toString())
                 .scale(ScaleFactor.DEFAULT_CARD)
                 .build();
 

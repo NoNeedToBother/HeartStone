@@ -5,6 +5,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -17,14 +18,14 @@ public class CardImages {
     public static void initDefaultCardImages() {
         CardRepository.CardTemplate[] cards = CardRepository.CardTemplate.values();
         for (CardRepository.CardTemplate card : cards) {
-            Image cardImage = Card.spriteBuilder()
+            Image cardImage = BattleCard.spriteBuilder()
                     .addImage(card.getPortraitUrl())
-                    .setStyle(Card.CardStyle.BASE.toString())
+                    .setStyle(BattleCard.CardStyle.BASE.toString())
                     .addRarity(card.getRarity())
                     .build();
-            Image selectedImage = Card.spriteBuilder()
+            Image selectedImage = BattleCard.spriteBuilder()
                     .addImage(card.getPortraitUrl())
-                    .setStyle(Card.CardStyle.SELECTED.toString())
+                    .setStyle(BattleCard.CardStyle.SELECTED.toString())
                     .addRarity(card.getRarity())
                     .build();
             List<Image> cardImages = List.of(cardImage, selectedImage);
@@ -42,16 +43,16 @@ public class CardImages {
 
     private final static String DEFAULT_PATH = "/assets/animations/card_statuses/";
 
-    public static Image getPortraitWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
+    public static Image getPortraitWithStatusesAndEffects(BattleCard card, List<CardRepository.Status> ignoredStatuses) {
         Image base = getPortrait(card.getCardInfo().getId());
         return addStatusesAndEffects(card, base, ignoredStatuses);
     }
-    public static Image getSelectedPortraitWithStatusesAndEffects(Card card, List<CardRepository.Status> ignoredStatuses) {
+    public static Image getSelectedPortraitWithStatusesAndEffects(BattleCard card, List<CardRepository.Status> ignoredStatuses) {
         Image base = getSelectedPortrait(card.getCardInfo().getId());
         return addStatusesAndEffects(card, base, ignoredStatuses);
     }
 
-    private static Image addStatusesAndEffects(Card card, Image base, List<CardRepository.Status> ignoredStatuses) {
+    private static Image addStatusesAndEffects(BattleCard card, Image base, List<CardRepository.Status> ignoredStatuses) {
         if (card.hasStatus(CardRepository.Status.SHIELDED) && !ignoredStatuses.contains(CardRepository.Status.SHIELDED))
             base = addShield(base);
         if (card.hasStatus(CardRepository.Status.FROZEN) && !ignoredStatuses.contains(CardRepository.Status.FROZEN))
@@ -74,7 +75,7 @@ public class CardImages {
         return addStatus(img, "card_shield.png");
     }
 
-    public static void removeShield(Card card) {
+    public static void removeShield(BattleCard card) {
         Image base = getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.SHIELDED));
         card.getAssociatedImageView().setImage(base);
     }
