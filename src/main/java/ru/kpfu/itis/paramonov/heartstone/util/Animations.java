@@ -16,8 +16,8 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -68,7 +68,7 @@ public class Animations {
         thread.start();
     }
 
-    public static void playUnfreezingAnimation(Card card) {
+    public static void playUnfreezingAnimation(BattleCard card) {
         Runnable unfreezingCardAnim = () -> {
             for (int i = FREEZING_FRAME_AMOUNT - 1; i >= 1; i--) {
                 try {
@@ -91,7 +91,7 @@ public class Animations {
 
     public static Image getFreezingFrame(int frameUntil) {
         BufferedImage bufferedImage = new BufferedImage(
-                Card.CardSpriteBuilder.DEFAULT_WIDTH, Card.CardSpriteBuilder.DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+                BattleCard.CardSpriteBuilder.DEFAULT_WIDTH, BattleCard.CardSpriteBuilder.DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
         for(int i = 1; i <= frameUntil; i++) {
             ImageUtil.addImage(bufferedImage, DEFAULT_PATH + "freezing/freezing_" + i + ".png");
         }
@@ -255,9 +255,9 @@ public class Animations {
         }
     }
 
-    public static void playCutAttackAnimation(List<Integer> positions, List<Card> field) {
+    public static void playCutAttackAnimation(List<Integer> positions, List<BattleCard> field) {
         for (Integer pos : positions) {
-            Card card = field.get(pos);
+            BattleCard card = field.get(pos);
             Runnable anim = () -> {
                 ImageView iv = card.getAssociatedImageView();
                 drawFrame("card_effects/cut.png", iv);

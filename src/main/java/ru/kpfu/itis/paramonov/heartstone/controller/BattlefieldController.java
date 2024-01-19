@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
@@ -54,9 +53,9 @@ public class BattlefieldController {
     @FXML
     private AnchorPane opponentHand;
 
-    private final List<Card> hand = new ArrayList<>();
-    private final List<Card> field = new ArrayList<>();
-    private final List<Card> opponentField = new ArrayList<>();
+    private final List<BattleCard> hand = new ArrayList<>();
+    private final List<BattleCard> field = new ArrayList<>();
+    private final List<BattleCard> opponentField = new ArrayList<>();
 
     @FXML
     private ImageView background;
@@ -99,7 +98,7 @@ public class BattlefieldController {
     @FXML
     private ImageView fieldEffects;
 
-    private Card selectedCard = null;
+    private BattleCard selectedCard = null;
 
     private static BattlefieldController controller = null;
 
@@ -128,9 +127,9 @@ public class BattlefieldController {
     }
 
     private void setDeckInfo() {
-        Image deckCover = Card.spriteBuilder()
+        Image deckCover = BattleCard.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
-                .setStyle(Card.CardStyle.BASE.toString())
+                .setStyle(BattleCard.CardStyle.BASE.toString())
                 .build();
         deckCoverIv.setImage(deckCover);
 
@@ -220,7 +219,7 @@ public class BattlefieldController {
             Animations.playCardAttacking(card, playerHeroInfo.getPortrait(), null, json);
         }
     }
-    private void playCutAnimation(JSONObject jsonObject, String key, List<Card> field) {
+    private void playCutAnimation(JSONObject jsonObject, String key, List<BattleCard> field) {
         List<Integer> positions;
         try {
             positions = jsonObject.getJSONArray(key).toList()
@@ -228,9 +227,7 @@ public class BattlefieldController {
                     .map(obj -> (Integer) obj)
                     .collect(Collectors.toList());
             Animations.playCutAttackAnimation(positions, field);
-        } catch (JSONException ignored) {
-            System.out.println("BRUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUH");
-        }
+        } catch (JSONException ignored) {}
     }
 
     public void notifyAttackingAnimationStopped() {
@@ -256,18 +253,18 @@ public class BattlefieldController {
                 onCardDeselected(selectedCard.getAssociatedImageView());
             }
             addOpponentCard(json);
-            Card stolen = field.remove(stolenPos);
+            BattleCard stolen = field.remove(stolenPos);
             onCardDeselected(stolen.getAssociatedImageView());
             hBoxFieldCards.getChildren().remove(stolen.getAssociatedImageView());
         } catch (JSONException ignored) {}
 
         try {
             int gottenPos = json.getInt("gotten_pos");
-            Card card = getCard(json);
+            BattleCard card = getCard(json);
             Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
             ImageView iv = new ImageView(sprite);
             card.associateImageView(iv);
-            Card gotten = opponentField.remove(gottenPos);
+            BattleCard gotten = opponentField.remove(gottenPos);
             hBoxOpponentFieldCards.getChildren().remove(gotten.getAssociatedImageView());
             field.add(card);
             hBoxFieldCards.getChildren().add(iv);
@@ -277,7 +274,7 @@ public class BattlefieldController {
 
         Integer handPos = getIntParam(json, "hand_pos");
         if (handPos != null) {
-            Card card = hand.get(handPos);
+            BattleCard card = hand.get(handPos);
             card.setCost(json.getInt("cost"));
         }
 
@@ -291,9 +288,9 @@ public class BattlefieldController {
         } catch (JSONException ignored) {}
     }
 
-    private void freezeEnemyCards(JSONArray frozenCards, List<Card> field) {
+    private void freezeEnemyCards(JSONArray frozenCards, List<BattleCard> field) {
         for (int i = 0; i < frozenCards.length(); i++) {
-            Card card = field.get(frozenCards.getInt(i));
+            BattleCard card = field.get(frozenCards.getInt(i));
             card.addStatus(CardRepository.Status.FROZEN);
             Animations.playFreezingAnimation(card.getAssociatedImageView());
         }
@@ -302,7 +299,7 @@ public class BattlefieldController {
     private void setSelectionBehaviour(ImageView iv) {
         iv.setOnMouseClicked(mouseEvent -> {
             if (selectedCard != null) {
-                Card imgCard = getHandCardByImageView(iv);
+                BattleCard imgCard = getHandCardByImageView(iv);
                 if (imgCard == null) imgCard = getFieldCardByImageView(iv);
                 if (imgCard == selectedCard) onCardDeselected(iv);
                 else onCardSelected(iv);
@@ -311,7 +308,7 @@ public class BattlefieldController {
         });
     }
 
-    private void checkShieldStatus(JSONObject json, Card card) {
+    private void checkShieldStatus(JSONObject json, BattleCard card) {
         String shieldStatus = getStringParam(json, "shield_status");
         if (shieldStatus != null) {
             switch (shieldStatus) {
@@ -327,8 +324,8 @@ public class BattlefieldController {
         }
     }
 
-    private void applyChanges(JSONObject json, int pos, List<Card> field) {
-        Card targeted = field.get(pos);
+    private void applyChanges(JSONObject json, int pos, List<BattleCard> field) {
+        BattleCard targeted = field.get(pos);
         Integer hp = getIntParam(json, "hp");
         Integer atk = getIntParam(json, "atk");
         String status = getStringParam(json, "card_status");
@@ -336,13 +333,13 @@ public class BattlefieldController {
         applyChange(field, targeted, pos, hp, atk, status);
     }
 
-    private void applyChange(List<Card> field, Card damaged, int pos, Integer hp, Integer atk, String status) {
+    private void applyChange(List<BattleCard> field, BattleCard damaged, int pos, Integer hp, Integer atk, String status) {
         if (hp != null && hp <= 0) {
             field.remove(damaged);
             Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
         }
         else {
-            Card card = field.get(pos);
+            BattleCard card = field.get(pos);
             if (hp != null) card.setHp(hp);
             if (atk != null) card.setAtk(atk);
             if (status != null) {
@@ -447,7 +444,7 @@ public class BattlefieldController {
 
     public void placeCard(JSONObject json) {
         int handPos = json.getInt("pos");
-        Card card = hand.get(handPos);
+        BattleCard card = hand.get(handPos);
         addStatuses(card, json);
         ImageView cardIv = card.getAssociatedImageView();
         onCardDeselected(cardIv);
@@ -468,9 +465,9 @@ public class BattlefieldController {
     public void updateOpponentHand(JSONObject json) {
         opponentHand.getChildren().clear();
         int handSize = json.getInt("opponent_hand_size");
-        Image deckCover = Card.spriteBuilder()
+        Image deckCover = BattleCard.spriteBuilder()
                 .addImage("/assets/images/cards/card_cover.png")
-                .setStyle(Card.CardStyle.BASE.toString())
+                .setStyle(BattleCard.CardStyle.BASE.toString())
                 .build();
         double deltaX = 40;
         for (int i = 0; i < handSize; i++) {
@@ -494,7 +491,7 @@ public class BattlefieldController {
     }
 
     public void addOpponentCard(JSONObject json) {
-        Card card = getCard(json);
+        BattleCard card = getCard(json);
         Image sprite = CardImages.getPortrait(card.getCardInfo().getId());
 
         ImageView cardIv = new ImageView();
@@ -512,8 +509,8 @@ public class BattlefieldController {
             }
             if (checkAttacking(mouseEvent)) return;
 
-            Card handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
-            Card selectedEnemyCard = getOpponentFieldCardByImageView(cardIv);
+            BattleCard handCard = getHandCardByImageView(selectedCard.getAssociatedImageView());
+            BattleCard selectedEnemyCard = getOpponentFieldCardByImageView(cardIv);
 
             if (handCard != null) {
                 List<CardRepository.Action> enemyCardTargetedActions = CardRepository.Action.getEnemyCardTargetedActions();
@@ -548,7 +545,7 @@ public class BattlefieldController {
         hBoxOpponentFieldCards.getChildren().add(cardIv);
     }
 
-    private void sendAttackingOnPlay(Card handCard, Card opponentCard) {
+    private void sendAttackingOnPlay(BattleCard handCard, BattleCard opponentCard) {
         String msg = ServerMessage.builder()
                 .setEntityToConnect(ServerMessage.Entity.ROOM)
                 .setRoomAction(GameRoom.RoomAction.CHECK_CARD_PLAYED)
@@ -569,26 +566,26 @@ public class BattlefieldController {
         updateCards(opponentChanges, opponentField);
     }
 
-    private void updateCards(JSONArray changes, List<Card> field) {
-        List<Card> defeatedCards = new ArrayList<>();
+    private void updateCards(JSONArray changes, List<BattleCard> field) {
+        List<BattleCard> defeatedCards = new ArrayList<>();
         for (int i = 0; i < changes.length(); i++) {
             JSONObject cardChange = changes.getJSONObject(i);
-            Card card = applyChanges(field, cardChange);
+            BattleCard card = applyChanges(field, cardChange);
             if (card.getHp() <= 0) defeatedCards.add(card);
         }
         removeCardsFrom(defeatedCards, field);
     }
 
-    private void removeCardsFrom(List<Card> cards, List<Card> from) {
-        for (Card card : cards) {
+    private void removeCardsFrom(List<BattleCard> cards, List<BattleCard> from) {
+        for (BattleCard card : cards) {
             Animations.playCardCrackingAnimation(card.getAssociatedImageView(), this);
         }
         from.removeAll(cards);
     }
 
-    private Card applyChanges(List<Card> field, JSONObject cardChange) {
+    private BattleCard applyChanges(List<BattleCard> field, JSONObject cardChange) {
         int pos = cardChange.getInt("pos");
-        Card cardToChange = field.get(pos);
+        BattleCard cardToChange = field.get(pos);
         Integer hp = getIntParam(cardChange, "hp");
         if (hp != null) cardToChange.setHp(hp);
         Integer atk = getIntParam(cardChange, "atk");
@@ -614,8 +611,8 @@ public class BattlefieldController {
         hBoxOpponentFieldCards.getChildren().remove(iv);
     }
 
-    private Card getCard(JSONObject json) {
-        Card card = new Card(
+    private BattleCard getCard(JSONObject json) {
+        BattleCard card = new BattleCard(
                 json.getInt("id"),
                 json.getInt("hp"),
                 json.getInt("atk"),
@@ -625,7 +622,7 @@ public class BattlefieldController {
         return card;
     }
 
-    private void addStatuses(Card card, JSONObject json) {
+    private void addStatuses(BattleCard card, JSONObject json) {
         try {
             JSONArray statuses = json.getJSONArray("statuses");
             for (int i = 0; i < statuses.length(); i++) {
@@ -639,7 +636,7 @@ public class BattlefieldController {
         if (selectedCard != null) {
             deselectCard(selectedCard.getAssociatedImageView());
         }
-        Card selected = getHandCardByImageView(card);
+        BattleCard selected = getHandCardByImageView(card);
         if (selected == null) selected = getFieldCardByImageView(card);
         selectedCard = selected;
         selectCard(card);
@@ -657,7 +654,7 @@ public class BattlefieldController {
     }
 
     private void deselectCard(ImageView card) {
-        Card deselected = getHandCardByImageView(card);
+        BattleCard deselected = getHandCardByImageView(card);
         if (deselected == null) deselected = getFieldCardByImageView(card);
         if(deselected == null) return;
         Image sprite = CardImages.getPortraitWithStatusesAndEffects(deselected, List.of());
@@ -709,7 +706,7 @@ public class BattlefieldController {
         ImageView img = new ImageView();
         img.setImage(sprite);
 
-        Card card = new Card(cardInfo);
+        BattleCard card = new BattleCard(cardInfo);
         card.setAtk(atk);
         card.setHp(hp);
         card.setCost(cost);
@@ -721,22 +718,22 @@ public class BattlefieldController {
         layoutCards.add(img);
     }
 
-    private Card getHandCardByImageView(ImageView iv) {
-        for (Card card : hand) {
+    private BattleCard getHandCardByImageView(ImageView iv) {
+        for (BattleCard card : hand) {
             if (iv.equals(card.getAssociatedImageView())) return card;
         }
         return null;
     }
 
-    private Card getFieldCardByImageView(ImageView iv) {
-        for (Card card : field) {
+    private BattleCard getFieldCardByImageView(ImageView iv) {
+        for (BattleCard card : field) {
             if (iv.equals(card.getAssociatedImageView())) return card;
         }
         return null;
     }
 
-    private Card getOpponentFieldCardByImageView(ImageView iv) {
-        for (Card card : opponentField) {
+    private BattleCard getOpponentFieldCardByImageView(ImageView iv) {
+        for (BattleCard card : opponentField) {
             if (iv.equals(card.getAssociatedImageView())) return card;
         }
         return null;
@@ -744,7 +741,7 @@ public class BattlefieldController {
 
     private void setOnHoverListener(ImageView iv, String place) {
         iv.hoverProperty().addListener(((observableValue, oldValue, isHovered) -> {
-            Card card = null;
+            BattleCard card = null;
             switch (place) {
                 case "hand" -> card = getHandCardByImageView(iv);
                 case "opponent_field" -> card = getOpponentFieldCardByImageView(iv);

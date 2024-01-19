@@ -1,17 +1,11 @@
 package ru.kpfu.itis.paramonov.heartstone.model.card;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
-
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Card implements Sprite {
+public class Card {
 
     private int hp;
 
@@ -24,12 +18,6 @@ public class Card implements Sprite {
     private List<CardRepository.Status> statuses;
 
     private CardRepository.CardTemplate cardInfo;
-
-    private ImageView imageView;
-
-    public enum CardStyle {
-        BASE, SELECTED;
-    }
 
     public Card(CardRepository.CardTemplate cardInfo) {
         this.cardInfo = cardInfo;
@@ -48,6 +36,8 @@ public class Card implements Sprite {
         this.cardInfo = CardRepository.getCardTemplate(id);
         this.statuses = new ArrayList<>();
     }
+
+    public Card() {}
 
     public int getHp() {
         return hp;
@@ -83,14 +73,6 @@ public class Card implements Sprite {
 
     public CardRepository.CardTemplate getCardInfo() {
         return cardInfo;
-    }
-
-    public void associateImageView(ImageView imageView) {
-        this.imageView = imageView;
-    }
-
-    public ImageView getAssociatedImageView() {
-        return imageView;
     }
 
     public void decreaseHp(int hp) {
@@ -172,72 +154,5 @@ public class Card implements Sprite {
 
     public void removeStatus(CardRepository.Status status) {
         statuses.remove(status);
-    }
-
-    public static class CardSpriteBuilder implements SpriteBuilder<Image> {
-        public static final int DEFAULT_WIDTH = 96;
-
-        public static final int DEFAULT_HEIGHT = 128;
-
-        private BufferedImage img = new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-
-        private final String DEFAULT_PATH = "/assets/images/cards";
-
-        private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
-            img = ImageUtil.addImage(img, imgUrl);
-            return this;
-        }
-
-        @Override
-        public SpriteBuilder<Image> setStyle(String style) {
-            switch (CardStyle.valueOf(style)) {
-                case BASE -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/base_card.png");
-                }
-                case SELECTED -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/selected_card.png");
-                }
-                default -> {throw new RuntimeException("Impossible");}
-            }
-        }
-
-        @Override
-        public SpriteBuilder<Image> addImage(String imgUrl) {
-            return addImageToBufferedImage(imgUrl);
-        }
-
-        @Override
-        public SpriteBuilder<Image> addRarity(CardRepository.Rarity rarity) {
-            switch (rarity) {
-                case COMMON -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_common.png");
-                }
-                case RARE -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_rare.png");
-                }
-                case EPIC -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_epic.png");
-                }
-                case LEGENDARY -> {
-                    return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_legendary.png");
-                }
-                default -> throw new RuntimeException("No such rarity");
-            }
-        }
-
-        @Override
-        public SpriteBuilder<Image> scale(double scale) {
-            img = ImageUtil.scale(img, scale);
-            return this;
-        }
-
-        @Override
-        public Image build() {
-            return ImageUtil.toImage(img);
-        }
-    }
-
-    public static CardSpriteBuilder spriteBuilder() {
-        return new CardSpriteBuilder();
     }
 }

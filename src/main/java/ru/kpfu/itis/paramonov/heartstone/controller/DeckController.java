@@ -6,10 +6,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
@@ -32,9 +32,9 @@ public class DeckController {
     @FXML
     private VBox vBoxDeckCards;
 
-    private final List<Card> deckCards = new ArrayList<>();
+    private final List<BattleCard> deckCards = new ArrayList<>();
 
-    private final List<Card> cards = new ArrayList<>();
+    private final List<BattleCard> cards = new ArrayList<>();
     @FXML
     private VBox deck;
 
@@ -65,7 +65,7 @@ public class DeckController {
 
         btnSave.setOnMouseClicked(mouseEvent -> {
             StringBuilder deck = new StringBuilder("[");
-            for (Card card : deckCards) {
+            for (BattleCard card : deckCards) {
                 deck.append(card.getCardInfo().getId()).append(",");
             }
             String stringDeck = deck.substring(0, deck.length() - 1) + "]";
@@ -77,7 +77,7 @@ public class DeckController {
             GameApplication.getApplication().getClient().sendMessage(msg);
 
             List<CardRepository.CardTemplate> cardInfos = new ArrayList<>();
-            for (Card card : deckCards) {
+            for (BattleCard card : deckCards) {
                 cardInfos.add(card.getCardInfo());
             }
             User.getInstance().setDeck(cardInfos);
@@ -95,13 +95,13 @@ public class DeckController {
         for (CardRepository.CardTemplate card : cards) {
             Image img = getImage(card);
             ImageView cardIv = new ImageView(img);
-            Card deckCard = new Card(card);
+            BattleCard deckCard = new BattleCard(card);
             deckCard.associateImageView(cardIv);
             this.cards.add(deckCard);
             fpCards.getChildren().add(cardIv);
 
             cardIv.setOnMouseClicked(mouseEvent -> {
-                Card ivCard = getByImageView(cardIv);
+                BattleCard ivCard = getByImageView(cardIv);
                 if (!checkCards(ivCard)) {
                     mouseEvent.consume();
                     return;
@@ -122,7 +122,7 @@ public class DeckController {
 
             cardIv.hoverProperty().addListener(((observableValue, aBoolean, isHovered) -> {
                 if (isHovered) {
-                    Card infoCard = getByImageView(cardIv);
+                    BattleCard infoCard = getByImageView(cardIv);
                     cardInfo.updateInfo(infoCard);
                     cardInfo.setVisible(true);
                 } else {
@@ -136,8 +136,8 @@ public class DeckController {
     private void setDeck() {
         List<CardRepository.CardTemplate> deck = User.getInstance().getDeck();
         for (CardRepository.CardTemplate cardTemplate : deck) {
-            List<Card> cards = getCardFromCards(cardTemplate.getId());
-            Card card;
+            List<BattleCard> cards = getCardFromCards(cardTemplate.getId());
+            BattleCard card;
             if (deckCards.contains(cards.get(0))) card = cards.get(1);
             else card = cards.get(0);
             deckCards.add(card);
@@ -151,16 +151,16 @@ public class DeckController {
         }
     }
 
-    private List<Card> getCardFromCards(int id) {
-        List<Card> res = new ArrayList<>();
-        for (Card card : cards) {
+    private List<BattleCard> getCardFromCards(int id) {
+        List<BattleCard> res = new ArrayList<>();
+        for (BattleCard card : cards) {
             if (card.getCardInfo().getId() == id) res.add(card);
         }
         return res;
     }
 
-    private boolean checkCards(Card card) {
-        for (Card deckCard : deckCards) {
+    private boolean checkCards(BattleCard card) {
+        for (BattleCard deckCard : deckCards) {
             if (deckCard.equals(card)) {
                 return false;
             }
@@ -168,8 +168,8 @@ public class DeckController {
         return true;
     }
 
-    private Card getByImageView(ImageView iv) {
-        for (Card card : cards) {
+    private BattleCard getByImageView(ImageView iv) {
+        for (BattleCard card : cards) {
             if (card.getAssociatedImageView().equals(iv)) return card;
         }
         return null;

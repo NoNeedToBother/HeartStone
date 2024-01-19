@@ -16,13 +16,13 @@ import java.awt.image.BufferedImage;
 
 public class DeckCardInfo extends StackPane {
 
-    private Card card;
+    private BattleCard card;
 
-    public DeckCardInfo(Card card) {
+    public DeckCardInfo(BattleCard card) {
         init(card);
     }
 
-    private void init(Card card) {
+    private void init(BattleCard card) {
         String src = GameApplication.class.getResource("/assets/images/deck_card_name.png").toString();
         ImageView iv = new ImageView(new Image(src));
         if (card.getCardInfo().getRarity().equals(CardRepository.Rarity.LEGENDARY)) {
@@ -38,11 +38,11 @@ public class DeckCardInfo extends StackPane {
         getChildren().addAll(iv, text);
     }
 
-    public Card getCard() {
+    public BattleCard getCard() {
         return card;
     }
 
-    public void setCard(Card card) {
+    public void setCard(BattleCard card) {
         this.card = card;
     }
 }

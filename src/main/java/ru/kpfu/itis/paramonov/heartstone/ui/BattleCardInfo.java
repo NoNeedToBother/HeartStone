@@ -58,7 +58,7 @@ public class BattleCardInfo extends Pane {
         text.setText("");
     }
 
-    public void updateInfo(Card card) {
+    public void updateInfo(BattleCard card) {
         setText(card.getCardInfo().getName());
         String actionDescription = card.getCardInfo().getActionDesc();
         if (!actionDescription.isEmpty()) addTextLine(card.getCardInfo().getActionDesc());
