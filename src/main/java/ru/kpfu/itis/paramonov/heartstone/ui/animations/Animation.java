@@ -1,9 +1,11 @@
 package ru.kpfu.itis.paramonov.heartstone.ui.animations;
 
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.util.Duration;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import javax.imageio.ImageIO;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Animation {
 
@@ -60,6 +63,16 @@ public abstract class Animation {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void playTransition(AtomicReference<TranslateTransition> transition, ImageView iv,
+                                double deltaX, double deltaY, long millis) {
+        transition.set(new TranslateTransition());
+        transition.get().setNode(iv);
+        transition.get().setByX(deltaX);
+        transition.get().setByY(deltaY);
+        transition.get().setDuration(Duration.millis(millis));
+        transition.get().play();
     }
 
     protected void delay(int millis) {

@@ -13,6 +13,8 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.Animation;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.PackShakingAnimation;
 import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
@@ -151,11 +153,14 @@ public class PacksController {
     }
 
     public void playOpeningAnimation(Integer cardId, JSONArray cardIds) {
-        Animations.playPackShakingAnimation(cardCoverIv, cardId, cardIds);
-    }
-
-    public void notifyAnimationEnded() {
-        opening = false;
+        clearCardImageViews();
+        Animation animation = new PackShakingAnimation(cardCoverIv);
+        animation.addOnAnimationEndedListener(anim -> {
+            opening = false;
+            if (cardId != null) showCard(cardId);
+            else showCards(cardIds);
+        });
+        animation.play();
     }
 
     public void showCard(int id) {
@@ -167,13 +172,13 @@ public class PacksController {
         cardIv.setImage(ImageUtil.scale(card, ScaleFactor.DEFAULT_CARD));
     }
 
-    public void showCards(JSONArray jsonIds) {
+    private void showCards(JSONArray jsonIds) {
         for (int i = 0; i < jsonIds.length(); i++) {
             showCard(cardImageViews.get(i), jsonIds.getInt(i));
         }
     }
 
-    public void clearCardImageViews() {
+    private void clearCardImageViews() {
         for (ImageView iv : cardImageViews) {
             iv.setImage(null);
         }

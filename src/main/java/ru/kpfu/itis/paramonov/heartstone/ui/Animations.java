@@ -28,7 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class Animations {
@@ -65,58 +64,7 @@ public class Animations {
         }
     }
 
-    public static void playPackShakingAnimation(ImageView pack, Integer cardId, JSONArray cardIds) {
-        PacksController.getController().clearCardImageViews();
-        AtomicReference<TranslateTransition> transition = new AtomicReference<>();
-        playTransition(transition, pack, 25, 0, 150);
-        transition.get().setOnFinished(actionEvent -> {
-            playTransition(transition, pack, -50, 0, 150);
-            transition.get().setOnFinished(actionEvent1 -> {
-                playTransition(transition, pack, 75, 0, 100);
-                transition.get().setOnFinished(actionEvent2 -> {
-                    playTransition(transition, pack, -100, 0, 100);
-                    transition.get().setOnFinished(actionEvent3 -> {
-                        playTransition(transition, pack, 50, 0, 75);
-                        transition.get().setOnFinished(actionEvent4 -> {
-                            PacksController.getController().notifyAnimationEnded();
-                            if (cardId != null) PacksController.getController().showCard(cardId);
-                            else PacksController.getController().showCards(cardIds);
-                        });
-                    });
-                });
-            });
-        });
-    }
 
-    private static void playTransition(AtomicReference<TranslateTransition> transition, ImageView iv,
-                                       double deltaX, double deltaY, long millis) {
-        transition.set(new TranslateTransition());
-        transition.get().setNode(iv);
-        transition.get().setByX(deltaX);
-        transition.get().setByY(deltaY);
-        transition.get().setDuration(Duration.millis(millis));
-        transition.get().play();
-    }
-
-    public static void playCardAttacking(ImageView attacker, ImageView attacked, Consumer<JSONObject> onAnimationEnded, JSONObject jsonObject) {
-        AtomicReference<TranslateTransition> transition = new AtomicReference<>(new TranslateTransition());
-        double attackerX = attacker.localToScene(attacker.getBoundsInLocal()).getCenterX();
-        double attackerY = attacker.localToScene(attacker.getBoundsInLocal()).getCenterY();
-        double attackedX = attacked.localToScene(attacked.getBoundsInLocal()).getCenterX();
-        double attackedY = attacked.localToScene(attacked.getBoundsInLocal()).getCenterY();
-        double deltaX = attackedX - attackerX;
-        double deltaY = attackedY - attackerY;
-        playTransition(transition, attacker, deltaX, deltaY, 400);
-        transition.get().setOnFinished(actionEvent -> {
-            if (onAnimationEnded != null) onAnimationEnded.accept(jsonObject);
-            playTransition(transition, attacker, -deltaX, -deltaY, 200);
-            transition.get().setOnFinished(actionEvent1 -> {
-                try {
-                    BattlefieldController.getController().notifyAttackingAnimationStopped();
-                } catch (NullPointerException ignored) {}
-            });
-        });
-    }
 
     public static void playFieldFireAnimation(ImageView iv) {
         final int FRAME_AMOUNT = 5;
