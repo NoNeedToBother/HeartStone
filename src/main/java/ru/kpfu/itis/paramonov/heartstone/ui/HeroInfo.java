@@ -7,8 +7,20 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
+import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
+import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
-public class HeroInfo extends HBox {
+import java.awt.image.BufferedImage;
+
+public class HeroInfo extends HBox implements Sprite {
+
+    public enum HeroStyle {
+        BASE
+    }
+
+    private Hero hero;
+
     private final ImageView portrait = new ImageView();
 
     private final StackPane healthSp = new StackPane();
@@ -42,5 +54,55 @@ public class HeroInfo extends HBox {
 
     public ImageView getPortrait() {
         return portrait;
+    }
+
+    public static class HeroSpriteBuilder implements Sprite.SpriteBuilder<Image> {
+
+        private BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+
+        private final String DEFAULT_PATH = "/assets/images/heroes";
+
+        private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
+            img = ImageUtil.addImage(img, imgUrl);
+            return this;
+        }
+
+        @Override
+        public SpriteBuilder<Image> setStyle(String style) {
+            switch (HeroStyle.valueOf(style)) {
+                case BASE -> {
+                    return addImageToBufferedImage(DEFAULT_PATH + "/base_hero.png");
+                }
+                default -> throw new RuntimeException("Not supported style");
+            }
+        }
+
+        @Override
+        public SpriteBuilder<Image> addImage(String imgUrl) {
+            return addImageToBufferedImage(DEFAULT_PATH + imgUrl);
+        }
+
+        @Override
+        public SpriteBuilder<Image> scale(double scale) {
+            img = ImageUtil.scale(img, scale);
+            return this;
+        }
+
+        @Override
+        public Image build() {
+            return ImageUtil.toImage(img);
+        }
+    }
+
+    public static HeroSpriteBuilder spriteBuilder() {
+        return new HeroSpriteBuilder();
+    }
+
+    public Hero getHero() {
+        return hero;
+    }
+
+    public void setHero(Hero hero) {
+        this.hero = hero;
     }
 }

@@ -74,9 +74,6 @@ public class BattlefieldController {
     @FXML
     private ManaBar opponentManaBar;
 
-    private Hero player;
-    private Hero opponent;
-
     @FXML
     private HeroInfo playerHeroInfo;
     @FXML
@@ -139,12 +136,14 @@ public class BattlefieldController {
     public void setHeroes(JSONObject json) {
         int playerHp = json.getInt("hp");
         int opponentHp = json.getInt("opponent_hp");
-        player = new Hero(playerHp, playerHp, 0, 0);
-        opponent = new Hero(opponentHp, opponentHp, 0, 0);
+        Hero player = new Hero(playerHp, playerHp, 0, 0);
+        Hero opponent = new Hero(opponentHp, opponentHp, 0, 0);
+        playerHeroInfo.setHero(player);
+        opponentHeroInfo.setHero(opponent);
 
-        Image portrait = Hero.spriteBuilder()
+        Image portrait = HeroInfo.spriteBuilder()
                 .addImage("/standard_hero.png")
-                .setStyle(Hero.HeroStyle.BASE.toString())
+                .setStyle(HeroInfo.HeroStyle.BASE.toString())
                 .build();
         playerHeroInfo.setPortrait(portrait);
         opponentHeroInfo.setPortrait(portrait);
@@ -450,8 +449,8 @@ public class BattlefieldController {
         onCardDeselected(cardIv);
 
         int newMana = json.getInt("mana");
-        manaBar.setMana(newMana, player.getMaxMana());
-        player.setMana(newMana);
+        manaBar.setMana(newMana, playerHeroInfo.getHero().getMaxMana());
+        playerHeroInfo.getHero().setMana(newMana);
 
         hBoxHandCards.getChildren().remove(cardIv);
         hand.remove(card);
@@ -486,8 +485,8 @@ public class BattlefieldController {
     }
 
     public void changeOpponentMana(int newOpponentMana) {
-        opponent.setMana(newOpponentMana);
-        opponentManaBar.setMana(newOpponentMana, opponent.getMaxMana());
+        opponentHeroInfo.getHero().setMana(newOpponentMana);
+        opponentManaBar.setMana(newOpponentMana, opponentHeroInfo.getHero().getMaxMana());
     }
 
     public void addOpponentCard(JSONObject json) {
@@ -799,6 +798,8 @@ public class BattlefieldController {
     }
 
     private void setMana(Integer mana, Integer maxMana, Integer opponentMana, Integer maxOpponentMana) {
+        Hero player = playerHeroInfo.getHero();
+        Hero opponent = opponentHeroInfo.getHero();
         if (mana != null) player.setMana(mana);
         if (maxMana != null) player.setMaxMana(maxMana);
         if (opponentMana != null) opponent.setMana(opponentMana);
@@ -806,6 +807,8 @@ public class BattlefieldController {
     }
 
     private void updateMana() {
+        Hero player = playerHeroInfo.getHero();
+        Hero opponent = opponentHeroInfo.getHero();
         manaBar.setMana(player.getMana(), player.getMaxMana());
         opponentManaBar.setMana(opponent.getMana(), opponent.getMaxMana());
     }
