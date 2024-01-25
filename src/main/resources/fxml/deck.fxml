@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.CardInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="ru.kpfu.itis.paramonov.heartstone.controller.DeckController"
@@ -15,16 +15,14 @@
     <HBox>
         <VBox prefWidth="250" fx:id="deck">
             <ScrollPane prefWidth="250" prefHeight="750">
-                <VBox fx:id="vBoxDeckCards">
-
-                </VBox>
+                <VBox fx:id="vBoxDeckCards"/>
             </ScrollPane>
         </VBox>
         <ScrollPane prefWidth="975" prefHeight="750" AnchorPane.leftAnchor="25">
             <FlowPane fx:id="fpCards" prefWidth="975" prefHeight="887.5"/>
         </ScrollPane>
         <VBox prefWidth="375" fx:id="vBoxCardInfo">
-            <BattleCardInfo fx:id="cardInfo" visible="false"/>
+            <CardInfo fx:id="cardInfo" visible="false"/>
         </VBox>
     </HBox>
 

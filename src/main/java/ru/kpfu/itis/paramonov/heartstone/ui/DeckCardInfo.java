@@ -8,8 +8,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;

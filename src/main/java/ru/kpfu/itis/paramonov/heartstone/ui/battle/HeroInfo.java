@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.ui;
+package ru.kpfu.itis.paramonov.heartstone.ui.battle;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -7,8 +7,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
+import ru.kpfu.itis.paramonov.heartstone.ui.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
@@ -56,19 +56,19 @@ public class HeroInfo extends HBox implements Sprite {
         return portrait;
     }
 
-    public static class HeroSpriteBuilder implements Sprite.SpriteBuilder<Image> {
+    public static class HeroSpriteBuilder implements Sprite.SpriteBuilder<HeroSpriteBuilder, Image> {
 
         private BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
 
         private final String DEFAULT_PATH = "/assets/images/heroes";
 
-        private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
+        private HeroSpriteBuilder addImageToBufferedImage(String imgUrl) {
             img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
         @Override
-        public SpriteBuilder<Image> setStyle(String style) {
+        public HeroSpriteBuilder setStyle(String style) {
             switch (HeroStyle.valueOf(style)) {
                 case BASE -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/base_hero.png");
@@ -78,12 +78,12 @@ public class HeroInfo extends HBox implements Sprite {
         }
 
         @Override
-        public SpriteBuilder<Image> addImage(String imgUrl) {
+        public HeroSpriteBuilder addImage(String imgUrl) {
             return addImageToBufferedImage(DEFAULT_PATH + imgUrl);
         }
 
         @Override
-        public SpriteBuilder<Image> scale(double scale) {
+        public HeroSpriteBuilder scale(double scale) {
             img = ImageUtil.scale(img, scale);
             return this;
         }

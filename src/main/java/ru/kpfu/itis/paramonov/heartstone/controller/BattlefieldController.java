@@ -2,7 +2,9 @@ package ru.kpfu.itis.paramonov.heartstone.controller;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -22,10 +24,17 @@ import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
-import ru.kpfu.itis.paramonov.heartstone.util.Animations;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.Animation;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.CrackingAnimation;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.FreezeAnimation;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.HeroInfo;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.ManaBar;
+import ru.kpfu.itis.paramonov.heartstone.ui.Animations;
 import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,7 +76,7 @@ public class BattlefieldController {
     private VBox vBoxCardInfo;
 
     @FXML
-    private BattleCardInfo cardInfo;
+    private CardInfo cardInfo;
 
     @FXML
     private ManaBar manaBar;
@@ -172,8 +181,36 @@ public class BattlefieldController {
     public void onGameEnd(JSONObject json) {
         User.getInstance().setMoney(json.getInt("money"));
         switch (json.getString("result")) {
-            case "win" -> Animations.playHeroCrackingAnimation(opponentHeroInfo.getPortrait(), true);
-            case "defeat" -> Animations.playHeroCrackingAnimation(playerHeroInfo.getPortrait(), false);
+            case "win" -> {
+                Animation animation = new CrackingAnimation(CrackingAnimation.Type.HERO, opponentHeroInfo.getPortrait());
+                animation.addOnAnimationEndedListener(anim -> onGameEnd(true));
+                animation.play();
+            }
+            case "defeat" -> {
+                Animation animation = new CrackingAnimation(CrackingAnimation.Type.HERO, playerHeroInfo.getPortrait());
+                animation.addOnAnimationEndedListener(anim -> onGameEnd(false));
+                animation.play();
+            }
+        }
+    }
+
+    private void onGameEnd(boolean win) {
+        resetController();
+        FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
+        try {
+            AnchorPane pane = loader.load();
+            Text title = new Text();
+            Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 80);
+            title.setFont(font);
+            title.setX(675);
+            title.setY(125);
+            if (win) title.setText("You won!");
+            else title.setText("You lost!");
+            pane.getChildren().add(title);
+            Scene scene = new Scene(pane);
+            GameApplication.getApplication().getPrimaryStage().setScene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -291,7 +328,8 @@ public class BattlefieldController {
         for (int i = 0; i < frozenCards.length(); i++) {
             BattleCard card = field.get(frozenCards.getInt(i));
             card.addStatus(CardRepository.Status.FROZEN);
-            Animations.playFreezingAnimation(card.getAssociatedImageView());
+            Animation freezeAnimation = new FreezeAnimation(FreezeAnimation.Type.FREEZING, card);
+            freezeAnimation.play();
         }
     }
 
@@ -323,6 +361,15 @@ public class BattlefieldController {
         }
     }
 
+    private void playCardCrackingAnimation(ImageView iv) {
+        Animation animation = new CrackingAnimation(CrackingAnimation.Type.CARD, iv);
+        animation.addOnAnimationEndedListener(anim -> {
+            hBoxFieldCards.getChildren().remove(iv);
+            hBoxOpponentFieldCards.getChildren().remove(iv);
+        });
+        animation.play();
+    }
+
     private void applyChanges(JSONObject json, int pos, List<BattleCard> field) {
         BattleCard targeted = field.get(pos);
         Integer hp = getIntParam(json, "hp");
@@ -335,7 +382,7 @@ public class BattlefieldController {
     private void applyChange(List<BattleCard> field, BattleCard damaged, int pos, Integer hp, Integer atk, String status) {
         if (hp != null && hp <= 0) {
             field.remove(damaged);
-            Animations.playCardCrackingAnimation(damaged.getAssociatedImageView(), this);
+            playCardCrackingAnimation(damaged.getAssociatedImageView());
         }
         else {
             BattleCard card = field.get(pos);
@@ -344,13 +391,15 @@ public class BattlefieldController {
             if (status != null) {
                 switch (status) {
                     case "no_frozen" -> {
-                        Animations.playUnfreezingAnimation(field.get(pos));
+                        Animation unfreezeAnimation = new FreezeAnimation(FreezeAnimation.Type.UNFREEZING, field.get(pos));
+                        unfreezeAnimation.play();
                         field.get(pos).removeStatus(CardRepository.Status.FROZEN);
                     }
                     case "FROZEN" -> {
                         if (!field.get(pos).hasStatus(CardRepository.Status.FROZEN)) {
                             field.get(pos).addStatus(CardRepository.Status.valueOf(status));
-                            Animations.playFreezingAnimation(field.get(pos).getAssociatedImageView());
+                            Animation freezeAnimation = new FreezeAnimation(FreezeAnimation.Type.FREEZING, field.get(pos));
+                            freezeAnimation.play();
                         }
                     }
                     case "no_aligned" -> card.removeStatus(card.getCurrentAlignedStatus());
@@ -577,7 +626,7 @@ public class BattlefieldController {
 
     private void removeCardsFrom(List<BattleCard> cards, List<BattleCard> from) {
         for (BattleCard card : cards) {
-            Animations.playCardCrackingAnimation(card.getAssociatedImageView(), this);
+            playCardCrackingAnimation(card.getAssociatedImageView());
         }
         from.removeAll(cards);
     }
@@ -593,7 +642,8 @@ public class BattlefieldController {
         if (status != null) {
             if (status.equals(CardRepository.Status.FROZEN.toString())) {
                 cardToChange.addStatus(CardRepository.Status.FROZEN);
-                Animations.playFreezingAnimation(cardToChange.getAssociatedImageView());
+                Animation freezeAnimation = new FreezeAnimation(FreezeAnimation.Type.FREEZING, cardToChange);
+                freezeAnimation.play();
             }
         }
         String alignedStatus = getStringParam(cardChange, "aligned_status");
@@ -603,11 +653,6 @@ public class BattlefieldController {
         }
         checkShieldStatus(cardChange, cardToChange);
         return cardToChange;
-    }
-
-    public void deleteCard(ImageView iv) {
-        hBoxFieldCards.getChildren().remove(iv);
-        hBoxOpponentFieldCards.getChildren().remove(iv);
     }
 
     private BattleCard getCard(JSONObject json) {

@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.ui;
+package ru.kpfu.itis.paramonov.heartstone.ui.battle;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

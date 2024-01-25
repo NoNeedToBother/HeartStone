@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server.room;
+package ru.kpfu.itis.paramonov.heartstone.net.server.room.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -6,9 +6,10 @@ import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.PlayerData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class CardAttackUtil {

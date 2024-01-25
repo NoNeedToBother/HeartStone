@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.util;
+package ru.kpfu.itis.paramonov.heartstone.ui;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
@@ -17,7 +17,9 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.controller.BattlefieldController;
 import ru.kpfu.itis.paramonov.heartstone.controller.PacksController;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
+import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,68 +28,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class Animations {
     private static final String DEFAULT_PATH = "/assets/animations/";
-    public static void playCardCrackingAnimation(ImageView iv, BattlefieldController controller) {
-        final int FRAME_AMOUNT = 5;
-
-        Runnable crackingCardAnim = () -> {
-            for (int i = 1; i <= FRAME_AMOUNT; i++) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                drawFrame(i, "card_cracking/card_cracking_", iv);
-            }
-            Platform.runLater(() -> controller.deleteCard(iv));
-        };
-
-        Thread thread = new Thread(crackingCardAnim);
-        thread.start();
-    }
-
-    private static int FREEZING_FRAME_AMOUNT = 4;
-    public static void playFreezingAnimation(ImageView iv) {
-        Runnable freezingCardAnim = () -> {
-            for (int i = 1; i <= FREEZING_FRAME_AMOUNT; i++) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                drawFrame(i, "freezing/freezing_", iv);
-            }
-        };
-
-        Thread thread = new Thread(freezingCardAnim);
-        thread.start();
-    }
-
-    public static void playUnfreezingAnimation(BattleCard card) {
-        Runnable unfreezingCardAnim = () -> {
-            for (int i = FREEZING_FRAME_AMOUNT - 1; i >= 1; i--) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
-                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
-                ImageUtil.addImage(bufferedImage, getFreezingFrame(i));
-                card.getAssociatedImageView().setImage(ImageUtil.toImage(bufferedImage));
-            }
-            Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of());
-            card.getAssociatedImageView().setImage(base);
-        };
-
-        Thread thread = new Thread(unfreezingCardAnim);
-        thread.start();
-    }
 
     public static Image getFreezingFrame(int frameUntil) {
         BufferedImage bufferedImage = new BufferedImage(
@@ -107,49 +52,6 @@ public class Animations {
     private static void drawFrame(String src, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
         img = ImageUtil.addImage(img, DEFAULT_PATH + src);
-        draw(img, iv);
-    }
-
-    public static void playHeroCrackingAnimation(ImageView iv, boolean win) {
-        final int FRAME_AMOUNT = 3;
-
-        Runnable crackingCardAnim = () -> {
-            for (int i = 1; i <= FRAME_AMOUNT; i++) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                drawHeroCrackingFrame(i, iv);
-            }
-            Platform.runLater(() -> {
-                BattlefieldController.resetController();
-                FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
-                try {
-                    AnchorPane pane = loader.load();
-                    Text title = new Text();
-                    Font font = Font.loadFont(GameApplication.class.getResource("/fonts/ThaleahFat.ttf").toString(), 80);
-                    title.setFont(font);
-                    title.setX(675);
-                    title.setY(125);
-                    if (win) title.setText("You won!");
-                    else title.setText("You lost!");
-                    pane.getChildren().add(title);
-                    Scene scene = new Scene(pane);
-                    GameApplication.getApplication().getPrimaryStage().setScene(scene);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        };
-
-        Thread thread = new Thread(crackingCardAnim);
-        thread.start();
-    }
-
-    private static void drawHeroCrackingFrame(int pos, ImageView iv) {
-        BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
-        img = ImageUtil.addImage(img, "/assets/animations/hero_cracking/hero_cracking_" + pos + ".png");
         draw(img, iv);
     }
 

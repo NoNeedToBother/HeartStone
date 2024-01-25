@@ -6,17 +6,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 
 import java.util.List;
 
-public class BattleCardInfo extends Pane {
+public class CardInfo extends Pane {
     private final ImageView bg = new ImageView();
 
     private final Text text = new Text();
 
-    public BattleCardInfo() {
+    public CardInfo() {
         init();
     }
 

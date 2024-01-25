@@ -1,8 +1,10 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server.room;
+package ru.kpfu.itis.paramonov.heartstone.net.server.room.util;
 
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.user.Hero;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.PlayerData;
 
 public class ManaUtil {
     private static final int MAX_MANA = 10;

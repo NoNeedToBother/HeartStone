@@ -3,9 +3,9 @@ package ru.kpfu.itis.paramonov.heartstone.util;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.Animations;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

@@ -6,6 +6,7 @@ import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.util.PackOpeningUtil;
 
 import java.io.*;
 import java.net.ServerSocket;

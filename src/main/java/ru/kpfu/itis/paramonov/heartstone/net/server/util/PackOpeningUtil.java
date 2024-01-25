@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server;
+package ru.kpfu.itis.paramonov.heartstone.net.server.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
