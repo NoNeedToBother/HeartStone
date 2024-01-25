@@ -30,11 +30,7 @@ public class FreezeAnimation extends Animation {
 
     private final Runnable freezingCardAnimation = () -> {
         for (int i = 1; i <= FREEZING_FRAME_AMOUNT; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            delay(100);
             drawFrame(i, "freezing/freezing_", card.getAssociatedImageView());
         }
         invokeOnAnimationEndedListeners();
@@ -42,11 +38,7 @@ public class FreezeAnimation extends Animation {
 
     private final Runnable unfreezingCardAnimation = () -> {
         for (int i = FREEZING_FRAME_AMOUNT - 1; i >= 1; i--) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            delay(100);
             Image base = CardImages.getPortraitWithStatusesAndEffects(card, List.of(CardRepository.Status.FROZEN));
             BufferedImage bufferedImage = SwingFXUtils.fromFXImage(base, null);
             ImageUtil.addImage(bufferedImage, getFreezingFrame(i));

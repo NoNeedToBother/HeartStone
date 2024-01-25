@@ -61,4 +61,12 @@ public abstract class Animation {
             throw new RuntimeException(e);
         }
     }
+
+    protected void delay(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

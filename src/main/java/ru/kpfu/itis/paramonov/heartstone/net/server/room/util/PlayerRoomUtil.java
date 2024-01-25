@@ -83,9 +83,9 @@ public class PlayerRoomUtil {
         int dmg = playerData.getBurntCardDamage();
         int newHp = hero.getHp() - dmg;
         hero.setHp(newHp);
-        responsePlayerDamaged.put("hp", newHp);
+        responsePlayerDamaged.put("hp", hero.getHp());
         responsePlayerDamaged.put("reason", "no_card");
         responsePlayerDamaged.put("dmg", dmg);
-        responsePlayerOther.put("opponent_hp", newHp);
+        responsePlayerOther.put("opponent_hp", hero.getHp());
     }
 }

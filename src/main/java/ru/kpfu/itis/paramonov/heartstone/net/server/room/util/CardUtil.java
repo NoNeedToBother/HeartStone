@@ -56,7 +56,7 @@ public class CardUtil {
         }
     }
 
-    public static void checkProfessorDogOnCardDraw(List<Card> field, GameServer.Client player, GameServer.Client other,
+    public static void checkCardEffectsOnCardDrawn(List<Card> field, GameServer.Client player, GameServer.Client other,
                                                    GameRoom room) {
         for (Card card : field) {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
@@ -156,7 +156,14 @@ public class CardUtil {
             if (card.hasAction(CardRepository.Action.GIVE_CARD_ON_TURN_END)) {
                 List<Integer> cardIds = giveCard(card);
                 PlayerData playerData = room.getPlayerData(player);
-                addAndSendGottenCardInfo(cardIds, player, room.getOtherPlayer(player), playerData, room);
+                if (playerData.getHand().size() + cardIds.size() > GameRoom.HAND_SIZE) {
+                    List<Integer> correctedCardIds = new ArrayList<>();
+                    for (int i = 0; i < GameRoom.HAND_SIZE - playerData.getHand().size(); i++) {
+                        correctedCardIds.add(cardIds.get(i));
+                    }
+                    addAndSendGottenCardInfo(correctedCardIds, player, room.getOtherPlayer(player), playerData, room);
+                }
+                else addAndSendGottenCardInfo(cardIds, player, room.getOtherPlayer(player), playerData, room);
             }
         }
     }

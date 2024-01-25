@@ -26,11 +26,7 @@ public class CrackingAnimation extends Animation {
 
     private final Runnable cardCrackingAnimation = () -> {
         for (int i = 1; i <= CARD_FRAME_AMOUNT; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            delay(100);
             drawFrame(i, "card_cracking/card_cracking_", target);
         }
         invokeOnAnimationEndedListeners();
@@ -40,13 +36,10 @@ public class CrackingAnimation extends Animation {
 
     private final Runnable heroCrackingCardAnimation = () -> {
         for (int i = 1; i <= HERO_FRAME_AMOUNT; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            delay(100);
             drawHeroCrackingFrame(i, target);
         }
+        invokeOnAnimationEndedListeners();
     };
 
     private static void drawHeroCrackingFrame(int pos, ImageView iv) {

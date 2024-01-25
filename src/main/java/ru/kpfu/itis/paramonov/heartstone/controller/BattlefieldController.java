@@ -195,7 +195,6 @@ public class BattlefieldController {
     }
 
     private void onGameEnd(boolean win) {
-        resetController();
         FXMLLoader loader = new FXMLLoader(GameApplication.class.getResource("/fxml/game_end.fxml"));
         try {
             AnchorPane pane = loader.load();
@@ -212,6 +211,7 @@ public class BattlefieldController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        resetController();
     }
 
     public void showMessage(String reason) {

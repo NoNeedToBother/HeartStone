@@ -80,7 +80,6 @@ public class GameRoom {
     }
 
     public void handleMessage(JSONObject msg, GameServer.Client player) {
-        System.out.println(msg.toString());
         switch (RoomAction.valueOf(msg.getString("room_action"))) {
             case END_TURN -> {
                 JSONObject responseEnd = new JSONObject();
@@ -228,7 +227,7 @@ public class GameRoom {
                         }
                         if (allCards.get("field").get(pos).hasStatus(CardRepository.Status.CAN_ATTACK_CARDS_ON_PLAY) && res) {
                             response.put("status", "not_ok");
-                            response.put("reason", "Cards with board\ncannot attack heroes immediately");
+                            response.put("reason", "Cards with board cannot attack heroes immediately");
                             res = false;
                         }
                         if (res) response.put("status", "ok");
@@ -263,7 +262,7 @@ public class GameRoom {
 
     private void putInvalidDataAndSendResponse(JSONObject response, GameServer.Client player) {
         response.put("status", "not_ok");
-        response.put("reason", "There is something wrong with your client.\n Consider quitting");
+        response.put("reason", "There is something wrong with your client. Consider quitting");
         sendResponse(response.toString(), player);
     }
 
@@ -355,14 +354,14 @@ public class GameRoom {
         PlayerData playerData = getPlayerData(player);
         try {
             cardToDraw = playerData.getDeck().remove(0);
-            if (playerData.getHand().size() == HAND_SIZE) {
+            if (playerData.getHand().size() >= HAND_SIZE) {
                 response.put("card_status", "burned");
             } else {
                 playerData.getHand().add(cardToDraw);
+                CardUtil.checkCardEffectsOnCardDrawn(playerData.getField(), player, getOtherPlayer(player), this);
                 response.put("card_status", "drawn");
             }
             CardUtil.putCardInfo(cardToDraw, response);
-            CardUtil.checkProfessorDogOnCardDraw(playerData.getField(), player, getOtherPlayer(player), this);
         } catch (IndexOutOfBoundsException e) {
             response.put("card_status", "no_card");
             JSONObject responsePlayerDamaged = new JSONObject();
@@ -454,9 +453,9 @@ public class GameRoom {
         playerData.setHero(new Hero(initialHp, initialHp, 0, 0));
     }
 
-    private final int INITIAL_HAND_SIZE = 4;
+    private final int INITIAL_HAND_SIZE = 3;
 
-    private final int HAND_SIZE = 7;
+    public static final int HAND_SIZE = 7;
 
     private void putInitialInfo(JSONObject response, JSONObject otherResponse,
                                 List<Card> deck, GameServer.Client player, int background) {
