@@ -19,7 +19,6 @@ import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
-import ru.kpfu.itis.paramonov.heartstone.ui.Animations;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;

@@ -41,15 +41,15 @@ public abstract class Animation {
         });
     }
 
-    protected final String DEFAULT_PATH = "/assets/animations/";
+    protected static final String DEFAULT_PATH = "/assets/animations/";
 
-    protected void drawFrame(int pos, String src, ImageView iv) {
+    protected static void drawFrame(int pos, String src, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
         img = ImageUtil.addImage(img, DEFAULT_PATH + src + pos + ".png");
         draw(img, iv);
     }
 
-    protected void drawFrame(String src, ImageView iv) {
+    protected static void drawFrame(String src, ImageView iv) {
         BufferedImage img = SwingFXUtils.fromFXImage(iv.getImage(), null);
         img = ImageUtil.addImage(img, DEFAULT_PATH + src);
         draw(img, iv);

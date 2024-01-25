@@ -78,7 +78,7 @@ public class CardAttackUtil {
                 attacked.setAtk(attacked.getAtk() + attacked.getCardInfo().getAtkIncrease());
                 attacked.increaseMaxHp(attacked.getCardInfo().getHpIncrease());
             }
-            if (attacked.hasAction(CardRepository.Action.DAMAGE_ENEMY_HERO_ON_DMG)) {
+            else if (attacked.hasAction(CardRepository.Action.DAMAGE_ENEMY_HERO_ON_DMG)) {
                 dealHeroDamageOnPunishment(attackerHero, attackedHero, attacked.getCardInfo().getHeroDamage(),
                         attackerResponse, attackedResponse, attackerPlayer, attackedPlayer);
             }

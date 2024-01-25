@@ -25,20 +25,16 @@ import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.ui.*;
 import ru.kpfu.itis.paramonov.heartstone.ui.animations.Animation;
-import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.CardAttackingAnimation;
-import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.CrackingAnimation;
-import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.FreezeAnimation;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.*;
 import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.battle.HeroInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.battle.ManaBar;
-import ru.kpfu.itis.paramonov.heartstone.ui.Animations;
 import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class BattlefieldController {
@@ -220,7 +216,8 @@ public class BattlefieldController {
     }
 
     public void playFieldFireAnimation() {
-        Animations.playFieldFireAnimation(fieldEffects);
+        Animation animation = new FieldEffectAnimation(FieldEffectAnimation.Type.FIRE_CIRCLE, fieldEffects);
+        animation.play();
     }
 
     public void playAttackingAnimation(JSONObject json) {
@@ -229,22 +226,33 @@ public class BattlefieldController {
         try {
             int pos = json.getInt("pos");
             int opponentPos = json.getInt("opponent_pos");
+            Integer attackAnimationSrc = getIntParam(json, "attack_anim_src");
             Animation.OnAnimationEndedListener onAnimationEnded = (animation) -> {
                 if (getIntParam(json, "punishment_src") != null) onPunishmentDamage(json);
-                if (getIntParam(json, "attack_anim_src") != null &&
-                        (getIntParam(json, "attack_anim_src") == CardRepository.CardTemplate.MutantCrab.getId() ||
-                         getIntParam(json, "attack_anim_src") == CardRepository.CardTemplate.PirateParrot.getId())) {
-                    playCutAnimation(json, "opponent_anim_indexes", opponentField);
-                    playCutAnimation(json, "player_anim_indexes", field);
-                }
                 updateCards(json);
             };
+
+            CardAttackingAnimation.CardEffect cardEffect = null;
+            if (attackAnimationSrc != null && CardRepository.getCardTemplate(attackAnimationSrc).getActions().contains(CardRepository.Action.ATTACK_ADJACENT_CARDS)) {
+                List<Integer> opponentPositions = getIntegersFromJSONArray(json, "opponent_anim_indexes");
+                if (!opponentPositions.isEmpty()) {
+                    cardEffect = new CardAttackingAnimation.CardEffect(
+                            CardAttackingAnimation.CardEffect.Type.CLAW, opponentPositions, opponentField);
+                }
+                List<Integer> playerPositions = getIntegersFromJSONArray(json, "player_anim_indexes");
+                if (!playerPositions.isEmpty()) {
+                    cardEffect = new CardAttackingAnimation.CardEffect(
+                            CardAttackingAnimation.CardEffect.Type.CLAW, playerPositions, field);
+                }
+            }
+
             if (json.getString("role").equals("attacker")) {
                 CardAttackingAnimation cardAttackingAnimation = new CardAttackingAnimation(
                         field.get(pos).getAssociatedImageView(),
                         opponentField.get(opponentPos).getAssociatedImageView());
                 cardAttackingAnimation.addOnAnimationEndedListener(onAnimationEnded);
                 cardAttackingAnimation.addOnCardReturnedListener(() -> attacking = false);
+                if (cardEffect != null) cardAttackingAnimation.addEffect(cardEffect);
                 cardAttackingAnimation.play();
             }
             else {
@@ -253,6 +261,7 @@ public class BattlefieldController {
                         field.get(pos).getAssociatedImageView());
                 cardAttackingAnimation.addOnAnimationEndedListener(onAnimationEnded);
                 cardAttackingAnimation.addOnCardReturnedListener(() -> attacking = false);
+                if (cardEffect != null) cardAttackingAnimation.addEffect(cardEffect);
                 cardAttackingAnimation.play();
             }
             return;
@@ -269,15 +278,16 @@ public class BattlefieldController {
             cardAttackingAnimation.play();
         }
     }
-    private void playCutAnimation(JSONObject jsonObject, String key, List<BattleCard> field) {
-        List<Integer> positions;
+
+    private List<Integer> getIntegersFromJSONArray(JSONObject jsonObject, String key) {
+        List<Integer> positions = new ArrayList<>();
         try {
             positions = jsonObject.getJSONArray(key).toList()
                     .stream()
                     .map(obj -> (Integer) obj)
                     .collect(Collectors.toList());
-            Animations.playCutAttackAnimation(positions, field);
         } catch (JSONException ignored) {}
+        return positions;
     }
 
     public void updateHp(JSONObject json) {
@@ -538,10 +548,16 @@ public class BattlefieldController {
 
     public void onPunishmentDamage(JSONObject json) {
         String target = json.getString("target");
+        int id = json.getInt("punishment_src");
         switch (target) {
-            case "opponent" -> Animations.playPunishmentAnimation(opponentHeroInfo.getPortrait(), json.getInt("punishment_src"));
-            case "player" -> Animations.playPunishmentAnimation(playerHeroInfo.getPortrait(), json.getInt("punishment_src"));
+            case "opponent" -> playPunishmentAnimation(opponentHeroInfo.getPortrait(), id);
+            case "player" -> playPunishmentAnimation(playerHeroInfo.getPortrait(), id);
         }
+    }
+
+    private void playPunishmentAnimation(ImageView portrait, int id) {
+        Animation animation = new PunishmentAnimation(portrait, id);
+        animation.play();
     }
 
     public void changeOpponentMana(int newOpponentMana) {
