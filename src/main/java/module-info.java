@@ -15,4 +15,5 @@ module ru.kpfu.itis.paramonov.heartstone {
     exports ru.kpfu.itis.paramonov.heartstone;
     exports ru.kpfu.itis.paramonov.heartstone.controller to javafx.fxml;
     exports ru.kpfu.itis.paramonov.heartstone.ui to javafx.fxml;
+    exports ru.kpfu.itis.paramonov.heartstone.ui.battle to javafx.fxml;
 }

@@ -9,9 +9,9 @@ import javafx.scene.text.Text;
 import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 
 public class MoneyInfo extends StackPane {
-    private ImageView iv = new ImageView();
+    private final ImageView iv = new ImageView();
 
-    private Text money = new Text();
+    private final Text money = new Text();
 
     public MoneyInfo() {
         init();

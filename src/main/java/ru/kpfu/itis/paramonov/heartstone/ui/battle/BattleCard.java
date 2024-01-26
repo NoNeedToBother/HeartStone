@@ -1,10 +1,10 @@
-package ru.kpfu.itis.paramonov.heartstone.ui;
+package ru.kpfu.itis.paramonov.heartstone.ui.battle;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import ru.kpfu.itis.paramonov.heartstone.model.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.ui.Sprite;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 
 import java.awt.image.BufferedImage;
@@ -97,7 +97,9 @@ public class BattleCard implements Sprite {
         return imageView;
     }
 
-    public static class CardSpriteBuilder implements SpriteBuilder<Image> {
+
+
+    public static class CardSpriteBuilder implements SpriteBuilder<CardSpriteBuilder, Image> {
         public static final int DEFAULT_WIDTH = 96;
 
         public static final int DEFAULT_HEIGHT = 128;
@@ -106,13 +108,13 @@ public class BattleCard implements Sprite {
 
         private final String DEFAULT_PATH = "/assets/images/cards";
 
-        private SpriteBuilder<Image> addImageToBufferedImage(String imgUrl) {
+        private CardSpriteBuilder addImageToBufferedImage(String imgUrl) {
             img = ImageUtil.addImage(img, imgUrl);
             return this;
         }
 
         @Override
-        public SpriteBuilder<Image> setStyle(String style) {
+        public CardSpriteBuilder setStyle(String style) {
             switch (CardStyle.valueOf(style)) {
                 case BASE -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/base_card.png");
@@ -125,12 +127,11 @@ public class BattleCard implements Sprite {
         }
 
         @Override
-        public SpriteBuilder<Image> addImage(String imgUrl) {
+        public CardSpriteBuilder addImage(String imgUrl) {
             return addImageToBufferedImage(imgUrl);
         }
 
-        @Override
-        public SpriteBuilder<Image> addRarity(CardRepository.Rarity rarity) {
+        public CardSpriteBuilder addRarity(CardRepository.Rarity rarity) {
             switch (rarity) {
                 case COMMON -> {
                     return addImageToBufferedImage(DEFAULT_PATH + "/rarities/rarity_common.png");
@@ -149,7 +150,7 @@ public class BattleCard implements Sprite {
         }
 
         @Override
-        public SpriteBuilder<Image> scale(double scale) {
+        public CardSpriteBuilder scale(double scale) {
             img = ImageUtil.scale(img, scale);
             return this;
         }

@@ -9,8 +9,8 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.CardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.DeckCardInfo;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
@@ -25,7 +25,7 @@ public class DeckController {
     private FlowPane fpCards;
 
     @FXML
-    private BattleCardInfo cardInfo;
+    private CardInfo cardInfo;
     @FXML
     private VBox vBoxCardInfo;
 

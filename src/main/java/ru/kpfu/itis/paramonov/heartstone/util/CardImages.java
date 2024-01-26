@@ -3,9 +3,8 @@ package ru.kpfu.itis.paramonov.heartstone.util;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -64,7 +63,7 @@ public class CardImages {
     private static Image addFrozenEffect(Image cardImage) {
         final int FREEZING_FRAME_AMOUNT = 4;
         BufferedImage bufferedImage = SwingFXUtils.fromFXImage(cardImage, null);
-        ImageUtil.addImage(bufferedImage, Animations.getFreezingFrame(FREEZING_FRAME_AMOUNT));
+        ImageUtil.addImage(bufferedImage, getFreezingFrame(FREEZING_FRAME_AMOUNT));
         return ImageUtil.toImage(bufferedImage);
     }
 
@@ -91,6 +90,17 @@ public class CardImages {
     private static Image addStatus(Image img, String src) {
         BufferedImage bufferedImage = SwingFXUtils.fromFXImage(img, null);
         ImageUtil.addImage(bufferedImage, DEFAULT_PATH + src);
+        return ImageUtil.toImage(bufferedImage);
+    }
+
+    private static final String ANIMATION_DEFAULT_PATH = "/assets/animations/";
+
+    public static Image getFreezingFrame(int frameUntil) {
+        BufferedImage bufferedImage = new BufferedImage(
+                BattleCard.CardSpriteBuilder.DEFAULT_WIDTH, BattleCard.CardSpriteBuilder.DEFAULT_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        for(int i = 1; i <= frameUntil; i++) {
+            ImageUtil.addImage(bufferedImage, ANIMATION_DEFAULT_PATH + "freezing/freezing_" + i + ".png");
+        }
         return ImageUtil.toImage(bufferedImage);
     }
 }

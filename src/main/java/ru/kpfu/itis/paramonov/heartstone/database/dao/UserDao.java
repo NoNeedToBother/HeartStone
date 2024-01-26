@@ -72,7 +72,7 @@ public class UserDao {
 
     private final String DEFAULT_DECK = "[1,1]";
 
-    private final int DEFAULT_MONEY = 500;
+    private final int DEFAULT_MONEY = 1000;
 
     public void save(String login, String password) throws SQLException {
         String sql = "insert into users (login, password, deck, cards, money) values (?, ?, ?, ?, ?)";
@@ -84,6 +84,7 @@ public class UserDao {
         statement.setInt(5, DEFAULT_MONEY);
 
         statement.executeUpdate();
+        statement.close();
     }
 
     public void updateDeck(String login, String deck) throws SQLException{
@@ -93,6 +94,7 @@ public class UserDao {
         statement.setString(2, login);
 
         statement.executeUpdate();
+        statement.close();
     }
 
     public void updateCards(String login, String cards) throws SQLException{
@@ -102,6 +104,7 @@ public class UserDao {
         statement.setString(2, login);
 
         statement.executeUpdate();
+        statement.close();
     }
 
     public void updateMoney(String login, int money) throws SQLException {
@@ -111,6 +114,7 @@ public class UserDao {
         statement.setString(2, login);
 
         statement.executeUpdate();
+        statement.close();
     }
 
 }

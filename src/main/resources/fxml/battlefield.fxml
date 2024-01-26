@@ -8,9 +8,9 @@
 
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.text.Text?>
-<?import ru.kpfu.itis.paramonov.heartstone.ui.BattleCardInfo?>
-<?import ru.kpfu.itis.paramonov.heartstone.ui.ManaBar?>
-<?import ru.kpfu.itis.paramonov.heartstone.ui.HeroInfo?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.CardInfo?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.battle.ManaBar?>
+<?import ru.kpfu.itis.paramonov.heartstone.ui.battle.HeroInfo?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="root"
@@ -25,7 +25,7 @@
     </VBox>
 
     <VBox AnchorPane.leftAnchor="12.5" AnchorPane.topAnchor="12.5" fx:id="vBoxCardInfo" prefWidth="325">
-        <BattleCardInfo fx:id="cardInfo" visible="false"/>
+        <CardInfo fx:id="cardInfo" visible="false"/>
     </VBox>
 
     <ImageView fx:id="cardPlacement" AnchorPane.leftAnchor="345" AnchorPane.bottomAnchor="225"/>

@@ -1,8 +1,9 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server.room;
+package ru.kpfu.itis.paramonov.heartstone.net.server.room.util;
 
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
+import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class AlignmentUtil {
                     attacked.decreaseHp(MADNESS_DIRECT_DMG);
                     int attackedIndex = attackedField.indexOf(attacked);
                     CardAttackUtil.decreaseHpFromNeighbourCards(MADNESS_INDIRECT_DMG, attackedIndex, attackedField,
-                            attackedIndexes, null);
+                            attackedIndexes);
                 }
             }
         }

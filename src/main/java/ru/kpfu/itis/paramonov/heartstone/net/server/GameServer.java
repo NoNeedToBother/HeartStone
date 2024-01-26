@@ -5,7 +5,9 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerResponse;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
+import ru.kpfu.itis.paramonov.heartstone.net.server.util.PackOpeningUtil;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -62,9 +64,9 @@ public class GameServer {
 
     }
 
-    public void sendResponse(String message, Client client) {
+    public void sendResponse(ServerResponse response, Client client) {
         try {
-            client.getOutput().write(message);
+            client.getOutput().write(response.toString());
             client.getOutput().newLine();
             client.getOutput().flush();
         } catch (IOException e) {
@@ -117,7 +119,7 @@ public class GameServer {
                     if (!isDisconnected) {
                         String message = input.readLine();
                         JSONObject json = new JSONObject(message);
-                        String response;
+                        ServerResponse response;
                         if (checkEntityIsServer(json)) {
                             response = handleServerMessage(json);
                         }
@@ -173,8 +175,8 @@ public class GameServer {
             return (ServerMessage.Entity.SERVER.toString().equals(jsonMessage.getString("entity")));
         }
 
-        private String handleServerMessage(JSONObject jsonServerMessage) {
-            JSONObject response = new JSONObject();
+        private ServerResponse handleServerMessage(JSONObject jsonServerMessage) {
+            ServerResponse response = new ServerResponse();
             try {
                 String serverAction = jsonServerMessage.getString("server_action");
                 switch (ServerMessage.ServerAction.valueOf(serverAction)) {
@@ -188,14 +190,14 @@ public class GameServer {
                         handleDisconnection();
                         return null;
                     }
-                    case OPEN_1_PACK -> PackOpeningUtil.openOnePack(jsonServerMessage, response);
-                    case OPEN_5_PACKS -> PackOpeningUtil.openFivePacks(jsonServerMessage, response);
+                    case OPEN_ONE_PACK -> PackOpeningUtil.openOnePack(jsonServerMessage, response);
+                    case OPEN_FIVE_PACKS -> PackOpeningUtil.openFivePacks(jsonServerMessage, response);
                     case UPDATE_DECK -> handleDeckUpdating(jsonServerMessage, response);
                 }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            return response.toString();
+            return response;
         }
 
         private void handleDisconnection() {
@@ -206,48 +208,41 @@ public class GameServer {
             if (connectionThread != null) connectionThread.interrupt();
         }
 
-        private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.LOGIN.toString());
+        private void handleLogin(JSONObject jsonServerMessage, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.LOGIN);
             UserService service = new UserService();
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
                 login = user.login();
-                response.put("status", "ok");
-                putUserInfo(user, response);
+                response.putStatus("ok");
+                response.putUserInfo(user);
             } else {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 
-        private void handleRegistration(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.REGISTER.toString());
+        private void handleRegistration(JSONObject jsonServerMessage, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.REGISTER);
             UserService service = new UserService();
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
-                response.put("status", "ok");
+                response.putStatus("ok");
                 login = user.login();
-                putUserInfo(user, response);
+                response.putUserInfo(user);
             } catch (SQLException e) {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 
-        private void putUserInfo(User user, JSONObject response) {
-            response.put("login", user.login());
-            response.put("deck", user.deck());
-            response.put("cards", user.cards());
-            response.put("money", user.money());
-        }
-
-        private void handleDeckUpdating(JSONObject json, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.UPDATE_DECK);
+        private void handleDeckUpdating(JSONObject json, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.UPDATE_DECK);
             UserService service = new UserService();
             try {
                 service.updateDeck(login, json.getString("deck"));
-                response.put("status", "ok");
+                response.putStatus("ok");
             } catch (SQLException e) {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 

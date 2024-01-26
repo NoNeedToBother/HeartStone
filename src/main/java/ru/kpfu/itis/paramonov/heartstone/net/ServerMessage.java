@@ -13,7 +13,7 @@ public class ServerMessage {
     }
 
     public enum ServerAction {
-        CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT, OPEN_1_PACK, OPEN_5_PACKS //etc
+        CONNECT, REGISTER, LOGIN, UPDATE_DECK, DISCONNECT, OPEN_ONE_PACK, OPEN_FIVE_PACKS //etc
     }
 
     private ServerMessage() {}

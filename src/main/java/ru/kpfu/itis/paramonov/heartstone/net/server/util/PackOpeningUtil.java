@@ -1,4 +1,4 @@
-package ru.kpfu.itis.paramonov.heartstone.net.server;
+package ru.kpfu.itis.paramonov.heartstone.net.server.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -6,6 +6,7 @@ import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerResponse;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,37 +26,35 @@ public class PackOpeningUtil {
         return userService.get(login);
     }
 
-    public static void openOnePack(JSONObject msg, JSONObject response) {
-        response.put("server_action", ServerMessage.ServerAction.OPEN_1_PACK.toString());
+    public static void openOnePack(JSONObject msg, ServerResponse response) {
+        response.putAction(ServerMessage.ServerAction.OPEN_ONE_PACK);
         User user = getUser(msg);
 
         if (!buyPack(response, user, ONE_PACK_COST)) return;
         Integer cardId = getRandomCard();
-        response.put("card_id", cardId);
+        response.putParameter("card_id", cardId);
         updateCards(response, user.login(), List.of(cardId));
     }
 
-    public static void openFivePacks(JSONObject msg, JSONObject response) {
-        response.put("server_action", ServerMessage.ServerAction.OPEN_5_PACKS.toString());
+    public static void openFivePacks(JSONObject msg, ServerResponse response) {
+        response.putAction(ServerMessage.ServerAction.OPEN_FIVE_PACKS);
         User user = getUser(msg);
 
         if (!buyPack(response, user, FIVE_PACK_COST)) return;
-        JSONArray cardIds = new JSONArray();
         List<Integer> ids = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Integer cardId = getRandomCard();
-            cardIds.put(cardId);
             ids.add(cardId);
         }
-        response.put("card_ids", cardIds);
+        response.putIntegers("card_ids", ids);
 
         updateCards(response, user.login(), ids);
     }
 
-    private static boolean buyPack(JSONObject response, User user, int packCost) {
+    private static boolean buyPack(ServerResponse response, User user, int packCost) {
         if (user.money() < packCost) {
-            response.put("status", "not_ok");
-            response.put("reason", "Not enough gold");
+            response.putStatus("not_ok");
+            response.putReason("Not enough gold");
             return false;
         }
 
@@ -63,8 +62,8 @@ public class PackOpeningUtil {
         try {
             userService.updateMoney(user.login(), user.money() - packCost);
         }  catch (SQLException e) {
-            response.put("status", "not_ok");
-            response.put("reason", "Failed to connect database, please try again later.");
+            response.putStatus("not_ok");
+            response.putReason("Failed to connect database, please try again later");
             return false;
         }
         return true;
@@ -95,22 +94,22 @@ public class PackOpeningUtil {
         return cardId;
     }
 
-    private static void updateCards(JSONObject response, String login, List<Integer> cardIds) {
+    private static void updateCards(ServerResponse response, String login, List<Integer> cardIds) {
         UserService service = new UserService();
         User user = service.get(login);
         String cards = user.cards();
         List<CardRepository.CardTemplate> userCards = CardRepository.getCardsById(cards);
         List<CardRepository.CardTemplate> gottenCards = CardRepository.getCardsById(cardIds);
 
-        int newUserMoney = 0;
+        int newUserMoney = user.money();
         for (CardRepository.CardTemplate gottenCard : gottenCards) {
-            newUserMoney = checkCopiesAndGetMoney(userCards, gottenCard, user);
+            newUserMoney += checkCopiesAndGetMoney(userCards, gottenCard, user);
         }
         try {
             service.updateMoney(login, newUserMoney);
         } catch (SQLException e) {
-            response.put("status", "not_ok");
-            response.put("reason", "Failed to connect database, please try again later.");
+            response.putStatus("not_ok");
+            response.putReason("Failed to connect database, please try again later");
         }
 
         StringBuilder cardIdsString = new StringBuilder("[");
@@ -123,13 +122,13 @@ public class PackOpeningUtil {
         try {
             service.updateCards(login, cardIdsString.toString());
         } catch (SQLException e) {
-            response.put("status", "not_ok");
-            response.put("reason", "Failed to connect database, please try again later.");
+            response.putStatus("not_ok");
+            response.putReason("Failed to connect database, please try again later");
             return;
         }
-        response.put("cards", cardIdsString.toString());
-        response.put("money", service.get(login).money());
-        response.put("status", "ok");
+        response.putParameter("cards", cardIdsString);
+        response.putParameter("money", service.get(login).money());
+        response.putStatus("ok");
     }
 
     private static int checkCopiesAndGetMoney(List<CardRepository.CardTemplate> userCards,
@@ -144,7 +143,7 @@ public class PackOpeningUtil {
             if (userCard.equals(card)) cardAmount++;
         }
 
-        int res = user.money();
+        int res = 0;
         if (cardAmount >= maxCardAmount) res += addGoldForCopy(card);
         else userCards.add(card);
         return res;

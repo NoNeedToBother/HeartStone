@@ -13,11 +13,12 @@ import ru.kpfu.itis.paramonov.heartstone.GameApplication;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
 import ru.kpfu.itis.paramonov.heartstone.model.user.User;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
-import ru.kpfu.itis.paramonov.heartstone.ui.BattleCard;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.Animation;
+import ru.kpfu.itis.paramonov.heartstone.ui.animations.animation.PackShakingAnimation;
+import ru.kpfu.itis.paramonov.heartstone.ui.battle.BattleCard;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameButton;
 import ru.kpfu.itis.paramonov.heartstone.ui.GameMessage;
 import ru.kpfu.itis.paramonov.heartstone.ui.MoneyInfo;
-import ru.kpfu.itis.paramonov.heartstone.util.Animations;
 import ru.kpfu.itis.paramonov.heartstone.util.ImageUtil;
 import ru.kpfu.itis.paramonov.heartstone.util.CardImages;
 import ru.kpfu.itis.paramonov.heartstone.util.ScaleFactor;
@@ -131,9 +132,9 @@ public class PacksController {
     }
 
     private void setOnClickListeners() {
-        btn100g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_1_PACK));
+        btn100g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_ONE_PACK));
 
-        btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_5_PACKS));
+        btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_FIVE_PACKS));
 
         btnBack.setOnMouseClicked(mouseEvent ->
                 GameApplication.getApplication().loadScene("/main_menu.fxml")
@@ -151,11 +152,14 @@ public class PacksController {
     }
 
     public void playOpeningAnimation(Integer cardId, JSONArray cardIds) {
-        Animations.playPackShakingAnimation(cardCoverIv, cardId, cardIds);
-    }
-
-    public void notifyAnimationEnded() {
-        opening = false;
+        clearCardImageViews();
+        Animation animation = new PackShakingAnimation(cardCoverIv);
+        animation.addOnAnimationEndedListener(anim -> {
+            opening = false;
+            if (cardId != null) showCard(cardId);
+            else showCards(cardIds);
+        });
+        animation.play();
     }
 
     public void showCard(int id) {
@@ -167,13 +171,13 @@ public class PacksController {
         cardIv.setImage(ImageUtil.scale(card, ScaleFactor.DEFAULT_CARD));
     }
 
-    public void showCards(JSONArray jsonIds) {
+    private void showCards(JSONArray jsonIds) {
         for (int i = 0; i < jsonIds.length(); i++) {
             showCard(cardImageViews.get(i), jsonIds.getInt(i));
         }
     }
 
-    public void clearCardImageViews() {
+    private void clearCardImageViews() {
         for (ImageView iv : cardImageViews) {
             iv.setImage(null);
         }
