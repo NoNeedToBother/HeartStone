@@ -26,7 +26,7 @@ public class AlignmentUtil {
                     attacked.decreaseHp(MADNESS_DIRECT_DMG);
                     int attackedIndex = attackedField.indexOf(attacked);
                     CardAttackUtil.decreaseHpFromNeighbourCards(MADNESS_INDIRECT_DMG, attackedIndex, attackedField,
-                            attackedIndexes, null);
+                            attackedIndexes);
                 }
             }
         }

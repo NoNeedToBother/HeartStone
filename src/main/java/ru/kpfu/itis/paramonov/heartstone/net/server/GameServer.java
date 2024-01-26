@@ -64,9 +64,9 @@ public class GameServer {
 
     }
 
-    public void sendResponse(String message, Client client) {
+    public void sendResponse(ServerResponse response, Client client) {
         try {
-            client.getOutput().write(message);
+            client.getOutput().write(response.toString());
             client.getOutput().newLine();
             client.getOutput().flush();
         } catch (IOException e) {
@@ -119,7 +119,7 @@ public class GameServer {
                     if (!isDisconnected) {
                         String message = input.readLine();
                         JSONObject json = new JSONObject(message);
-                        String response;
+                        ServerResponse response;
                         if (checkEntityIsServer(json)) {
                             response = handleServerMessage(json);
                         }
@@ -175,7 +175,7 @@ public class GameServer {
             return (ServerMessage.Entity.SERVER.toString().equals(jsonMessage.getString("entity")));
         }
 
-        private String handleServerMessage(JSONObject jsonServerMessage) {
+        private ServerResponse handleServerMessage(JSONObject jsonServerMessage) {
             ServerResponse response = new ServerResponse();
             try {
                 String serverAction = jsonServerMessage.getString("server_action");
@@ -197,7 +197,7 @@ public class GameServer {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            return response.toString();
+            return response;
         }
 
         private void handleDisconnection() {

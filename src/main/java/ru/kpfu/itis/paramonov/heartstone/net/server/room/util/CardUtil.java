@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.model.card.Card;
 import ru.kpfu.itis.paramonov.heartstone.model.card.card_info.CardRepository;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerResponse;
 import ru.kpfu.itis.paramonov.heartstone.net.server.GameServer;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.PlayerData;
@@ -35,10 +36,10 @@ public class CardUtil {
             else if (card.hasStatus(CardRepository.Status.FROZEN_1)) {
                 card.removeStatus(CardRepository.Status.FROZEN_1);
                 card.removeStatus(CardRepository.Status.FROZEN);
-                JSONObject responsePlayer = new JSONObject();
-                JSONObject responseOtherPlayer = new JSONObject();
-                responsePlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
-                responseOtherPlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+                ServerResponse responsePlayer = new ServerResponse();
+                ServerResponse responseOtherPlayer = new ServerResponse();
+                responsePlayer.putAction(GameRoom.RoomAction.GET_CHANGE);
+                responseOtherPlayer.putAction(GameRoom.RoomAction.GET_CHANGE);
                 putFrozenCardInfo(field.indexOf(card), responsePlayer, responseOtherPlayer, true);
                 sendGetChangeResponses(responsePlayer, responseOtherPlayer, player, otherPlayer, room);
             }
@@ -62,32 +63,31 @@ public class CardUtil {
             if (card.getCardInfo().getId() == CardRepository.CardTemplate.ProfessorDog.getId()) {
                 card.setAtk(card.getAtk() + card.getCardInfo().getAtkIncrease());
                 card.increaseMaxHp(card.getCardInfo().getHpIncrease());
-                JSONObject response = new JSONObject();
-                JSONObject otherResponse = new JSONObject();
+                ServerResponse response = new ServerResponse();
+                ServerResponse otherResponse = new ServerResponse();
                 room.putRoomAction(response, otherResponse, GameRoom.RoomAction.GET_CHANGE);
-                response.put("pos", field.indexOf(card));
-                putCardStatsAndId(card, response);
+                response.putParameter("pos", field.indexOf(card));
+                response.putCardStatsAndId(card);
 
-                otherResponse.put("opponent_pos", field.indexOf(card));
-                putCardStatsAndId(card, otherResponse);
+                otherResponse.putParameter("opponent_pos", field.indexOf(card));
+                otherResponse.putCardStatsAndId(card);
 
                 room.sendResponses(response, otherResponse, player, other);
             }
         }
     }
 
-    public static void sendGetChangeResponses(JSONObject responsePlayer1, JSONObject responsePlayer2, GameServer.Client player1,
-                                              GameServer.Client player2, GameRoom room) {
-        room.getServer().sendResponse(responsePlayer1.toString(), player1);
-        room.getServer().sendResponse(responsePlayer2.toString(), player2);
+    public static void sendGetChangeResponses(ServerResponse responsePlayer1, ServerResponse responsePlayer2,
+                                              GameServer.Client player1, GameServer.Client player2, GameRoom room) {
+        room.sendResponses(responsePlayer1, responsePlayer2, player1, player2);
         clearGetChangeResponses(responsePlayer1, responsePlayer2);
     }
 
-    private static void clearGetChangeResponses(JSONObject responsePlayer1, JSONObject responsePlayer2) {
-        responsePlayer1 = new JSONObject();
-        responsePlayer2 = new JSONObject();
-        responsePlayer1.put("room_action", GameRoom.RoomAction.GET_CHANGE);
-        responsePlayer2.put("room_action", GameRoom.RoomAction.GET_CHANGE);
+    private static void clearGetChangeResponses(ServerResponse responsePlayer1, ServerResponse responsePlayer2) {
+        responsePlayer1 = new ServerResponse();
+        responsePlayer2 = new ServerResponse();
+        responsePlayer1.putAction(GameRoom.RoomAction.GET_CHANGE);
+        responsePlayer2.putAction(GameRoom.RoomAction.GET_CHANGE);
     }
 
     public static int getDefeatedCardAmount(List<Card> field) {
@@ -98,36 +98,27 @@ public class CardUtil {
         return res;
     }
 
-    public static void putDamagedCardInfo(Card damagedCard, int pos, JSONObject responseDamaged, JSONObject responseOther) {
-        responseDamaged.put("pos", pos);
-        responseOther.put("opponent_pos", pos);
-        responseDamaged.put("hp", damagedCard.getHp());
-        responseOther.put("hp", damagedCard.getHp());
-        responseDamaged.put("atk", damagedCard.getAtk());
-        responseOther.put("atk", damagedCard.getAtk());
+    public static void putDamagedCardInfo(Card damagedCard, int pos, ServerResponse responseDamaged, ServerResponse responseOther) {
+        responseDamaged.putParameter("pos", pos);
+        responseOther.putParameter("opponent_pos", pos);
+        responseDamaged.putParameter("hp", damagedCard.getHp());
+        responseOther.putParameter("hp", damagedCard.getHp());
+        responseDamaged.putParameter("atk", damagedCard.getAtk());
+        responseOther.putParameter("atk", damagedCard.getAtk());
         checkShield(damagedCard, responseDamaged);
         checkShield(damagedCard, responseOther);
-
     }
 
-    public static void putFrozenCardInfo(int pos, JSONObject responseDamaged, JSONObject responseOther, boolean unfrozen) {
-        responseDamaged.put("pos", pos);
-        responseOther.put("opponent_pos", pos);
+    public static void putFrozenCardInfo(int pos, ServerResponse responseDamaged, ServerResponse responseOther, boolean unfrozen) {
+        responseDamaged.putParameter("pos", pos);
+        responseOther.putParameter("opponent_pos", pos);
         if (unfrozen) putCardStatus(responseDamaged, responseOther, "no_frozen");
         else putCardStatus(responseDamaged, responseOther, CardRepository.Status.FROZEN.toString());
     }
 
-    public static void putCardStatus(JSONObject responsePlayer1, JSONObject responsePlayer2, String cardStatus) {
-        responsePlayer1.put("card_status", cardStatus);
-        responsePlayer2.put("card_status", cardStatus);
-    }
-
-    public static void putFieldChanges(JSONObject response, List<Card> field, List<Card> opponentField,
-                                       List<Integer> positions, List<Integer> opponentPositions) {
-        JSONArray changes = getFieldChanges(field, positions);
-        response.put("stat_changes", changes);
-        JSONArray opponentChanges = getFieldChanges(opponentField, opponentPositions);
-        response.put("opponent_stat_changes", opponentChanges);
+    public static void putCardStatus(ServerResponse responsePlayer1, ServerResponse responsePlayer2, String cardStatus) {
+        responsePlayer1.putParameter("card_status", cardStatus);
+        responsePlayer2.putParameter("card_status", cardStatus);
     }
 
     public static JSONArray getFieldChanges(List<Card> field, List<Integer> positions) {
@@ -188,8 +179,8 @@ public class CardUtil {
 
     public static void addAndSendGottenCardInfo(List<Integer> ids, GameServer.Client player, GameServer.Client opponent,
                                                 PlayerData playerData, GameRoom room) {
-        JSONObject response = new JSONObject();
-        JSONObject opponentResponse = new JSONObject();
+        ServerResponse response = new ServerResponse();
+        ServerResponse opponentResponse = new ServerResponse();
         room.putRoomAction(response, opponentResponse, GameRoom.RoomAction.ADD_CARDS_TO_HAND);
         JSONArray cards = new JSONArray();
         for (Integer id : ids) {
@@ -198,8 +189,8 @@ public class CardUtil {
             playerData.getHand().add(card);
             putCardInfo(card, cards);
         }
-        response.put("gotten_cards", cards);
-        opponentResponse.put("opponent_hand_size", playerData.getHand().size());
+        response.putParameter("gotten_cards", cards);
+        opponentResponse.putParameter("opponent_hand_size", playerData.getHand().size());
         room.sendResponses(response, opponentResponse, player, opponent);
     }
 
@@ -217,8 +208,8 @@ public class CardUtil {
         playerData.getField().stream()
                 .filter(card -> card.getCardInfo().getId() == CardRepository.CardTemplate.HypnoShroom.getId())
                 .forEach(card -> {
-                    JSONObject responseOtherPlayer = new JSONObject();
-                    JSONObject responsePlayer = new JSONObject();
+                    ServerResponse responseOtherPlayer = new ServerResponse();
+                    ServerResponse responsePlayer = new ServerResponse();
                     Card res = stealCard(playerData.getField(), otherPlayerData.getField(),
                             responsePlayer, responseOtherPlayer, stolenAmount.get());
                     if (res != null) {
@@ -233,20 +224,20 @@ public class CardUtil {
     }
 
     private static Card stealCard(List<Card> playerField, List<Card> otherPlayerField,
-                                  JSONObject playerResponse, JSONObject otherPlayerResponse, int stolenAmount) {
-        playerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
-        otherPlayerResponse.put("room_action", GameRoom.RoomAction.GET_CHANGE.toString());
+                                  ServerResponse playerResponse, ServerResponse otherPlayerResponse, int stolenAmount) {
+        playerResponse.putAction(GameRoom.RoomAction.GET_CHANGE);
+        otherPlayerResponse.putAction(GameRoom.RoomAction.GET_CHANGE);
         Random random = new Random();
         int currentOpponentCardAmount = otherPlayerField.size() - stolenAmount;
         if (currentOpponentCardAmount <= 0 || playerField.size() + stolenAmount >= MAX_FIELD_SIZE) return null;
         int randPos = random.nextInt(currentOpponentCardAmount);
         Card stolenCard = otherPlayerField.get(randPos);
 
-        playerResponse.put("gotten_pos", randPos);
-        putCardStatsAndId(stolenCard, playerResponse);
+        playerResponse.putParameter("gotten_pos", randPos);
+        playerResponse.putCardStatsAndId(stolenCard);
 
-        otherPlayerResponse.put("stolen_pos", randPos);
-        putCardStatsAndId(stolenCard, otherPlayerResponse);
+        otherPlayerResponse.putParameter("stolen_pos", randPos);
+        otherPlayerResponse.putCardStatsAndId(stolenCard);
         return stolenCard;
     }
 
@@ -267,11 +258,11 @@ public class CardUtil {
     private static void decreaseCostAndSend(int decrease, GameServer.Client player, PlayerData playerData,
                                             Card card, GameRoom room) {
         card.setCost(card.getCost() - decrease);
-        JSONObject responsePlayer = new JSONObject();
-        responsePlayer.put("room_action", GameRoom.RoomAction.GET_CHANGE);
-        responsePlayer.put("hand_pos", playerData.getHand().indexOf(card));
-        responsePlayer.put("cost", card.getCost());
-        room.getServer().sendResponse(responsePlayer.toString(), player);
+        ServerResponse responsePlayer = new ServerResponse();
+        responsePlayer.putAction(GameRoom.RoomAction.GET_CHANGE);
+        responsePlayer.putParameter("hand_pos", playerData.getHand().indexOf(card));
+        responsePlayer.putParameter("cost", card.getCost());
+        room.getServer().sendResponse(responsePlayer, player);
     }
 
     public static void putCardInfo(Card card, JSONArray responseCards) {
@@ -279,44 +270,50 @@ public class CardUtil {
         responseCards.put(jsonCard);
     }
 
-    public static void putCardInfo(Card card, JSONObject response) {
+    public static void putCardInfo(Card card, ServerResponse response) {
         JSONObject jsonCard = getJsonCard(card);
-        response.put("card", jsonCard);
+        response.putParameter("card", jsonCard);
     }
 
-    public static void putCardStatsAndId(Card card, JSONObject response) {
-        response.put("hp", card.getHp());
-        response.put("atk", card.getAtk());
-        response.put("cost", card.getCost());
-        response.put("id", card.getCardInfo().getId());
-    }
-
-    public static void putStatuses(List<CardRepository.Status> statuses, JSONObject response) {
-        JSONArray responseStatuses = new JSONArray();
-        for (CardRepository.Status status : statuses) {
-            responseStatuses.put(status.toString());
-        }
-        response.put("statuses", responseStatuses);
-    }
-
-    public static void checkShield(Card card, JSONObject response) {
+    public static void checkShield(Card card, JSONObject jsonCard) {
         if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_2)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_2);
-            response.put("shield_status", "removed");
+            jsonCard.put("shield_status", "removed");
         }
         else if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_1)) {
             card.removeStatus(CardRepository.Status.SHIELD_REMOVED_1);
             card.addStatus(CardRepository.Status.SHIELD_REMOVED_2);
-            response.put("shield_status", "removed");
+            jsonCard.put("shield_status", "removed");
         }
         if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_2)) {
             card.removeStatus(CardRepository.Status.SHIELD_GIVEN_2);
-            response.put("shield_status", "given");
+            jsonCard.put("shield_status", "given");
         }
         else if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_1)) {
             card.removeStatus(CardRepository.Status.SHIELD_GIVEN_1);
             card.addStatus(CardRepository.Status.SHIELD_GIVEN_2);
-            response.put("shield_status", "given");
+            jsonCard.put("shield_status", "given");
+        }
+    }
+
+    public static void checkShield(Card card, ServerResponse response) {
+        if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_2)) {
+            card.removeStatus(CardRepository.Status.SHIELD_REMOVED_2);
+            response.putParameter("shield_status", "removed");
+        }
+        else if (card.hasStatus(CardRepository.Status.SHIELD_REMOVED_1)) {
+            card.removeStatus(CardRepository.Status.SHIELD_REMOVED_1);
+            card.addStatus(CardRepository.Status.SHIELD_REMOVED_2);
+            response.putParameter("shield_status", "removed");
+        }
+        if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_2)) {
+            card.removeStatus(CardRepository.Status.SHIELD_GIVEN_2);
+            response.putParameter("shield_status", "given");
+        }
+        else if (card.hasStatus(CardRepository.Status.SHIELD_GIVEN_1)) {
+            card.removeStatus(CardRepository.Status.SHIELD_GIVEN_1);
+            card.addStatus(CardRepository.Status.SHIELD_GIVEN_2);
+            response.putParameter("shield_status", "given");
         }
     }
 
