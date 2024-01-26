@@ -132,9 +132,9 @@ public class PacksController {
     }
 
     private void setOnClickListeners() {
-        btn100g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_1_PACK));
+        btn100g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_ONE_PACK));
 
-        btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_5_PACKS));
+        btn500g.setOnMouseClicked(getMouseEventHandler(ServerMessage.ServerAction.OPEN_FIVE_PACKS));
 
         btnBack.setOnMouseClicked(mouseEvent ->
                 GameApplication.getApplication().loadScene("/main_menu.fxml")

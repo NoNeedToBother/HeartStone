@@ -31,7 +31,7 @@ public class ServerMessageHandler {
                     }
                 }
             }
-            case OPEN_1_PACK, OPEN_5_PACKS -> {
+            case OPEN_ONE_PACK, OPEN_FIVE_PACKS -> {
                 if (checkStatus(json)) {
                     User.getInstance().setMoney(json.getInt("money"));
                     Integer cardId = null;

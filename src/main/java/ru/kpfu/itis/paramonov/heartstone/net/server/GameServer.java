@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import ru.kpfu.itis.paramonov.heartstone.database.User;
 import ru.kpfu.itis.paramonov.heartstone.database.service.UserService;
 import ru.kpfu.itis.paramonov.heartstone.net.ServerMessage;
+import ru.kpfu.itis.paramonov.heartstone.net.ServerResponse;
 import ru.kpfu.itis.paramonov.heartstone.net.server.room.GameRoom;
 import ru.kpfu.itis.paramonov.heartstone.net.server.util.PackOpeningUtil;
 
@@ -175,7 +176,7 @@ public class GameServer {
         }
 
         private String handleServerMessage(JSONObject jsonServerMessage) {
-            JSONObject response = new JSONObject();
+            ServerResponse response = new ServerResponse();
             try {
                 String serverAction = jsonServerMessage.getString("server_action");
                 switch (ServerMessage.ServerAction.valueOf(serverAction)) {
@@ -189,8 +190,8 @@ public class GameServer {
                         handleDisconnection();
                         return null;
                     }
-                    case OPEN_1_PACK -> PackOpeningUtil.openOnePack(jsonServerMessage, response);
-                    case OPEN_5_PACKS -> PackOpeningUtil.openFivePacks(jsonServerMessage, response);
+                    case OPEN_ONE_PACK -> PackOpeningUtil.openOnePack(jsonServerMessage, response);
+                    case OPEN_FIVE_PACKS -> PackOpeningUtil.openFivePacks(jsonServerMessage, response);
                     case UPDATE_DECK -> handleDeckUpdating(jsonServerMessage, response);
                 }
             } catch (JSONException e) {
@@ -207,48 +208,41 @@ public class GameServer {
             if (connectionThread != null) connectionThread.interrupt();
         }
 
-        private void handleLogin(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.LOGIN.toString());
+        private void handleLogin(JSONObject jsonServerMessage, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.LOGIN);
             UserService service = new UserService();
             User user = service.getWithLoginAndPassword(
                     jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
             if (user != null) {
                 login = user.login();
-                response.put("status", "ok");
-                putUserInfo(user, response);
+                response.putStatus("ok");
+                response.putUserInfo(user);
             } else {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 
-        private void handleRegistration(JSONObject jsonServerMessage, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.REGISTER.toString());
+        private void handleRegistration(JSONObject jsonServerMessage, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.REGISTER);
             UserService service = new UserService();
             try {
                 User user = service.save(jsonServerMessage.getString("login"), jsonServerMessage.getString("password"));
-                response.put("status", "ok");
+                response.putStatus("ok");
                 login = user.login();
-                putUserInfo(user, response);
+                response.putUserInfo(user);
             } catch (SQLException e) {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 
-        private void putUserInfo(User user, JSONObject response) {
-            response.put("login", user.login());
-            response.put("deck", user.deck());
-            response.put("cards", user.cards());
-            response.put("money", user.money());
-        }
-
-        private void handleDeckUpdating(JSONObject json, JSONObject response) {
-            response.put("server_action", ServerMessage.ServerAction.UPDATE_DECK);
+        private void handleDeckUpdating(JSONObject json, ServerResponse response) {
+            response.putAction(ServerMessage.ServerAction.UPDATE_DECK);
             UserService service = new UserService();
             try {
                 service.updateDeck(login, json.getString("deck"));
-                response.put("status", "ok");
+                response.putStatus("ok");
             } catch (SQLException e) {
-                response.put("status", "not_ok");
+                response.putStatus("not_ok");
             }
         }
 
